@@ -3,26 +3,39 @@
 Plataforma brasileira de IA para empresas pequenas e médias: os funcionários usam várias IAs (Claude, GPT, Gemini),
 sozinhas ou em times prontos ("receitas"), e o dono acompanha entregas e gastos.
 
-- Registro de falhas e riscos: [`Docs/FALHAS.md`](Docs/FALHAS.md)
+```
+FrontEnd/   as telas: React, JavaScript e CSS
+BackEnd/    o servidor: Express, o motor das IAs e o banco de dados (BackEnd/supabase)
+Docs/       documento do projeto, diário, registro de falhas e guias
+```
 
 - Regras do projeto para as IAs: [`AGENTS.md`](AGENTS.md)
 - Documento do projeto: [`Docs/DOCUMENTO-PROJETO.md`](Docs/DOCUMENTO-PROJETO.md)
 - Diário de progresso: [`Docs/PROGRESSO.md`](Docs/PROGRESSO.md)
+- Registro de falhas e riscos: [`Docs/FALHAS.md`](Docs/FALHAS.md)
+- Como publicar: [`Docs/GUIA-PUBLICACAO.md`](Docs/GUIA-PUBLICACAO.md)
 
 ## Como rodar na sua máquina
 
-Precisa do Node.js 24. Na pasta do projeto, no terminal:
+Precisa do Node.js 24. Na primeira vez, baixe as bibliotecas e crie o arquivo de configuração do servidor:
 
 ```bash
-npm install     # baixa as bibliotecas (na primeira vez e sempre que o package.json mudar)
-npm run dev     # liga o site em http://localhost:3000 (Ctrl + C para desligar)
+cd BackEnd && npm install && cp .env.example .env.local
+cd ../FrontEnd && npm install
 ```
 
-Checagens (as mesmas que o GitHub roda em todo pull request):
+Preencha no `BackEnd/.env.local` as três variáveis do Supabase, sempre do **projeto de testes**. Depois, em dois terminais:
 
 ```bash
-npm run lint        # procura erros comuns no código
-npm run typecheck   # confere os tipos do TypeScript
-npm test            # roda os testes automáticos
-npm run build       # monta a versão de produção
+cd BackEnd && npm run dev     # o servidor, na porta 3001
+cd FrontEnd && npm run dev    # as telas, em http://localhost:3000
+```
+
+## Checagens
+
+As mesmas que o GitHub roda em todo pull request:
+
+```bash
+cd BackEnd && npm run lint && npm test
+cd FrontEnd && npm run lint && npm test && npm run build
 ```

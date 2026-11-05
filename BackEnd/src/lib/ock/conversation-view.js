@@ -1,0 +1,129 @@
+// Uma conversa do chat do jeito que a tela mostra: as mensagens, quanto cada uma custou, os anexos, as entregas e os
+// gráficos desenhados. SÓ do servidor. Tudo é lido com a sessão de quem está logado, então só a própria pessoa vê.
+
+import { readStoredFile, loadTaskFiles } from "./files.js";
+import { actionNotice } from "./quick-task.js";
+import { loadOwnConversation, loadOwnTasks, sumOwnTaskCharges } from "./task-store.js";
+
+/** O tipo dos gráficos que a OCK desenha. */
+export const CHART_MIME = "image/svg+xml";
+
+/** Gráfico maior que isto não é mostrado na conversa (só fica para baixar). Os nossos têm poucos KB. */
+const MAX_CHART_BYTES = 200_000;
+
+/** As imagens criadas pela IA que aparecem na conversa, e o tamanho máximo (uma imagem média tem uns 200 KB). */
+const IMAGE_MIMES = new Set(["image/jpeg", "image/png"]);
+const MAX_IMAGE_BYTES = 2_000_000;
+
+/**
+ * Uma mensagem que ficou "respondendo" por mais tempo que isto parou no meio (o servidor caiu): a tela avisa. Nada foi
+ * cobrado, porque a resposta é gravada antes da cobrança.
+ */
+const STALE_TASK_MS = 6 * 60 * 1000;
+
+export const STALE_TASK_ANSWER = "Esta resposta não chegou: o servidor parou no meio. Nada foi cobrado. Tente de novo.";
+
+/**
+ * O gráfico desenhado (ou a imagem criada pela IA), para mostrar dentro de uma imagem (assim, nada dele roda na nossa
+ * página).
+ * @param {Uint8Array} bytes
+ * @param {string} mime
+ * @returns {string}
+ */
+export function previewDataUrl(bytes, mime) {
+  return `data:${mime};base64,${Buffer.from(bytes).toString("base64")}`;
+}
+
+/**
+ * @typedef {{
+ * conversation: ChatConversation;
+ * tasks: ChatTask[];
+ * }} ConversationView
+ */
+
+/**
+ * A conversa da própria pessoa, com as mensagens mais recentes, ou null se ela não existe ou é de outra pessoa.
+ * @param {SupabaseClient} session
+ * @param {string} memberId
+ * @param {string} conversationId
+ * @returns {Promise<ConversationView | null>}
+ */
+export async function loadConversationView(session, memberId, conversationId, now = Date.now()) {
+  const conversation = await loadOwnConversation(session, conversationId);
+  if (!conversation) return null;
+
+  const rows = await loadOwnTasks(session, conversationId);
+  const taskIds = rows.map((row) => row.id);
+  const [costs, files] = await Promise.all([
+    sumOwnTaskCharges(session, taskIds),
+    loadTaskFiles(session, memberId, taskIds),
+  ]);
+  const charts = await chartPreviews(files);
+
+  const tasks = rows.map((row) => {
+    const own = files.filter((file) => file.task_id === row.id);
+    const chartFile = own.find((file) => charts.has(file.id));
+    return taskView(row, {
+      costCents: costs.get(row.id) ?? 0,
+      attachments: own.filter((file) => file.kind === "upload").map(toChatFile),
+      deliveries: own.filter((file) => file.kind === "delivery").map(toChatFile),
+      chart: chartFile ? (charts.get(chartFile.id) ?? null) : null,
+      now,
+    });
+  });
+  return { conversation, tasks };
+}
+
+/**
+ * Uma mensagem guardada, do jeito que a tela mostra.
+ * @param {TaskRow} row
+ * @param {{ costCents: number; attachments: ChatFile[]; deliveries: ChatFile[]; chart: string | null; now: number }} extras
+ * @returns {ChatTask}
+ */
+export function taskView(row, extras) {
+  const stale = row.status === "running" && extras.now - Date.parse(row.created_at) > STALE_TASK_MS;
+  const status = stale ? "failed" : row.status;
+  return {
+    id: row.id,
+    prompt: row.prompt,
+    answer: stale ? STALE_TASK_ANSWER : row.answer,
+    status,
+    action: row.action,
+    provider: row.chosen_provider,
+    tier: row.chosen_tier,
+    effort: row.chosen_effort,
+    reason: null,
+    notice: status === "finished" ? actionNotice(row.action, row.answer) : null,
+    costCents: extras.costCents,
+    attachmentsCut: false,
+    createdAt: row.created_at,
+    attachments: extras.attachments,
+    deliveries: extras.deliveries,
+    chart: extras.chart,
+  };
+}
+
+function toChatFile(file) {
+  return { id: file.id, name: file.name };
+}
+
+/** Os gráficos e as imagens criadas das mensagens, já prontos para mostrar, por id do arquivo. */
+async function chartPreviews(files) {
+  const shown = files.filter((file) => file.kind === "delivery" && previewable(file));
+  const previews = new Map();
+  for (const file of shown) {
+    try {
+      previews.set(file.id, previewDataUrl(await readStoredFile(file.storage_path), file.mime_type ?? CHART_MIME));
+    } catch (error) {
+      // Sem a prévia, o arquivo continua para baixar.
+      console.error(`[chat] Não consegui ler a prévia ${file.id}:`, error);
+    }
+  }
+  return previews;
+}
+
+function previewable(file) {
+  const size = file.size_bytes ?? 0;
+  if (file.mime_type === CHART_MIME) return size <= MAX_CHART_BYTES;
+  return file.mime_type !== null && IMAGE_MIMES.has(file.mime_type) && size <= MAX_IMAGE_BYTES;
+}

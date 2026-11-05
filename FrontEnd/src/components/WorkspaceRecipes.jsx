@@ -1,0 +1,107 @@
+// A aba "Receitas" do espaço de trabalho: as receitas em cartões e, ao escolher uma, a receita ali mesmo (montar o
+// time, ver o custo, começar, acompanhar ao vivo e ver o resultado), sem sair da página. "Todas as receitas" volta para
+// os cartões; o time de uma receita que já começou continua trabalhando no servidor e é retomado ao abri-la de novo.
+
+import { useEffect, useId, useRef } from "react";
+
+import { RecipeCard } from "./RecipeCard.jsx";
+import { RecipeFlow } from "./RecipeFlow.jsx";
+import { WorkspaceAgents } from "./WorkspaceAgents.jsx";
+import styles from "./WorkspaceRecipes.module.css";
+
+/** Uma receita pronta, com tudo o que a tela dela precisa: os dados da tela e o custo máximo de cada etapa. */
+/** @typedef {RecipeScreen & { stepCosts: StepCost[] }} WorkspaceRecipe */
+
+/**
+ * @typedef {{
+ * pageMemberId: string;
+ * // Os cartões: as receitas prontas e as que estão "Em breve".
+ * cards: RecipeSummary[];
+ * recipes: WorkspaceRecipe[];
+ * // A receita aberta; null mostra os cartões.
+ * openRecipeId: string | null;
+ * onOpen: (recipeId: string) => void;
+ * onClose: () => void;
+ * // Avisado quando a receita aberta gasta: o espaço de trabalho atualiza o "Gasto do mês".
+ * onSpendingChange: () => void;
+ * // Abrir o chat já ligado a um agente pronto (a prateleira de agentes fica no alto desta aba).
+ * onStartAgent: (agentId: string) => void;
+ * // Os agentes que a própria empresa criou (Fase 2); entram numa área "Da sua empresa".
+ * companyAgents: CompanyAgentCard[];
+ * }} WorkspaceRecipesProps
+ */
+
+/**
+ * @param {WorkspaceRecipesProps} props
+ */
+export function WorkspaceRecipes({
+  pageMemberId,
+  cards,
+  recipes,
+  openRecipeId,
+  onOpen,
+  onClose,
+  onSpendingChange,
+  onStartAgent,
+  companyAgents,
+}) {
+  const titleId = useId();
+  const headingRef = useRef(null);
+  const recipeRef = useRef(null);
+  // A receita que estava à vista. O foco só muda quando a pessoa abre ou fecha uma receita, não ao carregar a página.
+  const shownRef = useRef(openRecipeId);
+
+  useEffect(() => {
+    if (shownRef.current === openRecipeId) return;
+    shownRef.current = openRecipeId;
+    if (openRecipeId) recipeRef.current?.focus();
+    else headingRef.current?.focus();
+  }, [openRecipeId]);
+
+  const recipe = recipes.find((item) => item.id === openRecipeId);
+  if (recipe) {
+    return (
+      <div ref={recipeRef} tabIndex={-1} role="region" aria-label={`Receita ${recipe.name}`} className={styles.recipe}>
+        <button type="button" className={styles.back} onClick={onClose}>
+          <span aria-hidden="true">← </span>Todas as receitas
+        </button>
+        {/* key: trocar de receita monta a tela do zero, com o time e o pedido da outra. */}
+        <RecipeFlow
+          key={recipe.id}
+          memberId={pageMemberId}
+          recipeId={recipe.id}
+          recipeName={recipe.name}
+          resultTitle={recipe.resultTitle}
+          roles={recipe.roles}
+          stages={recipe.stages}
+          stepCosts={recipe.stepCosts}
+          requestPlaceholder={recipe.requestPlaceholder}
+          onSpendingChange={onSpendingChange}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.page}>
+      <WorkspaceAgents onStart={onStartAgent} companyAgents={companyAgents} />
+
+      <section className={styles.shelf} aria-labelledby={titleId}>
+        <div className={styles.intro}>
+          <h2 id={titleId} ref={headingRef} tabIndex={-1} className={styles.title}>
+            Receitas prontas
+          </h2>
+          <p className={styles.lead}>
+            Diferente dos agentes: aqui um time de IAs trabalha sozinho, do começo ao fim, e te entrega um arquivo
+            pronto (um site, uma proposta em Word). Você descreve o serviço e recebe o resultado.
+          </p>
+        </div>
+        <div className={styles.grid}>
+          {cards.map((card) => (
+            <RecipeCard key={card.id} recipe={card} onUse={() => onOpen(card.id)} />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}

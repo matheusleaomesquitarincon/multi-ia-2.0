@@ -161,6 +161,6 @@ next-env.d.ts
 .vercel
 
 # Supabase (arquivos temporários da ferramenta do banco local; não vão para o Git)
-supabase/.temp
-supabase/.branches
+BackEnd/supabase/.temp
+BackEnd/supabase/.branches
 

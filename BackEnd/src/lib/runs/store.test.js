@@ -1,0 +1,215 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+// Nunca falamos com o Supabase de verdade nos testes: trocamos o cliente por um dublê encadeável.
+// Cada chamada guarda a tabela, a operação e os filtros; o `.then` resolve com o resultado que o teste combinou.
+
+const calls = vi.hoisted(() => []);
+// O resultado que o próximo `await` de uma consulta vai receber ({ data, error }).
+const nextResult = vi.hoisted(() => ({ value: { data: null, error: null } }));
+
+const fakeClient = vi.hoisted(() => {
+  function makeChain(record) {
+    const chain = {};
+    const methods = [
+      "insert",
+      "update",
+      "delete",
+      "select",
+      "eq",
+      "in",
+      "or",
+      "gt",
+      "order",
+      "limit",
+      "single",
+      "maybeSingle",
+    ];
+    for (const method of methods) {
+      chain[method] = (...args) => {
+        record.ops = [...(record.ops ?? []), { method, args }];
+        return chain;
+      };
+    }
+    // Torna o encadeamento "aguardável" em qualquer ponto (ex.: depois de .order() ou de .single()).
+    chain.then = (resolve) => resolve(nextResult.value);
+    return chain;
+  }
+  return (who) => ({
+    from: (table) => {
+      const record = { table, who };
+      calls.push(record);
+      return makeChain(record);
+    },
+  });
+});
+
+vi.mock("./supabase-server.js", () => ({ supabaseAdmin: () => fakeClient("admin") }));
+
+import {
+  cancelRun,
+  claimRun,
+  createRun,
+  EVENTS_PAGE_SIZE,
+  loadOwnEventsAfter,
+  loadOwnRun,
+  lockPausedRun,
+  releaseRun,
+  renewLease,
+  requeuePausedRun,
+  saveSnapshot,
+} from "./store.js";
+
+const opsOf = (index) => calls[index].ops;
+const session = () => fakeClient("session");
+
+afterEach(() => {
+  calls.length = 0;
+  nextResult.value = { data: null, error: null };
+});
+
+describe("store da execução persistida (com cliente dublê)", () => {
+  it("createRun insere na tabela certa, com o id pronto, a empresa, a pessoa e a estimativa, já na fila", async () => {
+    nextResult.value = { data: { id: "run-123" }, error: null };
+
+    const id = await createRun({
+      id: "run-123",
+      estimate_cents: 531,
+      company_id: "empresa-1",
+      member_id: "pessoa-1",
+      recipe_id: "create-site",
+      request: "um site",
+      team: { frontend: "claude" },
+      plan: [],
+    });
+
+    expect(id).toBe("run-123");
+    expect(calls[0]).toMatchObject({ table: "runs", who: "admin" });
+    expect(opsOf(0).find((op) => op.method === "insert")?.args[0]).toMatchObject({
+      company_id: "empresa-1",
+      member_id: "pessoa-1",
+      status: "queued",
+      cursor: { stageIndex: 0, round: 1 },
+      recipe_id: "create-site",
+    });
+  });
+
+  it("claimRun só reivindica quem está na fila ou rodando, com a reserva vencida, somando 1 na tentativa", async () => {
+    // 1ª consulta: lê o attempt atual. 2ª consulta: a troca condicional devolve a linha reivindicada.
+    nextResult.value = { data: { attempt: 2 }, error: null };
+    const claimed = await claimRun("run-123");
+
+    // Com o dublê, ambas as consultas veem o mesmo resultado; o que importa são os filtros montados.
+    expect(claimed).toEqual({ attempt: 2 });
+    const ops = opsOf(1);
+    expect(ops.find((op) => op.method === "update")?.args[0]).toMatchObject({ status: "running", attempt: 3 });
+    expect(ops.some((op) => op.method === "in")).toBe(true);
+    expect(ops.some((op) => op.method === "or")).toBe(true);
+  });
+
+  it("claimRun devolve null quando a execução não existe", async () => {
+    nextResult.value = { data: null, error: null };
+    expect(await claimRun("sumiu")).toBeNull();
+  });
+
+  it("renewLease só renova a reserva da mesma reivindicação e devolve o status atual", async () => {
+    nextResult.value = { data: { status: "cancelled" }, error: null };
+    expect(await renewLease("run-123", 3)).toBe("cancelled");
+    const ops = opsOf(0);
+    expect(ops.find((op) => op.method === "update")?.args[0]).toHaveProperty("lease_until");
+    expect(ops.filter((op) => op.method === "eq").map((op) => op.args)).toEqual([
+      ["id", "run-123"],
+      ["attempt", 3],
+    ]);
+
+    nextResult.value = { data: null, error: null };
+    expect(await renewLease("run-123", 3)).toBeNull();
+  });
+
+  it("cancelRun só cancela o que ainda não acabou e diz até quando vale a reserva de quem roda", async () => {
+    nextResult.value = { data: [{ lease_until: "2026-10-25T12:00:00Z" }], error: null };
+    expect(await cancelRun("run-123")).toEqual({ leaseUntil: "2026-10-25T12:00:00Z" });
+    const ops = opsOf(0);
+    expect(ops.find((op) => op.method === "update")?.args[0]).toMatchObject({ status: "cancelled" });
+    expect(ops.find((op) => op.method === "in")?.args).toEqual(["status", ["queued", "running", "paused"]]);
+
+    nextResult.value = { data: [], error: null };
+    expect(await cancelRun("run-123")).toBeNull();
+  });
+
+  it("saveSnapshot só grava se a execução ainda é desta reivindicação", async () => {
+    nextResult.value = { data: [{ id: "run-123" }], error: null };
+    expect(await saveSnapshot("run-123", 4, { cursor: { stageIndex: 1, round: 1 } })).toBe(true);
+    expect(
+      opsOf(0)
+        .filter((op) => op.method === "eq")
+        .map((op) => op.args),
+    ).toEqual([
+      ["id", "run-123"],
+      ["attempt", 4],
+    ]);
+
+    nextResult.value = { data: [], error: null };
+    expect(await saveSnapshot("run-123", 4, {})).toBe(false);
+  });
+
+  it("releaseRun só solta quem ainda está rodando com esta reivindicação (cancelou no meio: false)", async () => {
+    nextResult.value = { data: [{ id: "run-123" }], error: null };
+    expect(await releaseRun("run-123", 4, "paused")).toBe(true);
+    const ops = opsOf(0);
+    expect(ops.find((op) => op.method === "update")?.args[0]).toEqual({ status: "paused", lease_until: null });
+    expect(ops.filter((op) => op.method === "eq").map((op) => op.args)).toEqual([
+      ["id", "run-123"],
+      ["attempt", 4],
+      ["status", "running"],
+    ]);
+
+    nextResult.value = { data: [], error: null };
+    expect(await releaseRun("run-123", 4, "queued")).toBe(false);
+  });
+
+  it("lockPausedRun segura só a execução pausada que ninguém está segurando; requeuePausedRun volta para a fila", async () => {
+    nextResult.value = { data: { id: "run-123", status: "paused" }, error: null };
+    expect(await lockPausedRun("run-123")).toEqual({ id: "run-123", status: "paused" });
+    const lock = opsOf(0);
+    expect(lock.find((op) => op.method === "update")?.args[0]).toHaveProperty("lease_until");
+    expect(lock.find((op) => op.method === "eq" && op.args[0] === "status")?.args).toEqual(["status", "paused"]);
+    expect(lock.find((op) => op.method === "or")?.args[0]).toMatch(/^lease_until.is.null,lease_until.lt./);
+
+    nextResult.value = { data: [{ id: "run-123" }], error: null };
+    expect(await requeuePausedRun("run-123")).toBe(true);
+    expect(opsOf(1).find((op) => op.method === "update")?.args[0]).toEqual({ status: "queued", lease_until: null });
+
+    // Cancelada enquanto a reserva era feita: não volta para a fila.
+    nextResult.value = { data: [], error: null };
+    expect(await requeuePausedRun("run-123")).toBe(false);
+  });
+
+  it("loadOwnRun lê com a sessão de quem está logado, só as colunas que ela pode ver", async () => {
+    nextResult.value = { data: { id: "run-123", status: "running" }, error: null };
+    expect(await loadOwnRun(session(), "run-123")).toEqual({ id: "run-123", status: "running" });
+    expect(calls[0]).toMatchObject({ table: "runs", who: "session" });
+    const columns = String(opsOf(0).find((op) => op.method === "select")?.args[0]);
+    // As colunas internas (erro técnico, reserva, tentativas) a sessão nem pode pedir.
+    expect(columns).not.toMatch(/\*|error|lease_until|attempt/);
+  });
+
+  it("loadOwnEventsAfter traz os eventos com a posição (seq), em ordem, com a sessão e em partes", async () => {
+    nextResult.value = {
+      data: [
+        { id: 5, event: { type: "step-finished", stepId: "brief", durationMs: 10 } },
+        { id: 6, event: { type: "run-finished", result: "ok", durationMs: 20 } },
+      ],
+      error: null,
+    };
+
+    const events = await loadOwnEventsAfter(session(), "run-123", 4);
+    expect(events).toEqual([
+      { seq: 5, event: { type: "step-finished", stepId: "brief", durationMs: 10 } },
+      { seq: 6, event: { type: "run-finished", result: "ok", durationMs: 20 } },
+    ]);
+    expect(calls[0]).toMatchObject({ table: "run_events", who: "session" });
+    const ops = opsOf(0);
+    expect(ops.find((op) => op.method === "gt")?.args).toEqual(["id", 4]);
+    expect(ops.find((op) => op.method === "limit")?.args).toEqual([EVENTS_PAGE_SIZE]);
+  });
+});

@@ -1,0 +1,302 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// Um Supabase de mentira, em memória: as tabelas members e member_invites e os logins do Supabase Auth, só com o que
+// invites.ts usa. Assim os testes conferem o resultado (o que ficou guardado), não a ordem exata das chamadas.
+
+const db = {
+  tables: { members: [], member_invites: [] },
+  users: [],
+  queries: 0,
+  failMemberInsert: null,
+  failPassword: null,
+};
+
+let nextId = 0;
+function newId() {
+  nextId += 1;
+  return `00000000-0000-4000-8000-${String(nextId).padStart(12, "0")}`;
+}
+
+class FakeQuery {
+  op = "select";
+  filters = [];
+  payload = {};
+  ignoreDuplicates = false;
+  mode = "many";
+
+  constructor(table) {
+    this.table = table;
+  }
+
+  select() {
+    return this;
+  }
+  insert(row) {
+    this.op = "insert";
+    this.payload = row;
+    return this;
+  }
+  upsert(row, options) {
+    this.op = "upsert";
+    this.payload = row;
+    this.ignoreDuplicates = options?.ignoreDuplicates ?? false;
+    return this;
+  }
+  update(row) {
+    this.op = "update";
+    this.payload = row;
+    return this;
+  }
+  delete() {
+    this.op = "delete";
+    return this;
+  }
+  eq(column, value) {
+    this.filters.push((row) => row[column] === value);
+    return this;
+  }
+  gt(column, value) {
+    this.filters.push((row) => String(row[column]) > value);
+    return this;
+  }
+  maybeSingle() {
+    this.mode = "maybe";
+    return this;
+  }
+  single() {
+    this.mode = "single";
+    return this;
+  }
+
+  then(resolve, reject) {
+    return Promise.resolve(this.run()).then(resolve, reject);
+  }
+
+  run() {
+    db.queries += 1;
+    const rows = db.tables[this.table];
+    let result;
+    if (this.op === "insert") {
+      if (this.table === "members" && db.failMemberInsert) return { data: null, error: db.failMemberInsert };
+      // Como o banco: a pessoa nasce ativa.
+      const row = { id: newId(), ...(this.table === "members" ? { status: "active" } : {}), ...this.payload };
+      rows.push(row);
+      result = [row];
+    } else if (this.op === "upsert") {
+      const index = rows.findIndex((row) => row.member_id === this.payload.member_id);
+      if (index >= 0 && !this.ignoreDuplicates) rows[index] = { ...this.payload };
+      if (index < 0) rows.push({ ...this.payload });
+      result = [];
+    } else if (this.op === "update") {
+      result = rows.filter((row) => this.filters.every((f) => f(row)));
+      for (const row of result) Object.assign(row, this.payload);
+    } else if (this.op === "delete") {
+      result = rows.filter((row) => this.filters.every((f) => f(row)));
+      db.tables[this.table] = rows.filter((row) => !result.includes(row));
+    } else {
+      result = rows.filter((row) => this.filters.every((f) => f(row)));
+    }
+    if (this.mode === "many") return { data: result, error: null };
+    if (this.mode === "single" && result.length !== 1) return { data: null, error: { message: "não é uma linha só" } };
+    return { data: result[0] ?? null, error: null };
+  }
+}
+
+vi.mock("../runs/supabase-server.js", () => ({
+  supabaseAdmin: () => ({
+    from: (table) => new FakeQuery(table),
+    auth: {
+      admin: {
+        createUser: async ({ email, password }) => {
+          if (db.users.some((u) => u.email === email)) {
+            return { data: { user: null }, error: { code: "email_exists", status: 422 } };
+          }
+          const user = { id: newId(), email, password };
+          db.users.push(user);
+          return { data: { user }, error: null };
+        },
+        updateUserById: async (id, { password }) => {
+          if (db.failPassword) return { data: { user: null }, error: db.failPassword };
+          const user = db.users.find((u) => u.id === id);
+          if (user) user.password = password;
+          return { data: { user }, error: null };
+        },
+        deleteUser: async (id) => {
+          db.users = db.users.filter((u) => u.id !== id);
+          return { data: {}, error: null };
+        },
+      },
+    },
+  }),
+}));
+
+const { acceptInvite, findInvite, inviteEmployee, issueInvite, issueNewLink } = await import("./invites.js");
+const { newInviteToken } = await import("./invite-token.js");
+
+const COMPANY = "c0000000-0000-4000-8000-000000000001";
+const OTHER_COMPANY = "c0000000-0000-4000-8000-000000000002";
+const ANA = { companyId: COMPANY, name: "Ana Lima", email: "ana@example.com", budgetCents: 5000 };
+
+beforeEach(() => {
+  db.tables = { members: [], member_invites: [] };
+  db.users = [];
+  db.queries = 0;
+  db.failMemberInsert = null;
+  db.failPassword = null;
+});
+
+async function createdAna() {
+  const result = await inviteEmployee(ANA);
+  if (!result.ok) throw new Error("o cadastro deveria ter dado certo");
+  const member = db.tables.members[0];
+  return { tempPassword: result.tempPassword, memberId: String(member.id), userId: String(member.user_id) };
+}
+
+// Os caminhos antigos de link (findInvite/acceptInvite) continuam existindo; para testá-los, cria-se o convite à mão,
+// já que o fluxo novo (o dono cria o login) não gera mais link nenhum.
+async function withLegacyInvite(kind = "invite") {
+  const { memberId, userId } = await createdAna();
+  const token = await issueInvite({ memberId, companyId: COMPANY, kind });
+  return { token, memberId, userId };
+}
+
+describe("criar um funcionário", () => {
+  it("cria o login com uma senha temporária e põe a pessoa na empresa marcada para trocá-la", async () => {
+    const { tempPassword, memberId, userId } = await createdAna();
+
+    expect(tempPassword).toHaveLength(10);
+    expect(db.users).toEqual([{ id: userId, email: "ana@example.com", password: tempPassword }]);
+    expect(db.tables.members).toEqual([
+      {
+        id: memberId,
+        company_id: COMPANY,
+        user_id: userId,
+        name: "Ana Lima",
+        email: "ana@example.com",
+        role: "employee",
+        monthly_budget_cents: 5000,
+        must_change_password: true,
+        status: "active",
+      },
+    ]);
+    // O fluxo novo não cria mais link de convite.
+    expect(db.tables.member_invites).toEqual([]);
+  });
+
+  it("não cria de novo quem já está na equipe", async () => {
+    await createdAna();
+    expect(await inviteEmployee({ ...ANA, name: "Ana de novo" })).toEqual({ ok: false, reason: "already-in-team" });
+    expect(db.users).toHaveLength(1);
+    expect(db.tables.members).toHaveLength(1);
+  });
+
+  it("não cria um e-mail que já tem conta na plataforma (dono ou funcionário de outra empresa)", async () => {
+    await createdAna();
+    expect(await inviteEmployee({ ...ANA, companyId: OTHER_COMPANY })).toEqual({ ok: false, reason: "email-taken" });
+    expect(db.tables.members).toHaveLength(1);
+  });
+
+  it("apaga o login criado se a pessoa não puder entrar na equipe", async () => {
+    db.failMemberInsert = { code: "23514", message: "check violation" };
+    await expect(inviteEmployee(ANA)).rejects.toThrow("Não deu para pôr o funcionário na equipe");
+    expect(db.users).toEqual([]);
+
+    db.failMemberInsert = { code: "23505", message: "duplicate key" };
+    expect(await inviteEmployee(ANA)).toEqual({ ok: false, reason: "already-in-team" });
+    expect(db.users).toEqual([]);
+  });
+});
+
+describe("gerar uma senha nova", () => {
+  it("troca o login por uma senha temporária nova e marca a pessoa para trocá-la no próximo acesso", async () => {
+    const { tempPassword: first, memberId, userId } = await createdAna();
+    db.tables.members[0].must_change_password = false; // a pessoa já tinha criado a própria senha
+
+    const reset = await issueNewLink({ memberId, companyId: COMPANY });
+    if (!reset.ok) throw new Error("a senha nova deveria ter dado certo");
+
+    expect(reset.email).toBe("ana@example.com");
+    expect(reset.tempPassword).not.toBe(first);
+    expect(db.users.find((u) => u.id === userId)?.password).toBe(reset.tempPassword);
+    expect(db.tables.members[0].must_change_password).toBe(true);
+  });
+
+  it("recusa gerar senha para quem não é da empresa de quem pediu", async () => {
+    const { memberId } = await createdAna();
+    expect(await issueNewLink({ memberId, companyId: OTHER_COMPANY })).toEqual({ ok: false, reason: "not-found" });
+  });
+});
+
+describe("abrir o link do convite", () => {
+  it("mostra a empresa, a pessoa e o e-mail, sem gastar o convite", async () => {
+    const { token, memberId } = await withLegacyInvite();
+    db.tables.members[0].companies = { name: "Agência Exemplo" };
+
+    const found = await findInvite(token);
+    expect(found).toMatchObject({
+      status: "valid",
+      memberId,
+      kind: "invite",
+      name: "Ana Lima",
+      email: "ana@example.com",
+      companyName: "Agência Exemplo",
+    });
+    expect(await findInvite(token)).toEqual(found);
+    expect(db.tables.member_invites).toHaveLength(1);
+  });
+
+  it("nem procura no banco um link cortado ou inventado", async () => {
+    expect(await findInvite("abc")).toEqual({ status: "not-found" });
+    expect(await findInvite(newInviteToken())).toEqual({ status: "not-found" });
+    expect(db.queries).toBe(1);
+  });
+
+  it("avisa quando o link venceu ou a pessoa foi desativada", async () => {
+    const { token } = await withLegacyInvite();
+    const tomorrow = new Date(Date.now() + 24 * 3_600_000 + 1000);
+    expect(await findInvite(token, tomorrow)).toEqual({ status: "expired" });
+
+    db.tables.members[0].status = "disabled";
+    expect(await findInvite(token)).toEqual({ status: "disabled" });
+  });
+});
+
+describe("aceitar o convite", () => {
+  it("grava a senha criada pela pessoa e gasta o link", async () => {
+    const { token, userId } = await withLegacyInvite();
+
+    expect(await acceptInvite(token, "senha-boa-123")).toEqual({ ok: true, email: "ana@example.com" });
+    expect(db.users.find((u) => u.id === userId)?.password).toBe("senha-boa-123");
+    expect(db.tables.member_invites).toEqual([]);
+
+    // O mesmo link não serve uma segunda vez (nem para trocar a senha de novo).
+    expect(await acceptInvite(token, "outra-senha-456")).toEqual({ ok: false, reason: "not-found" });
+    expect(db.users.find((u) => u.id === userId)?.password).toBe("senha-boa-123");
+  });
+
+  it("não aceita link vencido, nem de pessoa desativada", async () => {
+    const { token, userId } = await withLegacyInvite();
+    const tomorrow = new Date(Date.now() + 24 * 3_600_000 + 1000);
+    expect(await acceptInvite(token, "senha-boa-123", tomorrow)).toEqual({ ok: false, reason: "not-found" });
+
+    db.tables.members[0].status = "disabled";
+    expect(await acceptInvite(token, "senha-boa-123")).toEqual({ ok: false, reason: "disabled" });
+    // A senha não virou a que foi tentada (continua a temporária que o login nasceu com).
+    expect(db.users.find((u) => u.id === userId)?.password).not.toBe("senha-boa-123");
+  });
+
+  it("devolve o convite se o Supabase não gravar a senha, para tentar de novo com o mesmo link", async () => {
+    const { token } = await withLegacyInvite();
+
+    db.failPassword = { code: "weak_password", status: 422 };
+    expect(await acceptInvite(token, "senha-boa-123")).toEqual({ ok: false, reason: "weak-password" });
+    expect((await findInvite(token)).status).toBe("valid");
+
+    db.failPassword = { code: "unexpected_failure", status: 500 };
+    await expect(acceptInvite(token, "senha-boa-123")).rejects.toThrow("Não deu para gravar a senha");
+    expect((await findInvite(token)).status).toBe("valid");
+
+    db.failPassword = null;
+    expect(await acceptInvite(token, "senha-boa-123")).toEqual({ ok: true, email: "ana@example.com" });
+  });
+});

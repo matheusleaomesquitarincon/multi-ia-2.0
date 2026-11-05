@@ -1,5 +1,9 @@
 # Banco de dados
 
+> **Multi-IA 2.0:** os passos de tela continuam valendo. No computador, a configuração fica em `BackEnd/.env.local`, e o site liga
+> com `npm run dev` em `BackEnd/` e em `FrontEnd/`. As variáveis do Supabase agora se chamam `SUPABASE_URL` e
+> `SUPABASE_PUBLISHABLE_KEY`, e os caminhos `supabase/` agora ficam em `BackEnd/supabase/`.
+
 > **Status (24/10/2026):** proposta aprovada e decisões tomadas pelo Luis (fim deste arquivo). As migrações entraram na
 > `main` no PR #24 e já estão no projeto de verdade (conferido pelo Luis: 11 tabelas vazias, pasta `files` privada,
 > Postgres 17.11, a mesma versão das checagens). A migração 6 (convites, PR 2b) chegou com o merge do PR #30; a 7 (as

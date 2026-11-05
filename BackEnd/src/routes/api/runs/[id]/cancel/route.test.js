@@ -1,0 +1,136 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { POST } from "./route.js";
+
+// Quem está logado, o banco e a carteira são dublês: conferimos quem pode cancelar, o que a rota grava e quando ela
+// fecha a reserva.
+
+const RUN_ID = "0f8fad5b-d9cb-469f-a165-70867728950e";
+const ANA = {
+  id: "11111111-1111-4111-8111-111111111111",
+  companyId: "c0000000-0000-4000-8000-000000000000",
+  companyName: "Doce Encanto",
+  name: "Ana Lima",
+  email: "ana@example.com",
+  role: "employee",
+  mustChangePassword: false,
+};
+
+const state = vi.hoisted(() => ({
+  viewer: { status: "signed-out" },
+  run: null,
+  /** O que cancelRun devolve: null se a execução já tinha acabado; senão, a reserva de quem a roda. */
+  cancelled: { leaseUntil: null },
+}));
+const appendEvents = vi.hoisted(() => vi.fn(async () => {}));
+const cancelRun = vi.hoisted(() => vi.fn(async () => state.cancelled));
+const closeRunHolds = vi.hoisted(() => vi.fn(async () => {}));
+
+vi.mock("../../../../../lib/auth/viewer.js", () => ({ getViewer: async () => state.viewer }));
+vi.mock("../../../../../lib/auth/session.js", () => ({ createSessionClient: async () => ({}) }));
+vi.mock("../../../../../lib/runs/store.js", () => ({
+  FINAL_STATUSES: ["finished", "failed", "cancelled"],
+  loadOwnRun: async () => state.run,
+  cancelRun,
+  appendEvents,
+}));
+vi.mock("../../../../../lib/runs/wallet.js", () => ({ closeRunHolds }));
+
+beforeEach(() => {
+  state.viewer = { status: "member", member: ANA };
+  state.run = {
+    id: RUN_ID,
+    recipe_id: "create-site",
+    request: "Um site para a confeitaria.",
+    status: "running",
+    plan: [],
+    cursor: { stageIndex: 1, round: 1 },
+    result: null,
+    duration_ms: null,
+    estimate_cents: 531,
+  };
+  state.cancelled = { leaseUntil: null };
+});
+
+afterEach(() => {
+  vi.clearAllMocks();
+});
+
+function post(body = { pageMemberId: ANA.id }, contentType = "application/json") {
+  return POST(
+    new Request(`http://localhost/api/runs/${RUN_ID}/cancel`, {
+      method: "POST",
+      headers: { "Content-Type": contentType },
+      body: JSON.stringify(body),
+    }),
+    { params: Promise.resolve({ id: RUN_ID }) },
+  );
+}
+
+describe("rota POST /api/runs/[id]/cancel", () => {
+  it("quem começou cancela: marca cancelada e narra o cancelamento na etapa em que estava", async () => {
+    const response = await post();
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ status: "cancelled" });
+    expect(cancelRun).toHaveBeenCalledWith(RUN_ID);
+    // A fase 2 da receita (build) começa pelo Front-end.
+    expect(appendEvents).toHaveBeenCalledWith({ id: RUN_ID, company_id: ANA.companyId }, [
+      { type: "run-cancelled", stepId: "front" },
+    ]);
+  });
+
+  it("entre duas fases ou numa pausa (ninguém rodando), fecha a reserva na hora: o que sobrou volta ao saldo", async () => {
+    state.run = { ...state.run, status: "paused" };
+    state.cancelled = { leaseUntil: null };
+    await post();
+    expect(closeRunHolds).toHaveBeenCalledWith(RUN_ID);
+
+    // A reserva de quem rodava já venceu (o servidor caiu): também fecha aqui.
+    closeRunHolds.mockClear();
+    state.cancelled = { leaseUntil: new Date(Date.now() - 60_000).toISOString() };
+    await post();
+    expect(closeRunHolds).toHaveBeenCalledWith(RUN_ID);
+  });
+
+  it("com uma fase rodando agora, quem roda fecha a reserva no fim dela; a rota não mexe", async () => {
+    state.cancelled = { leaseUntil: new Date(Date.now() + 55_000).toISOString() };
+    await post();
+    expect(closeRunHolds).not.toHaveBeenCalled();
+  });
+
+  it("execução de outra pessoa (o banco não devolve pela sessão): não encontrada, nada muda", async () => {
+    state.run = null;
+    expect((await post()).status).toBe(404);
+    expect(cancelRun).not.toHaveBeenCalled();
+  });
+
+  it("execução que já acabou: devolve o status, sem mexer em nada", async () => {
+    state.run = { ...state.run, status: "finished" };
+    const response = await post();
+    expect(await response.json()).toEqual({ status: "finished" });
+    expect(cancelRun).not.toHaveBeenCalled();
+  });
+
+  it("se ela acabou bem na hora, não narra um cancelamento que não houve", async () => {
+    state.cancelled = null;
+    await post();
+    expect(appendEvents).not.toHaveBeenCalled();
+    expect(closeRunHolds).not.toHaveBeenCalled();
+  });
+
+  it("com o login trocado em outra aba (409) ou sem login (401), não cancela e explica", async () => {
+    state.viewer = { status: "member", member: { ...ANA, id: "22222222-2222-4222-8222-222222222222", name: "Bruno" } };
+    const other = await post();
+    expect(other.status).toBe(409);
+    expect((await other.json()).problems[0]).toContain("quem está conectado agora é Bruno");
+
+    state.viewer = { status: "signed-out" };
+    expect((await post()).status).toBe(401);
+    expect(cancelRun).not.toHaveBeenCalled();
+  });
+
+  it("só aceita JSON", async () => {
+    expect((await post({ pageMemberId: ANA.id }, "text/plain")).status).toBe(415);
+    expect(cancelRun).not.toHaveBeenCalled();
+  });
+});
