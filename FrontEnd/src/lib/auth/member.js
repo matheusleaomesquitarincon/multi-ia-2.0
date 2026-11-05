@@ -1,0 +1,68 @@
+// Quem está logado, do jeito que as telas usam: a pessoa, o papel e a empresa. Só dados e funções puras, para testar
+// sem banco. A busca no banco fica em viewer.ts.
+
+/** @typedef {"owner" | "employee"} MemberRole */
+
+/**
+ * @typedef {{
+ * id: string;
+ * companyId: string;
+ * companyName: string;
+ * name: string;
+ * email: string;
+ * role: MemberRole;
+ * // Entrou com uma senha temporária e ainda precisa criar a própria (só o servidor marca/desmarca).
+ * mustChangePassword: boolean;
+ * }} CurrentMember
+ */
+
+/**
+ * A página de cada papel: o dono vai para o painel; o funcionário, para o espaço de trabalho.
+ * @param {MemberRole} role
+ * @returns {"/dono" | "/trabalho"}
+ */
+export function homePathFor(role) {
+  return role === "owner" ? "/dono" : "/trabalho";
+}
+
+/**
+ * Primeiro nome, para cumprimentar ("Marina Souza" → "Marina").
+ * @param {string} name
+ * @returns {string}
+ */
+export function firstName(name) {
+  return name.trim().split(/\s+/)[0] ?? name;
+}
+
+function isText(value) {
+  return typeof value === "string" && value.length > 0;
+}
+
+/**
+ * Lê a linha de members (com a empresa junto, em `companies`) que o banco devolve. Confere cada campo em vez de
+ * confiar no formato: se o banco mudar sem o código acompanhar, falha aqui com uma mensagem clara.
+ * @param {unknown} row
+ * @returns {CurrentMember}
+ */
+export function parseMemberRow(row) {
+  if (typeof row !== "object" || row === null) throw new Error("Cadastro da pessoa em formato inesperado.");
+  const r = row;
+  // A empresa vem como objeto (ligação de muitos para um); algumas versões devolvem uma lista de um item.
+  const company = Array.isArray(r.companies) ? r.companies[0] : r.companies;
+  const companyName = typeof company === "object" && company !== null ? company.name : null;
+
+  if (!isText(r.id) || !isText(r.company_id) || !isText(r.name) || !isText(r.email) || !isText(companyName)) {
+    throw new Error("Cadastro da pessoa incompleto.");
+  }
+  if (r.role !== "owner" && r.role !== "employee") throw new Error("Papel da pessoa desconhecido.");
+
+  return {
+    id: r.id,
+    companyId: r.company_id,
+    companyName,
+    name: r.name,
+    email: r.email,
+    role: r.role,
+    mustChangePassword: r.must_change_password === true,
+  };
+}

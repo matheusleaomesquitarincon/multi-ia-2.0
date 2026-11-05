@@ -1,0 +1,145 @@
+/*
+ * Tokens de design — a ÚNICA fonte de cores, fontes, espaçamentos e arredondamentos.
+ * Componentes usam sempre var(--nome-do-token), nunca o valor direto.
+ * Para mudar o visual do site inteiro, mude os valores aqui.
+ * Valores tirados do protótipo das telas (docs/PROGRESSO.md, "Protótipo das telas").
+ */
+
+:root {
+  /* Cores: fundo, superfícies e texto */
+  --color-bg: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f1f2f5;
+  --color-surface-muted: #eef0f3;
+  --color-text: #121417;
+  --color-text-body: #2c313a;
+  --color-text-soft: #3a3f49;
+  --color-text-muted: #4a505c;
+  --color-border: #e3e5ea;
+  --color-border-strong: #cdd1d9;
+
+  /* Cores: ação principal (botões e links) */
+  --color-primary: #2a3bd1;
+  --color-primary-hover: #1a2699;
+  --color-on-primary: #ffffff;
+
+  /* Cores: status de cada etapa */
+  --color-status-done-text: #0b6b4a;
+  --color-status-done-bg: #e3f4ec;
+  --color-status-working-text: #1f2d9e;
+  --color-status-working-bg: #e6e9fb;
+  --color-status-waiting-text: #3a3f49;
+  --color-status-waiting-bg: #eef0f3;
+
+  /* Cores: avisos de erro (ex.: pedido vazio) */
+  --color-error-text: #b42318;
+  --color-error-bg: #fef3f2;
+
+  /* Cores: avisos de atenção, que não são erro (ex.: a IA está tentando de novo, outra IA assumiu o papel) */
+  --color-warning-text: #8a4b00;
+  --color-warning-bg: #fff6e5;
+
+  /* Cores: bloco de código */
+  --color-code-bg: #14161b;
+  --color-code-text: #e8eaf0;
+
+  /* Cores: prévia do site, com uma barra imitando a janela do navegador */
+  --color-preview-bar: #f8f9fa;
+  --color-preview-bar-dot: #d3d7de;
+
+  /* Cores: aba escolhida (ex.: Prévia / Código) */
+  --color-tab-selected-bg: var(--color-text);
+  --color-tab-selected-text: var(--color-surface);
+
+  /* Cores: uma por IA */
+  --color-ai-claude: #d9622b;
+  --color-ai-gpt: #0f8a5f;
+  --color-ai-gemini: #3b6fe0;
+
+  /* Fontes. Os arquivos ficam em assets/fonts e são servidos pelo nosso próprio site (styles/fonts.css): o navegador
+     do usuário não faz nenhum pedido ao Google. */
+  --font-display: "Bricolage Grotesque", sans-serif;
+  --font-body: "IBM Plex Sans", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  /* Tamanhos de texto (1rem = 16px) */
+  --text-xs: 0.8125rem; /* 13px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-md: 0.9375rem; /* 15px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.0625rem; /* 17px */
+  --text-xl: 1.125rem; /* 18px */
+  --text-2xl: 1.25rem; /* 20px */
+  --text-3xl: 1.375rem; /* 22px */
+  --text-title: clamp(2rem, 4vw + 1rem, 2.5rem); /* até 40px */
+  --text-display: clamp(2.25rem, 5vw + 1rem, 3rem); /* até 48px */
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --line-height-tight: 1.1;
+  --line-height-body: 1.5;
+  --letter-spacing-title: -0.02em;
+
+  /* Espaçamentos */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-14: 56px;
+  --space-18: 72px;
+
+  /* Arredondamentos */
+  --radius-control: 10px;
+  --radius-card: 14px;
+  --radius-pill: 999px;
+
+  /* Tamanhos de controles (botões e campos) */
+  --control-height: 44px;
+  --control-height-lg: 48px;
+  --control-height-sm: 40px; /* abas */
+  --picker-width: 240px; /* lista de escolha da IA, com a bolinha de cor */
+
+  /* Tamanhos de peças pequenas */
+  --size-ai-dot: 8px; /* bolinha com a cor da IA */
+  --size-ai-dot-lg: 12px;
+  --size-badge: 40px; /* quadradinho com o número do papel */
+  --size-preview-bar-dot: 10px; /* bolinhas da barra da prévia */
+
+  /* Larguras de página */
+  --page-max-width: 1120px;
+  --page-narrow-width: 880px;
+  --text-max-width: 720px;
+  --form-max-width: 440px; /* cadastro e entrada */
+  --invite-field-min-width: 200px; /* painel do dono: abaixo disso, os campos do convite vão um embaixo do outro */
+  --card-min-width: 250px; /* largura mínima de um cartão de receita */
+  /* Tela "Montar o time": abaixo destas larguras, as peças passam para a linha de baixo */
+  --team-min-width: 560px;
+  --request-min-width: 320px;
+  --role-info-min-width: 160px;
+  /* Tela "Seu time está trabalhando": altura da caixa com o texto de cada etapa (depois disso, ela rola) */
+  --output-max-height: 260px;
+  /* Tela de resultado: a prévia ao lado do resumo do time (abaixo destas larguras, o resumo vai para baixo) */
+  --result-main-min-width: 560px;
+  --result-aside-min-width: 300px;
+  --preview-height: clamp(420px, 70vh, 720px);
+  /* Espaço de trabalho (chat): a lista de conversas ao lado da conversa (abaixo destas larguras, ela vai para cima) */
+  --chat-sidebar-width: 220px;
+  --chat-main-min-width: 360px;
+  --chat-column-max-width: 760px; /* largura das mensagens dentro da conversa */
+  --chat-messages-height: clamp(320px, 55vh, 680px); /* altura da conversa (depois disso, ela rola) */
+  --chat-input-max-height: 200px;
+  --chart-preview-max-width: 560px; /* gráfico desenhado dentro da conversa */
+  --progress-height: 8px; /* barra do gasto do mês */
+  /* Painel do dono: a barra do gasto do mês dividida por IA, com um fio da cor do fundo entre os pedaços */
+  --stacked-bar-height: 12px;
+  --stacked-bar-gap: 2px;
+  --page-gutter: var(--space-6);
+}
