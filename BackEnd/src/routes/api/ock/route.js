@@ -1,5 +1,5 @@
 // POST /api/ock: uma mensagem do chat (a tarefa rápida). O Chefe decide quem responde, a IA responde e a OCK cobra da
-// carteira da empresa (lib/ock/run-task.ts). Só para quem é da empresa, está ativo e é quem abriu a página (F34); a
+// carteira da empresa (lib/ock/run-task.js). Só para quem é da empresa, está ativo e é quem abriu a página (F34); a
 // empresa e a pessoa vêm do login, nunca do pedido. Continua com a IA simulada, como as receitas, até o PR das IAs de
 // verdade.
 

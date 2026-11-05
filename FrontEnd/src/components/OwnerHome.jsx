@@ -13,6 +13,7 @@ import { DemoRecharge } from "./DemoRecharge.jsx";
 import { InviteEmployee } from "./InviteEmployeeForm.jsx";
 import { MemberActions } from "./MemberActions.jsx";
 import { MemberMonth } from "./MemberMonth.jsx";
+import { MonthStory } from "./MonthStory.jsx";
 import { StatementList } from "./StatementList.jsx";
 import styles from "./OwnerHome.module.css";
 
@@ -62,6 +63,13 @@ export function OwnerHome({ me, team, credit, months, statement, agents, demo })
     .filter((line) => line.kind === "topup")
     .reduce((total, line) => total + line.amountCents, 0);
   const runs = [...months.values()].reduce((total, month) => total + month.quickTasks + month.recipes, 0);
+  const deliveries = [...months.values()].reduce((total, month) => total + month.deliveries, 0);
+  // Quem mais gastou no mês, para a história do mês.
+  const topMonth = [...months.values()].reduce((top, month) => (top && top.spentCents >= month.spentCents ? top : month), null);
+  const topPerson =
+    topMonth && topMonth.spentCents > 0 && people.has(topMonth.memberId)
+      ? { name: people.get(topMonth.memberId), spentCents: topMonth.spentCents }
+      : null;
   return (
     <main className={styles.main}>
       <section className={styles.intro}>
@@ -72,6 +80,15 @@ export function OwnerHome({ me, team, credit, months, statement, agents, demo })
           equipe.
         </p>
       </section>
+
+      <MonthStory
+        credit={credit}
+        topupCents={topupCents}
+        topupPartial={statement.more}
+        runs={runs}
+        deliveries={deliveries}
+        topPerson={topPerson}
+      />
 
       <CompanyCredit credit={credit} topupCents={topupCents} topupPartial={statement.more} runs={runs} />
 

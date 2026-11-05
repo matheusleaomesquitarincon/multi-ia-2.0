@@ -1,6 +1,6 @@
 // A parte "Agentes da empresa" do painel do dono (Fase 2): a lista dos agentes que a empresa criou (com apagar) e o
 // formulário para criar um novo (nome, função, chamada do cartão, como ele age, o que ele sempre sabe e perguntas de
-// partida). Quem confere e grava é o servidor (app/dono/actions.ts); a persona e o conhecimento nunca voltam para cá.
+// partida). Quem confere e grava é o servidor (routes/actions/dono.js); a persona e o conhecimento nunca voltam para cá.
 
 import { useActionState, useState } from "react";
 import { createAgentAction, deleteAgentAction } from "../lib/actions.js";

@@ -1,4 +1,4 @@
-// O cálculo do custo de cada uso em reais, a partir do preço oficial de cada modelo (lib/providers/models.ts).
+// O cálculo do custo de cada uso em reais, a partir do preço oficial de cada modelo (lib/providers/models.js).
 // É o que a OCK usa para MEDIR quanto cada tarefa gastou e descontar da carteira da empresa.
 
 import { IMAGE_MODEL, modelPrice, TRANSCRIBE_MODEL } from "../providers/models.js";

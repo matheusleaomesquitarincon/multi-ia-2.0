@@ -1,7 +1,7 @@
 // O lado do navegador: pede ao servidor para CRIAR uma execução (e devolve o id dela), para cancelá-la ou para
 // continuá-la depois de uma pausa (quando o custo ia passar do que foi reservado).
 // A execução roda no servidor, persistida, em chamadas curtas e separadas; o navegador acompanha
-// depois buscando as novidades (ver lib/runs/live-client.ts).
+// depois buscando as novidades (ver lib/runs/live-client.js).
 
 export const RUNS_URL = "/api/runs";
 

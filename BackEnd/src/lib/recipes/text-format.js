@@ -1,5 +1,5 @@
 // Regras de escrita das receitas que terminam num texto (ex.: a proposta comercial). O texto final aparece na tela e
-// vira um arquivo Word (lib/ock/rich-text.ts lê estas marcas), então todas as IAs escrevem do mesmo jeito.
+// vira um arquivo Word (lib/ock/rich-text.js lê estas marcas), então todas as IAs escrevem do mesmo jeito.
 
 /** Como escrever o texto final: as marcas que a tela e o Word entendem. */
 export const TEXT_FORMAT_RULES = `Formato do texto (ele aparece na tela e vira um arquivo Word):

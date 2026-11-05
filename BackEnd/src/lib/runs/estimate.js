@@ -1,7 +1,7 @@
 // A estimativa de custo de uma receita: o MÁXIMO que o time pode gastar (decisão do Luis de 25/10/2026). Funciona como
 // a pré-autorização do cartão num hotel: a plataforma reserva o máximo e cobra só o que o time usou.
 // O máximo de uma etapa soma o maior texto que ela pode receber (o pedido mais longo e as respostas mais longas das
-// etapas anteriores) e o maior texto que a IA pode escrever, contando o "pensamento" (lib/providers/limits.ts).
+// etapas anteriores) e o maior texto que a IA pode escrever, contando o "pensamento" (lib/providers/limits.js).
 //
 // O servidor calcula o máximo de cada etapa com cada IA (stepCosts). A soma para um time (estimate-sum.js) roda também
 // no navegador, que recebe só esses números, nunca as instruções das IAs. Este arquivo não importa o catálogo de
@@ -98,7 +98,7 @@ function countRuns(recipe, from) {
 function maxInputTokens(recipe, step) {
   const role = recipe.roles.find((candidate) => candidate.id === step.roleId);
   const systemChars = role ? buildSystemPrompt(role, step).length : 0;
-  // As partes vão juntas, separadas por uma linha em branco (lib/engine/input.ts).
+  // As partes vão juntas, separadas por uma linha em branco (lib/engine/input.js).
   const separators = Math.max(0, step.inputs.length - 1) * "\n\n".length;
   const inputChars = step.inputs.reduce(
     (total, input) =>

@@ -1,5 +1,5 @@
 // Quanto cada IA pode escrever numa chamada, contando o "pensamento". É o mesmo teto que os conectores reais mandam
-// para a API de cada empresa (real.ts) e a base da estimativa de custo (lib/runs/estimate.ts e a reserva do chat):
+// para a API de cada empresa (real.ts) e a base da estimativa de custo (lib/runs/estimate.js e a reserva do chat):
 // mudou aqui, muda nos dois lugares, e a estimativa continua sendo o máximo que a IA consegue gastar.
 
 /**

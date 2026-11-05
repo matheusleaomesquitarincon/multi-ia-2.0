@@ -1,5 +1,5 @@
 // O texto final de uma receita, com o título, as seções, as listas e os destaques que a IA marcou
-// (lib/ock/rich-text.ts). Tudo entra na página como texto: nada do que a IA escreveu vira código aqui.
+// (lib/ock/rich-text.js). Tudo entra na página como texto: nada do que a IA escreveu vira código aqui.
 
 import { parseRichText } from "../lib/ock/rich-text.js";
 import styles from "./RichText.module.css";

@@ -1,6 +1,6 @@
 // O Chefe do OCK: lê o pedido do funcionário e DECIDE a melhor IA, o nível e o esforço para a tarefa
 // (otimizando tempo/custo/qualidade). É o coração do diferencial: o funcionário só descreve o que quer; o Chefe
-// escolhe quem faz e como. Se a decisão por IA falhar, cai numa regra simples. Quem executa é lib/ock/run-task.ts.
+// escolhe quem faz e como. Se a decisão por IA falhar, cai numa regra simples. Quem executa é lib/ock/run-task.js.
 
 import { isProviderId } from "../providers/catalog.js";
 

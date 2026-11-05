@@ -1,12 +1,12 @@
 // POST /api/runs/[id]/continue: roda UM segmento (uma fase) de uma execução persistida e encadeia o próximo.
-// É interna: só o próprio servidor chama, com o segredo interno (lib/runs/internal-secret.ts). O navegador nunca.
+// É interna: só o próprio servidor chama, com o segredo interno (lib/runs/internal-secret.js). O navegador nunca.
 // Fluxo: reivindica a execução → confere a reserva na carteira (sem o bastante para o que falta, pausa e pergunta) →
 // roda um segmento, gravando a narração aos poucos (F35) → grava o novo estado → cobra as etapas concluídas e registra
 // todas as chamadas às IAs → se acabou, guarda o site pronto como entrega da pessoa (F47), fecha a reserva e encerra;
 // senão, volta para a fila e dispara a próxima.
 // Enquanto a fase roda, renova a reserva de quem roda a cada poucos segundos e, se a pessoa cancelou, para a IA no meio.
 // Se algo estourar no meio, a reserva de quem roda vence logo e a próxima busca da tela retoma a execução.
-// As IAs são as de verdade ou as simuladas, conforme o interruptor OCK_AI_MODE (lib/providers/mode.ts); a simulada
+// As IAs são as de verdade ou as simuladas, conforme o interruptor OCK_AI_MODE (lib/providers/mode.js); a simulada
 // custa o mesmo que a de verdade equivalente.
 
 import { runSegment } from "../../../../../lib/engine/segment.js";

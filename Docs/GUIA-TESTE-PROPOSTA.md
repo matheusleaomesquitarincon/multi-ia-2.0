@@ -1,5 +1,9 @@
 # Guia: testar a receita "Proposta comercial" (bloco 1, primeiro PR)
 
+> **Multi-IA 2.0:** os passos de tela continuam valendo. No computador, a configuração fica em `BackEnd/.env.local`, e o site liga
+> com `npm run dev` em `BackEnd/` e em `FrontEnd/`. As variáveis do Supabase agora se chamam `SUPABASE_URL` e
+> `SUPABASE_PUBLISHABLE_KEY`, e os caminhos `supabase/` agora ficam em `BackEnd/supabase/`.
+
 > Escrito em 26/10/2026 (bloco 1 da nova ordem, issue #54) para o Luis fazer à mão, com a ajuda do chat do Claude
 > (claude.ai). **Para o chat do Claude:** guie o Luis uma parte de cada vez, em português simples, e espere ele
 > confirmar antes de seguir. Se uma tela não bater com o guia, ajude pelo print. **Nunca peça para ele colar no chat

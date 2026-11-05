@@ -117,6 +117,7 @@ export function RunProgress({
         </p>
       )}
       <CostLine status={run.status} chargedCents={chargedCents} estimateCents={estimateCents} />
+      <StoryProgress steps={run.steps} />
 
       <p className={styles.request}>
         <span className={styles.requestLabel}>Seu pedido:</span> {request}
@@ -125,8 +126,9 @@ export function RunProgress({
       <LiveDocumentPanel document={document} />
 
       <div className={styles.stages}>
-        {stages.map((stage) => (
+        {stages.map((stage, index) => (
           <section key={stage.id} className={styles.stage} aria-label={stageAriaLabel(stage)}>
+            <ChapterHead stage={stage} number={index + 1} />
             {stage.round > 1 && (
               <p className={styles.roundBanner}>
                 {stage.kind === "review"
@@ -217,6 +219,60 @@ function CostLine({ status, chargedCents, estimateCents }) {
       break;
   }
   return <p className={styles.cost}>{text}</p>;
+}
+
+/** Quantas etapas da história já terminaram. A frase diz o mesmo que a barra, para quem usa leitor de tela. */
+function StoryProgress({ steps }) {
+  const done = steps.filter((step) => step.status === "done").length;
+  if (steps.length === 0) return null;
+  return (
+    <div className={styles.storyProgress}>
+      <p className={styles.storyProgressText}>
+        {done} de {steps.length} {steps.length === 1 ? "etapa concluída" : "etapas concluídas"}
+      </p>
+      <div className={styles.storyTrack} aria-hidden="true">
+        {/* A largura vem da conta, não de um token. */}
+        <div className={styles.storyFill} style={{ width: `${(done / steps.length) * 100}%` }} />
+      </div>
+    </div>
+  );
+}
+
+/** A situação de um capítulo: quem está nele e o que está acontecendo, com os dados da própria execução. */
+function chapterState(stage) {
+  const working = stage.steps.filter((step) => step.status === "working");
+  if (working.length > 0) {
+    const names = working.map((step) => `${step.name} (${getProviderInfo(step.provider).name})`);
+    return {
+      node: styles.nodeWorking,
+      text: working.length === 1 ? `${names[0]} está trabalhando.` : `${joinNames(names)} estão trabalhando ao mesmo tempo.`,
+    };
+  }
+  if (stage.steps.some((step) => step.status === "failed")) return { node: styles.nodeFailed, text: "Este capítulo parou aqui." };
+  if (stage.steps.every((step) => step.status === "done")) return { node: styles.nodeDone, text: "Concluído." };
+  return { node: "", text: "Ainda vai começar." };
+}
+
+function chapterTitle(stage) {
+  if (stage.kind === "review") return "A revisão";
+  return joinNames(stage.steps.map((step) => step.name));
+}
+
+/** O cabeçalho de uma fase, contada como um capítulo da história. */
+function ChapterHead({ stage, number }) {
+  const state = chapterState(stage);
+  return (
+    <>
+      <span className={`${styles.chapterNode} ${state.node}`} aria-hidden="true">
+        {number}
+      </span>
+      <div className={styles.chapterHead}>
+        <p className={styles.chapterKicker}>Capítulo {number}</p>
+        <p className={styles.chapterTitle}>{chapterTitle(stage)}</p>
+        <p className={styles.chapterStatus}>{state.text}</p>
+      </div>
+    </>
+  );
 }
 
 /** Painel com o que o time já produziu até agora. Fica escondido enquanto nenhuma parte está pronta. */

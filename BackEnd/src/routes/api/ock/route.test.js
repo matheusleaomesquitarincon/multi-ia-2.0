@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { POST } from "./route.js";
 
-// A rota do chat confere quem pede e o que veio, e passa a mensagem adiante (lib/ock/run-task.ts, testado à parte).
+// A rota do chat confere quem pede e o que veio, e passa a mensagem adiante (lib/ock/run-task.js, testado à parte).
 
 const state = vi.hoisted(() => ({
   viewer: { status: "signed-out" },

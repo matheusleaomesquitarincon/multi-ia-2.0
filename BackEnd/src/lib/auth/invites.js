@@ -3,7 +3,7 @@
 // ela conhece a senha (F12). O mesmo caminho serve para quem perdeu a senha: o dono gera um link de senha nova.
 //
 // Tudo aqui usa a chave secreta, porque pela sessão ninguém cria login, pessoa nem convite (migrações 1 e
-// member_invites). Quem chama confere antes que é o dono daquela empresa (app/dono/actions.ts). SÓ do servidor.
+// member_invites). Quem chama confere antes que é o dono daquela empresa (routes/actions/dono.js). SÓ do servidor.
 
 import { randomInt } from "node:crypto";
 import { supabaseAdmin } from "../runs/supabase-server.js";

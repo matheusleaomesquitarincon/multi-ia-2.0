@@ -23,7 +23,7 @@
 
 /**
  * Ferramentas que a IA pode usar numa chamada, além de escrever. Cada uma existe numa IA só (a pesquisa no Claude, o
- * código no Gemini; veja lib/ock/quick-task.ts) e só liga com o interruptor OCK_AI_TOOLS (lib/providers/mode.ts).
+ * código no Gemini; veja lib/ock/quick-task.js) e só liga com o interruptor OCK_AI_TOOLS (lib/providers/mode.js).
  * - web_search: pesquisar na internet e citar as fontes.
  * - code_execution: escrever e rodar um programa (num ambiente isolado da empresa da IA) para fazer uma conta.
  */

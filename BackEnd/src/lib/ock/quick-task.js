@@ -1,6 +1,6 @@
 // A tarefa rápida (o chat do workspace), na parte que não depende do banco nem da rede: o que cada tipo de resposta
 // pede à IA, o máximo que ela pode custar, o que cobrar e como montar o texto que vai para a IA. SÓ do servidor, porque
-// leva as instruções das IAs (o que a tela usa fica em chat.ts). Quem executa é lib/ock/run-task.ts.
+// leva as instruções das IAs (o que a tela usa fica em chat.ts). Quem executa é lib/ock/run-task.js.
 //
 // O dinheiro segue as regras das receitas (AGENTS.md, seção 5), com uma diferença decidida pelo Luis em 25/10/2026
 // (issue #39): no chat não há estimativa antes de cada mensagem. Depois que o Chefe decide, o servidor reserva o máximo
@@ -41,7 +41,7 @@ export const PROJECT_FAILED =
 /** Instrução do trabalhador: um assistente de trabalho geral, em português. */
 const WORKER_SYSTEM = `Você é um assistente de trabalho de uma empresa brasileira. Responda em português do Brasil, de forma clara, direta e útil, fazendo exatamente o que o usuário pediu. Não invente dados; quando faltar informação, diga o que falta.`;
 
-// Pesquisa na internet e rodar código só ligam com o interruptor OCK_AI_TOOLS (lib/providers/mode.ts). Desligados, a IA
+// Pesquisa na internet e rodar código só ligam com o interruptor OCK_AI_TOOLS (lib/providers/mode.js). Desligados, a IA
 // responde com o que sabe e diz isso: nunca esconde que não pesquisou nem rodou o código (F45).
 const SEARCH_OFFLINE_SYSTEM = `${WORKER_SYSTEM} Você não tem acesso à internet nesta conversa: responda com o que já sabe e, se a informação puder ter mudado, diga isso em uma frase.`;
 const CODE_OFFLINE_SYSTEM = `${WORKER_SYSTEM} Você não pode rodar código nesta conversa. Resolva a conta ou a lógica passo a passo, mostre o resultado e diga que ele não foi conferido por um programa.`;
@@ -123,7 +123,7 @@ function documentSystem(format) {
  * ou o código ligado, a pesquisa vai para o Claude e o código para o Gemini, que são as IAs que têm cada um.
  */
 /**
- * Monta o plano de trabalho. `persona` é a instrução de um agente pronto (lib/ock/agent-persona.ts): quando a resposta é
+ * Monta o plano de trabalho. `persona` é a instrução de um agente pronto (lib/ock/agent-persona.js): quando a resposta é
  * texto ("responder"), ela entra como preâmbulo do WORKER_SYSTEM, para a IA responder no personagem do agente. Nas ações
  * de formato fixo (documento, gráfico, projeto, imagem, pesquisa/código), a instrução própria delas manda, sem a persona.
  * @param {Route} route
@@ -300,7 +300,7 @@ export function requestInputTokens(request) {
 /**
  * O máximo, em dólar, que um pedido a uma IA pode custar: a entrada, que já se conhece, o que as ferramentas podem somar
  * a ela (e as pesquisas, cobradas à parte), e o maior texto que a IA pode escrever, contando o "pensamento" (o mesmo
- * teto que os conectores reais mandam, lib/providers/limits.ts).
+ * teto que os conectores reais mandam, lib/providers/limits.js).
  */
 function maxRequestUsd(provider, request) {
   const outputTokens = outputTokenCap(provider, request.maxOutputTokens, request.effort ?? "medium");

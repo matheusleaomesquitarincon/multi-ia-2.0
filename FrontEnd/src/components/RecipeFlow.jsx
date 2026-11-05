@@ -23,7 +23,7 @@ import { RunResult } from "./RunResult.jsx";
 import { TeamBuilder } from "./TeamBuilder.jsx";
 import styles from "./RecipeFlow.module.css";
 
-/** Uma fase agrupando as suas etapas, do jeito que a tela recebe (lib/recipes/screen.ts). */
+/** Uma fase agrupando as suas etapas, do jeito que a tela recebe (lib/recipes/screen.js). */
 /** @typedef {ScreenStage} FlowStage */
 
 /** O resumo que GET /api/runs/[id] devolve: o pedido, status, plano, o custo e, se terminou, o resultado. */

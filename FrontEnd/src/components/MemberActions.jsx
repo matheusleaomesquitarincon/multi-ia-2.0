@@ -1,5 +1,5 @@
 // Os botões do cartão de cada funcionário no painel do dono: mudar o teto, gerar um link novo (para quem não aceitou o
-// convite ou perdeu a senha) e desativar ou reativar. Cada ação é conferida de novo no servidor (app/dono/actions.ts).
+// convite ou perdeu a senha) e desativar ou reativar. Cada ação é conferida de novo no servidor (routes/actions/dono.js).
 
 import { useActionState, useState } from "react";
 import { newLinkAction, setStatusAction, updateBudgetAction } from "../lib/actions.js";

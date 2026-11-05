@@ -73,7 +73,7 @@ async function renderDocx(title, content) {
 
 /**
  * O resultado em texto de uma receita (ex.: a proposta comercial) num arquivo Word, com o título, as seções, as listas e
- * os destaques que a IA marcou (lib/ock/rich-text.ts). O nome vem da receita, nunca do pedido (F49).
+ * os destaques que a IA marcou (lib/ock/rich-text.js). O nome vem da receita, nunca do pedido (F49).
  * @param {string} name
  * @param {string} text
  * @returns {Promise<GeneratedDoc>}

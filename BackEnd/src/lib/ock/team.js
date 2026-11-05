@@ -1,6 +1,6 @@
 // A equipe da empresa, como o dono vê no painel. Tudo aqui usa a sessão de quem está logado: as regras de acesso do
 // banco só devolvem a equipe inteira (e os convites) para o dono, e só deixam o dono mudar teto e situação dos
-// funcionários da empresa dele. O convite em si (criar login, gerar link) fica em lib/auth/invites.ts.
+// funcionários da empresa dele. O convite em si (criar login, gerar link) fica em lib/auth/invites.js.
 
 /** @typedef {"active" | "disabled"} MemberStatus */
 
@@ -27,7 +27,7 @@
  */
 
 /**
- * Confere cada campo da linha que o banco devolve (ver parseMemberRow em lib/auth/member.ts).
+ * Confere cada campo da linha que o banco devolve (ver parseMemberRow em lib/auth/member.js).
  * @param {unknown} row
  * @returns {Omit<TeamMember, "invite">}
  */

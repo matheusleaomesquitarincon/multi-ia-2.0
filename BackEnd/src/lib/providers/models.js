@@ -1,6 +1,6 @@
 // Os modelos de verdade de cada IA, por nível, e o preço oficial de cada um. É o ÚNICO lugar a mudar quando uma
 // empresa trocar o nome de um modelo ou o preço: o conector (real.ts) pede o modelo daqui, e a conta do custo
-// (lib/ock/pricing.ts) usa o preço daqui, então os dois nunca ficam desencontrados. Só dados: pode ir para a tela.
+// (lib/ock/pricing.js) usa o preço daqui, então os dois nunca ficam desencontrados. Só dados: pode ir para a tela.
 //
 // Conferido nas páginas oficiais em 25/10/2026 (F17): Anthropic (referência da API), OpenAI
 // (developers.openai.com/api/docs/pricing e a página de cada modelo) e Google (ai.google.dev/gemini-api/docs/pricing).

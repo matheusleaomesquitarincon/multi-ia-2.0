@@ -82,7 +82,7 @@ const FILE_FAILED = "Não consegui gerar o arquivo. Nada foi cobrado. Tente de n
  * conversationId: string | null;
  * // Os anexos, já enviados para a pasta da pessoa (/api/ock/files).
  * fileIds: string[];
- * // Ao começar uma conversa nova, o agente pronto escolhido (lib/ock/agents.ts); null é um chat comum.
+ * // Ao começar uma conversa nova, o agente pronto escolhido (lib/ock/agents.js); null é um chat comum.
  * agentId?: string | null;
  * }} QuickTaskRequest
  */
@@ -386,7 +386,7 @@ function companyPersona(agent) {
 }
 
 /**
- * Resolve o agente de uma conversa: o id válido e a persona dele. De fábrica (lib/ock/agents.ts, persona no código) ou da
+ * Resolve o agente de uma conversa: o id válido e a persona dele. De fábrica (lib/ock/agents.js, persona no código) ou da
  * empresa (banco). Um id que não é de nenhum dos dois é ignorado (id null, persona undefined → conversa comum).
  */
 async function resolveAgent(agentId, companyId) {

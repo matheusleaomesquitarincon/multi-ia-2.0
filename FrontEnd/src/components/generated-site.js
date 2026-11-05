@@ -1,4 +1,4 @@
-// O site feito pelas IAs: como ele roda na prévia. O nome do arquivo que a pessoa baixa fica em lib/ock/site-file.ts.
+// O site feito pelas IAs: como ele roda na prévia. O nome do arquivo que a pessoa baixa fica em lib/ock/site-file.js.
 //
 // A prévia é um "quarto trancado" em três camadas (regra do AGENTS.md, seção 6):
 // 1. A moldura (SitePreview.tsx) usa sandbox="allow-scripts" SEM allow-same-origin: o site não enxerga

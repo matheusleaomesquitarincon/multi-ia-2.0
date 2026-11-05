@@ -1,12 +1,12 @@
 // O espaço de trabalho de quem é da empresa (funcionário ou dono), em quatro abas:
-// - "Chat": a tarefa rápida (components/QuickChat.tsx). A pessoa pede, o Chefe escolhe a IA e cada resposta mostra
+// - "Chat": a tarefa rápida (components/QuickChat.jsx). A pessoa pede, o Chefe escolhe a IA e cada resposta mostra
 //   quanto custou. Com o chat vazio, sugere as receitas prontas.
-// - "Receitas": as receitas prontas em cartões; a escolhida abre ali mesmo (components/WorkspaceRecipes.tsx).
+// - "Receitas": as receitas prontas em cartões; a escolhida abre ali mesmo (components/WorkspaceRecipes.jsx).
 // - "Entregas": os arquivos que as IAs fizeram para a pessoa (PDF, planilha, gráfico, projeto...), para baixar.
 // - "Meus gastos": o gasto do mês, em reais, o teto e o extrato do mês da própria pessoa, com cada receita numa linha só
 //   (decisão 4 da issue #39 e decisão 2 da issue #43).
 // Nas duas últimas, o funcionário lê o que o dono da empresa vê do trabalho dele (F05).
-// A aba e a receita aberta ficam no endereço (components/workspace-view.ts): recarregar volta para o mesmo lugar.
+// A aba e a receita aberta ficam no endereço (components/workspace-view.js): recarregar volta para o mesmo lugar.
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { QuickChat } from "./QuickChat.jsx";

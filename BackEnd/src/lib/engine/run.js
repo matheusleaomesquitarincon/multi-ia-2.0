@@ -485,7 +485,7 @@ async function* runAttempt(context, provider, attempt) {
       result = {
         stepId: step.id,
         provider: provider.id,
-        // O site sai sem as marcas de código que as IAs às vezes põem em volta (lib/engine/output.ts).
+        // O site sai sem as marcas de código que as IAs às vezes põem em volta (lib/engine/output.js).
         output: finalStepOutput(output, step.format),
         model: chunk.model,
         usage: chunk.usage,

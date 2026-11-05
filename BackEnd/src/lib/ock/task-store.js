@@ -56,7 +56,7 @@ export async function loadOwnConversation(session, id) {
 
 /**
  * Cria uma conversa em nome de quem está logado (a empresa e a pessoa vêm do login, não daqui). `agentId` liga a conversa
- * a um agente pronto (lib/ock/agents.ts); null é um chat comum.
+ * a um agente pronto (lib/ock/agents.js); null é um chat comum.
  * @param {SupabaseClient} session
  * @param {string} title
  * @param {string | null} [agentId]

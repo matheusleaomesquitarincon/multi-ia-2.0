@@ -10,9 +10,13 @@
 .bar {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
+  padding: var(--space-7);
+  background: var(--gradient-hero);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
 }
 
 .greeting {
@@ -27,12 +31,12 @@
   font-weight: var(--weight-bold);
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-title);
-  color: var(--color-text);
+  color: var(--color-on-ink);
 }
 
 .lead {
   font-size: var(--text-base);
-  color: var(--color-text-body);
+  color: var(--color-on-ink-muted);
 }
 
 .side {
@@ -43,33 +47,40 @@
 
 .month {
   font-size: var(--text-md);
-  color: var(--color-text-body);
+  color: var(--color-on-ink);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-on-ink-hover);
 }
 
 .tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-5);
-  border-bottom: 1px solid var(--color-border);
+  gap: var(--space-1);
+  padding: var(--space-1);
+  align-self: flex-start;
+  max-width: 100%;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-pill);
 }
 
 .tab {
   min-height: var(--control-height-sm);
-  margin-bottom: -1px;
-  padding: 0;
+  padding: 0 var(--space-5);
   border: none;
-  border-bottom: 2px solid transparent;
   background: transparent;
   color: var(--color-text-soft);
   font-family: var(--font-body);
   font-size: var(--text-md);
   font-weight: var(--weight-semibold);
   cursor: pointer;
+  border-radius: var(--radius-pill);
 }
 
 .tab[aria-selected="true"] {
-  border-bottom-color: var(--color-text);
-  color: var(--color-text);
+  color: var(--color-primary);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .tab:hover:not([aria-selected="true"]) {
@@ -80,6 +91,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  animation: panel-in var(--duration-slow) var(--ease-out) both;
 }
 
 .panelLead {
@@ -117,6 +129,7 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-control);
+  box-shadow: var(--shadow-sm);
 }
 
 .rowName {
@@ -246,6 +259,7 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
 }
 
 .usageTop {
@@ -288,4 +302,17 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
 }

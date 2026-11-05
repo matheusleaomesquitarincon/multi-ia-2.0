@@ -1,6 +1,6 @@
 // O chat da tarefa rápida visto pela tela: os limites e o formato do que o servidor manda. Só dados, sem instruções
-// das IAs: este arquivo vai também para o navegador. O resto do chat fica em lib/ock/quick-task.ts (o que cada tipo
-// de resposta pede à IA) e lib/ock/run-task.ts (quem executa).
+// das IAs: este arquivo vai também para o navegador. O resto do chat fica em lib/ock/quick-task.js (o que cada tipo
+// de resposta pede à IA) e lib/ock/run-task.js (quem executa).
 
 import { MAX_REQUEST_CHARS } from "../engine/validate.js";
 
@@ -68,7 +68,7 @@ export const UNREADABLE_ATTACHMENT =
  * id: string;
  * title: string;
  * updatedAt: string;
- * // O agente pronto com que a conversa começou (lib/ock/agents.ts), ou null (chat comum).
+ * // O agente pronto com que a conversa começou (lib/ock/agents.js), ou null (chat comum).
  * agentId: string | null;
  * }} ChatConversation
  */

@@ -1,5 +1,5 @@
 // Cadastro da empresa: o dono cria a conta e recebe um e-mail para confirmar. Quem confere tudo é o servidor
-// (app/cadastro/actions.ts); aqui só aparecem os avisos que ele devolve.
+// (routes/actions/cadastro.js); aqui só aparecem os avisos que ele devolve.
 
 import { Link } from "react-router";
 import { useActionState } from "react";

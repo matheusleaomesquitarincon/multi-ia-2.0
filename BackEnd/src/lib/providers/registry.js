@@ -1,5 +1,5 @@
 // Entrega a IA pronta para uso. Só o servidor deve usar este arquivo: é aqui que as IAs reais recebem as chaves da
-// plataforma (lib/keys/server-keys.ts). A empresa nunca conecta chave própria (decisão de 24/10/2026).
+// plataforma (lib/keys/server-keys.js). A empresa nunca conecta chave própria (decisão de 24/10/2026).
 
 import { KEY_ENV_NAMES, serverKeys } from "../keys/server-keys.js";
 import { getProviderInfo } from "./catalog.js";
@@ -18,7 +18,7 @@ const TEST_FAILURE_AFTER_CHUNKS = 12;
 
 /**
  * Quem entrega as IAs no servidor (receitas e chat): as de verdade ou as simuladas, conforme o interruptor
- * OCK_AI_MODE (lib/providers/mode.ts). O interruptor é lido a cada chamada: o `npm run dev` percebe a mudança no
+ * OCK_AI_MODE (lib/providers/mode.js). O interruptor é lido a cada chamada: o `npm run dev` percebe a mudança no
  * .env.local sem reiniciar.
  * @param {ProviderId} id
  * @returns {AiProvider}

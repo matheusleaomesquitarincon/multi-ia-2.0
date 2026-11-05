@@ -6,6 +6,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
 }
 
 .comingSoon {
@@ -79,4 +81,15 @@
   color: var(--color-text-soft);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
+}
+
+.card:not(.comingSoon):hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card:not(.comingSoon):hover {
+    transform: none;
+  }
 }

@@ -19,7 +19,7 @@ export function resolveSelfOrigin() {
 
 /**
  * Chama /api/runs/<id>/continue sem esperar a resposta. Erro aqui não derruba quem chamou:
- * se a chamada se perder, a próxima busca de novidades da tela retoma a execução (lib/runs/resume.ts).
+ * se a chamada se perder, a próxima busca de novidades da tela retoma a execução (lib/runs/resume.js).
  * @param {string} runId
  * @returns {void}
  */

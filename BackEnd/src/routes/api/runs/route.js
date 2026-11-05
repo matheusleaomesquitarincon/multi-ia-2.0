@@ -1,5 +1,5 @@
 // POST /api/runs: cria uma execução PERSISTIDA, em nome de quem está logado, e dispara o primeiro segmento. Não roda
-// nada aqui dentro: devolve só o id. O navegador acompanha depois buscando as novidades (lib/runs/live-client.ts),
+// nada aqui dentro: devolve só o id. O navegador acompanha depois buscando as novidades (lib/runs/live-client.js),
 // e a execução roda em chamadas curtas e separadas em /api/runs/[id]/continue, sobrevivendo ao navegador sair.
 // Só para quem é da empresa e está ativo; a empresa e a pessoa vêm do login, nunca do pedido.
 // Antes de criar, reserva na carteira da empresa a estimativa (o máximo que o time pode gastar), calculada aqui de

@@ -1,6 +1,6 @@
 // Tela "Montar o time": escolher a IA de cada papel e escrever o pedido, vendo o custo estimado.
 // Roda no navegador porque reage na hora a cada troca de IA e a cada letra digitada.
-// O custo estimado é o MÁXIMO que o time pode gastar (lib/runs/estimate.ts): a tela só soma os números que o servidor
+// O custo estimado é o MÁXIMO que o time pode gastar (lib/runs/estimate.js): a tela só soma os números que o servidor
 // mandou. Ao começar, o servidor calcula de novo e reserva esse valor; no fim, cobra só o que o time usou.
 
 import { useId, useState } from "react";

@@ -1,4 +1,4 @@
-// Aparece quando algo dá errado ao montar uma página (ex.: o banco não respondeu). O padrão do Next.js é em inglês.
+// Aparece quando algo dá errado ao montar uma página (ex.: o banco não respondeu).
 // A mensagem técnica fica no registro do servidor; a tela só pede para tentar de novo.
 
 import { Link } from "react-router";

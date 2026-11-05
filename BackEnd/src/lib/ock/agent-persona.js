@@ -1,9 +1,9 @@
 // A persona de cada agente pronto: a INSTRUÇÃO que o servidor coloca na frente da resposta, para a IA responder "no
-// personagem" daquele agente. SÓ do servidor (como as instruções em lib/ock/quick-task.ts): nunca vai para a tela. As
-// chaves batem com os ids de lib/ock/agents.ts (um teste confere que todo agente tem persona e vice-versa).
+// personagem" daquele agente. SÓ do servidor (como as instruções em lib/ock/quick-task.js): nunca vai para a tela. As
+// chaves batem com os ids de lib/ock/agents.js (um teste confere que todo agente tem persona e vice-versa).
 //
 // A persona é um PREÂMBULO: o WORKER_SYSTEM (assistente brasileiro, não inventa, pede o que falta) vem logo depois, em
-// lib/ock/quick-task.ts. Por isso aqui só entra a especialidade e o jeito de trabalhar de cada agente.
+// lib/ock/quick-task.js. Por isso aqui só entra a especialidade e o jeito de trabalhar de cada agente.
 
 const PERSONAS = {
   "ti-fullstack":
@@ -41,5 +41,5 @@ export function agentPersona(id) {
   return PERSONAS[id];
 }
 
-/** Os ids que têm persona (para o teste de paridade com lib/ock/agents.ts). */
+/** Os ids que têm persona (para o teste de paridade com lib/ock/agents.js). */
 export const AGENT_PERSONA_IDS = Object.keys(PERSONAS);

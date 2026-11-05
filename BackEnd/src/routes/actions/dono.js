@@ -207,7 +207,7 @@ export async function deleteAgentAction(_previous, formData) {
 
 /**
  * Recarga de TESTE (visão raio-x): adiciona crédito fictício na empresa do dono logado. Só funciona no modo raio-x
- * (lib/auth/demo.ts: no computador, nunca em produção); fora dele, recusa. A recarga de verdade continua só pelo painel
+ * (lib/auth/demo.js: no computador, nunca em produção); fora dele, recusa. A recarga de verdade continua só pelo painel
  * do Supabase (F25). A função demo_wallet_topup existe só no banco local (seed), então em produção isto nunca roda.
  * @param {MemberActionState} _previous
  * @param {FormData} formData

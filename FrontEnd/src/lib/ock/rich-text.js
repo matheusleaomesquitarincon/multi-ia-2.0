@@ -1,4 +1,4 @@
-// O texto final de uma receita, do jeito que as IAs escrevem (lib/recipes/text-format.ts), lido em partes para a tela e
+// O texto final de uma receita, do jeito que as IAs escrevem (lib/recipes/text-format.js), lido em partes para a tela e
 // para o Word: o título ("# "), os títulos de seção ("## "), os itens de lista ("- ") e os destaques (**assim**). Tudo
 // vira texto: nada do que a IA escreveu entra na página como código (AGENTS.md, seção 6). Vai para a tela.
 

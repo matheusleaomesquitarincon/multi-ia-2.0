@@ -1,5 +1,5 @@
 // Endereço do Supabase e chave pública (publishable). Os dois podem ir para o navegador: quem protege os dados são as
-// regras de acesso do banco (RLS), não o segredo da chave. A chave secreta fica em lib/runs/supabase-server.ts.
+// regras de acesso do banco (RLS), não o segredo da chave. A chave secreta fica em lib/runs/supabase-server.js.
 
 /**
  * @typedef {{

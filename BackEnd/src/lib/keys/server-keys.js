@@ -1,7 +1,7 @@
-// As chaves-mãe da PLATAFORMA (OCK), lidas SÓ do servidor (env do Vercel / cofre).
+// As chaves-mãe da PLATAFORMA (OCK), lidas SÓ do servidor (variáveis de ambiente da hospedagem).
 // Toda empresa usa estas chaves; a OCK mede e trava por empresa e por funcionário no nosso banco.
 // A empresa nunca conecta nem vê chave nenhuma. Nunca expor estes valores ao cliente nem em log.
-// Só valem com as IAs de verdade ligadas (OCK_AI_MODE, lib/providers/mode.ts).
+// Só valem com as IAs de verdade ligadas (OCK_AI_MODE, lib/providers/mode.js).
 
 import { demoKeys } from "./demo-keys.js";
 

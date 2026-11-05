@@ -1,6 +1,6 @@
 // O formulário do dono para criar um agente da empresa, e o cartão que a tela mostra. Só DADOS e conferências puras
 // (vai para o navegador): a persona e o conhecimento (a instrução da IA) são conferidos aqui pelo tamanho, mas quem os
-// usa é só o servidor. Mesma ideia de lib/ock/team-forms.ts (o convite), para o formulário do painel do dono.
+// usa é só o servidor. Mesma ideia de lib/ock/team-forms.js (o convite), para o formulário do painel do dono.
 
 import { text } from "../auth/forms.js";
 

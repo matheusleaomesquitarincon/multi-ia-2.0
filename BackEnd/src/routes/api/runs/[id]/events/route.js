@@ -1,7 +1,7 @@
 // GET /api/runs/[id]/events?after=<seq>: as novidades da narração (eventos com posição maior que <seq>, em ordem),
 // o status da execução e quanto já foi cobrado dela. É o replay (do início, com after=0) e a busca de novidades que a
 // tela faz a cada segundo. Lido com a sessão de quem está logado: só a própria pessoa lê a narração e os gastos dela.
-// Cada busca também confere se a execução parou no meio e, se parou, a retoma (lib/runs/resume.ts).
+// Cada busca também confere se a execução parou no meio e, se parou, a retoma (lib/runs/resume.js).
 
 import { signedInSession } from "../../../../../lib/auth/session.js";
 import { isRunId } from "../../../../../lib/runs/parse-request.js";

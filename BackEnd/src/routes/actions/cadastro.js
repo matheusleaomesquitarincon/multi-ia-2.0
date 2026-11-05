@@ -1,5 +1,5 @@
 // Cadastro da empresa: cria o login do dono no Supabase Auth e manda o e-mail de confirmação. A empresa só nasce no
-// banco no primeiro acesso, com o e-mail confirmado (lib/auth/company-signup.ts).
+// banco no primeiro acesso, com o e-mail confirmado (lib/auth/company-signup.js).
 
 import { redirect } from "../../http/navigation.js";
 import { LOGIN_NOT_CONFIGURED } from "../../lib/auth/config.js";

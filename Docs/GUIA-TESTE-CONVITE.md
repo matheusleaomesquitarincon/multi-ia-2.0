@@ -1,5 +1,9 @@
 # Guia: testar o convite de funcionário (PR 2b)
 
+> **Multi-IA 2.0:** os passos de tela continuam valendo. No computador, a configuração fica em `BackEnd/.env.local`, e o site liga
+> com `npm run dev` em `BackEnd/` e em `FrontEnd/`. As variáveis do Supabase agora se chamam `SUPABASE_URL` e
+> `SUPABASE_PUBLISHABLE_KEY`, e os caminhos `supabase/` agora ficam em `BackEnd/supabase/`.
+
 > Escrito em 24/10/2026 (etapa 5) para o Luis fazer à mão, com a ajuda do chat do Claude (claude.ai). Atualizado no
 > mesmo dia, depois do primeiro teste: a janela anônima explicada (Parte C) e a Parte H, do aviso de troca de login.
 > **Para o chat do Claude:** guie o Luis uma parte de cada vez, em português simples, e espere ele confirmar antes de

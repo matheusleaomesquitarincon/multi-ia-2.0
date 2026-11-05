@@ -2,7 +2,7 @@
 // login: se outra aba entrar com outra conta, os botões desta aba passam a pedir com esse login. Cada tela que muda
 // alguma coisa manda, junto do pedido, o id de quem a abriu; se o login mudou, nada é feito e a tela explica o que
 // houve. O id que vem da tela só serve para recusar: quem pode o quê continua sendo decidido pelo login e pelo banco.
-// Só dados e funções puras. (O painel do dono tem a sua versão, checkPageOwner, em lib/ock/team-forms.ts.)
+// Só dados e funções puras. (O painel do dono tem a sua versão, checkPageOwner, em lib/ock/team-forms.js.)
 
 /** O nome do campo, no pedido, com o id de quem abriu a página. */
 export const PAGE_MEMBER_FIELD = "pageMemberId";

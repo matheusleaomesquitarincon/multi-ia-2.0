@@ -1,5 +1,5 @@
 // Convidar um funcionário: o dono informa nome, e-mail e o teto do mês e recebe um link para mandar à pessoa.
-// Quem confere tudo é o servidor (app/dono/actions.ts); aqui só aparecem os avisos que ele devolve.
+// Quem confere tudo é o servidor (routes/actions/dono.js); aqui só aparecem os avisos que ele devolve.
 
 import { useActionState, useState } from "react";
 import { inviteEmployeeAction } from "../lib/actions.js";

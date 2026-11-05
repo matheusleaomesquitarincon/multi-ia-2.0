@@ -19,7 +19,7 @@ export const SERVER_PROBLEM = "Algo deu errado do nosso lado. Tente de novo daqu
  * conversationId: string | null;
  * fileIds: string[];
  * pageMemberId: string;
- * // Ao começar uma conversa nova com um agente pronto, o id dele (lib/ock/agents.ts).
+ * // Ao começar uma conversa nova com um agente pronto, o id dele (lib/ock/agents.js).
  * agentId?: string | null;
  * }} SendBody
  */

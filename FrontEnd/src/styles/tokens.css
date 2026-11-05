@@ -23,6 +23,29 @@
   --color-primary-hover: #1a2699;
   --color-on-primary: #ffffff;
 
+  /* Cores: tom suave da ação principal e o fundo escuro das aberturas (a mesma família do azul) */
+  --color-primary-soft: #eef0fd;
+  --color-primary-glow: rgba(42, 59, 209, 0.28);
+  --color-ink: #0e1240;
+  --color-ink-soft: #1d2a9c;
+  --color-on-ink: #ffffff;
+  --color-on-ink-muted: #d3d7f7;
+  --color-on-ink-border: rgba(255, 255, 255, 0.4);
+  --color-on-ink-hover: rgba(255, 255, 255, 0.12);
+  --color-header-glass: rgba(255, 255, 255, 0.82);
+
+  /* Fundos em degradê e sombras */
+  --gradient-hero: linear-gradient(135deg, var(--color-ink) 0%, var(--color-ink-soft) 62%, var(--color-primary) 100%);
+  --shadow-sm: 0 1px 2px rgba(14, 18, 64, 0.05), 0 2px 8px rgba(14, 18, 64, 0.04);
+  --shadow-md: 0 8px 24px rgba(14, 18, 64, 0.1);
+  --shadow-lg: 0 24px 60px rgba(14, 18, 64, 0.14);
+  --shadow-glow: 0 0 0 4px var(--color-primary-glow);
+
+  /* Movimento */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 160ms;
+  --duration-slow: 640ms;
+
   /* Cores: status de cada etapa */
   --color-status-done-text: #0b6b4a;
   --color-status-done-bg: #e3f4ec;
@@ -73,6 +96,8 @@
   --text-3xl: 1.375rem; /* 22px */
   --text-title: clamp(2rem, 4vw + 1rem, 2.5rem); /* até 40px */
   --text-display: clamp(2.25rem, 5vw + 1rem, 3rem); /* até 48px */
+  --text-hero: clamp(2.75rem, 6.5vw, 5.25rem); /* abertura da página inicial */
+  --text-chapter: clamp(1.75rem, 3.5vw, 2.75rem); /* título de um capítulo da história */
 
   --weight-regular: 400;
   --weight-medium: 500;
@@ -97,8 +122,9 @@
   --space-18: 72px;
 
   /* Arredondamentos */
-  --radius-control: 10px;
-  --radius-card: 14px;
+  --radius-control: 12px;
+  --radius-card: 18px;
+  --radius-xl: 28px;
   --radius-pill: 999px;
 
   /* Tamanhos de controles (botões e campos) */
@@ -114,8 +140,8 @@
   --size-preview-bar-dot: 10px; /* bolinhas da barra da prévia */
 
   /* Larguras de página */
-  --page-max-width: 1120px;
-  --page-narrow-width: 880px;
+  --page-max-width: 1200px;
+  --page-narrow-width: 960px;
   --text-max-width: 720px;
   --form-max-width: 440px; /* cadastro e entrada */
   --invite-field-min-width: 200px; /* painel do dono: abaixo disso, os campos do convite vão um embaixo do outro */

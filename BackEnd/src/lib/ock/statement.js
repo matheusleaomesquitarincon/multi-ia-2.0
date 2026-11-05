@@ -1,6 +1,6 @@
 // As contas do mês vistas pela tela: o extrato com cada receita numa linha só, o mês de cada pessoa e o crédito da
 // empresa. Só dados e textos, sem acesso ao banco: este arquivo vai também para o navegador. Quem lê do banco é
-// lib/ock/spending.ts; as contas em si são feitas dentro do banco (migração de 25/10/2026, F48).
+// lib/ock/spending.js; as contas em si são feitas dentro do banco (migração de 25/10/2026, F48).
 
 import { getProviderInfo, PROVIDERS } from "../providers/catalog.js";
 

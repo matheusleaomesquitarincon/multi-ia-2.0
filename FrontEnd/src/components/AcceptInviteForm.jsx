@@ -1,5 +1,5 @@
 // O funcionário abriu o link do convite: vê a empresa e o e-mail com que vai entrar, cria a própria senha e entra.
-// O mesmo formulário serve para o link de senha nova. Quem confere tudo é o servidor (app/convite/actions.ts).
+// O mesmo formulário serve para o link de senha nova. Quem confere tudo é o servidor (routes/actions/convite.js).
 
 import { useActionState } from "react";
 import { acceptInviteAction } from "../lib/actions.js";

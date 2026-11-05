@@ -4,6 +4,14 @@
 > Atualizado pelo Claude ao fim de cada etapa.
 > **Versão oficial:** este arquivo, no repositório `C:\Users\Luis\projetos\multi-ia\docs\`.
 
+> **Nota (05/11/2026, Multi-IA 2.0):** o projeto mudou de repositório (`matheusleaomesquitarincon/multi-ia-2.0`, a partir do
+> commit `d9952f9` de `lgvoliveira/multi-ia`) e de arquitetura: pastas `FrontEnd` (React + Vite), `BackEnd` (Express) e
+> `Docs`, tudo em JavaScript. O banco, o motor, as receitas e a carteira continuam os mesmos; a interface foi refeita com
+> storytelling (página inicial em capítulos, execução como linha do tempo, história do mês no painel do dono). **Vale
+> daqui para baixo como histórico:** os caminhos antigos (`app/`, `lib/*.ts`, Vercel) se referem à versão anterior.
+> **Próximo passo:** preencher as chaves do projeto de testes em `BackEnd/.env.local` e refazer os testes dos
+> `GUIA-TESTE-*.md` com o banco de verdade (F62). As decisões e os riscos desta mudança estão em `Docs/FALHAS.md` (F58 a F62).
+
 **Última atualização:** 04/11/2026 (painel do dono: créditos por pessoa + custo total da empresa; antes: 27/10/2026,
 madrugada — bloco 1, issue #54: a Proposta comercial na `main`, pelo merge do Luis em 26/10; o segundo PR, a receita
 "Posts para redes sociais", esperando o teste do Luis)

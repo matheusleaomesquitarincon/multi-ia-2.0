@@ -1,5 +1,5 @@
 // A recarga de teste do painel do dono: SÓ aparece na visão raio-x (no computador). Põe crédito fictício na empresa
-// para testar à vontade. Cada pedido é conferido de novo no servidor (app/dono/actions.ts: modo raio-x + dono logado).
+// para testar à vontade. Cada pedido é conferido de novo no servidor (routes/actions/dono.js: modo raio-x + dono logado).
 
 import { useActionState } from "react";
 import { demoTopupAction } from "../lib/actions.js";

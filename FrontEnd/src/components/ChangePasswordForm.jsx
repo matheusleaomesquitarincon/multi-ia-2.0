@@ -1,5 +1,5 @@
 // Primeiro acesso: a pessoa entrou com a senha temporária e cria a própria aqui. Só o formulário; quem confere e grava
-// é o servidor (app/trocar-senha/actions.ts). Ao dar certo, ele leva direto para o espaço de trabalho.
+// é o servidor (routes/actions/trocar-senha.js). Ao dar certo, ele leva direto para o espaço de trabalho.
 
 import { useActionState } from "react";
 import { changePasswordAction } from "../lib/actions.js";

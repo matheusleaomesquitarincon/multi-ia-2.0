@@ -131,6 +131,7 @@ export function columnName(index) {
 /** O texto dentro do XML: sem os caracteres de controle que o XML não aceita e com os sinais especiais trocados. */
 function escapeXml(text) {
   return text
+    // eslint-disable-next-line no-control-regex -- tira os caracteres que o XML do Excel não aceita.
     .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")

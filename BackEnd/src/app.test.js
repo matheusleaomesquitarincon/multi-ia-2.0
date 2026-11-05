@@ -1,4 +1,4 @@
-// O servidor de verdade (Express), com pedidos de verdade pela rede local. Confere o que antes o Next.js fazia sozinho:
+// O servidor de verdade (Express), com pedidos de verdade pela rede local. Confere as proteções do servidor:
 // as proteções e o caminho de um pedido até a rota. Sem Supabase configurado: nada aqui toca em banco.
 
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";

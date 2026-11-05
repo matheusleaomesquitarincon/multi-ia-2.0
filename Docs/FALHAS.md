@@ -75,6 +75,11 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F55 | Com as IAs de verdade por último, o site é montado sem medir custo, tempo e qualidade de verdade | Processo / Produto | Média | Aceita |
 | F56 | A tela ao vivo das receitas de texto mostrava "Plano do chefe" | Produto / Código | Baixa | Resolvida |
 | F57 | O Editor dos posts é da mesma IA que um dos redatores | Produto | Baixa | Aceita |
+| F58 | Chamadas às IAs sem limite de tempo próprio num servidor sempre ligado | Código | Alta | Resolvida |
+| F59 | Visão raio-x poderia ligar no site publicado sem o NODE_ENV que o Next definia sozinho | Segurança | Alta | Resolvida |
+| F60 | Regras simples existem em duas cópias (BackEnd e FrontEnd) | Código | Baixa | Aceita |
+| F61 | Sem TypeScript, nada confere os formatos dos dados automaticamente | Código | Média | Aceita |
+| F62 | A nova arquitetura ainda não foi testada de ponta a ponta com o banco de verdade | Processo | Alta | Aberta |
 
 ## Negócio
 
@@ -800,3 +805,28 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   simulada, só com empresas de teste, e ligar as chaves depois do bloco 6, ou fazer a sessão 2 do
   `docs/GUIA-TESTE-IAS-REAIS.md` logo antes de publicar; (3) a F54 pode ser resolvida no bloco 5 sem medir, dividindo as
   fases longas (cada etapa numa chamada).
+
+## Multi-IA 2.0 (05/11/2026)
+
+### F58 — Chamadas às IAs sem limite de tempo próprio num servidor sempre ligado
+**Status:** Resolvida (05/11/2026). Quem encerrava uma chamada travada era o teto de tempo da função na Vercel. Agora cada
+chamada tem teto próprio e o pedido inteiro respeita o `maxDuration` da rota (`BackEnd/src/lib/providers/deadline.js`). Passou
+do tempo, vira uma falha comum: tenta de novo, troca de IA ou pausa, sem cobrar.
+
+### F59 — Visão raio-x poderia ligar no site publicado
+**Status:** Resolvida (05/11/2026). O código confiava em `NODE_ENV` ser "production", que o Next definia sozinho e o Express
+não. Agora o atalho só liga com `NODE_ENV=development`, o servidor assume produção por padrão e as senhas de teste nunca vão
+para o navegador.
+
+### F60 — Regras simples existem em duas cópias
+**Status:** Aceita (05/11/2026). Consequência de só haver as pastas `FrontEnd` e `BackEnd`, sem uma pasta compartilhada. O teste
+`FrontEnd/src/lib/copies.test.js` falha se as cópias ficarem diferentes.
+
+### F61 — Nada confere os formatos dos dados automaticamente
+**Status:** Aceita (05/11/2026). Decisão de usar JavaScript em vez de TypeScript. Os formatos ficam em comentários JSDoc, que
+podem ficar desatualizados, inclusive no código de dinheiro. A proteção passa a ser os testes do servidor e os testes do banco.
+
+### F62 — A nova arquitetura ainda não foi testada de ponta a ponta com o banco de verdade
+**Status:** Aberta (05/11/2026). Testado: os testes automáticos, o servidor e as telas ligados de verdade sem banco, e as telas com
+dados de exemplo num navegador. Falta o login de verdade, as regras de acesso, a carteira e uma receita até o fim, seguindo os
+`GUIA-TESTE-*.md`. **Não publicar antes disso.**

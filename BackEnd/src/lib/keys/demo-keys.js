@@ -1,5 +1,5 @@
 // Armazém LOCAL das chaves de IA, para a visão raio-x: um jeito fácil de colar as chaves pela tela, sem editar o
-// .env.local na mão. Vale SÓ no modo raio-x (lib/auth/demo.ts: no computador, nunca em produção). O arquivo
+// .env.local na mão. Vale SÓ no modo raio-x (lib/auth/demo.js: no computador, nunca em produção). O arquivo
 // .ock-local-keys.json fica na raiz do projeto e está no .gitignore — nunca vai para o Git nem para a produção, onde
 // as chaves continuam vindo só do ambiente do servidor (serverKeys). Conectar uma chave aqui já liga a IA real.
 

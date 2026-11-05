@@ -1,7 +1,7 @@
 // Os agentes prontos do OCK: assistentes de IA já montados para uma função, organizados por área (ex.: TI tem agentes
 // devs). O funcionário escolhe um e conversa com ele no chat; cada agente responde "no personagem" dele, com a persona
-// que o servidor injeta (lib/ock/agent-persona.ts). Este arquivo é só DADOS da tela (nome, função, chamadas de partida),
-// NUNCA a instrução da IA — essa fica no servidor, como as outras instruções das IAs (lib/ock/quick-task.ts).
+// que o servidor injeta (lib/ock/agent-persona.js). Este arquivo é só DADOS da tela (nome, função, chamadas de partida),
+// NUNCA a instrução da IA — essa fica no servidor, como as outras instruções das IAs (lib/ock/quick-task.js).
 
 /** Uma área de trabalho, com os agentes dela. */
 /**

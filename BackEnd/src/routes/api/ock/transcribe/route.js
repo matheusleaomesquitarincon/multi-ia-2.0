@@ -1,6 +1,6 @@
 // POST /api/ock/transcribe (formulário com o áudio e o id de quem abriu a página): transcreve o que a pessoa ditou no
 // chat e devolve o texto, para ela revisar e enviar. Só com a voz ligada (OCK_AI_TOOLS), para quem é da empresa, está
-// ativo e é quem abriu a página (F34). Cobra da carteira da empresa (lib/ock/voice.ts). O áudio não é guardado.
+// ativo e é quem abriu a página (F34). Cobra da carteira da empresa (lib/ock/voice.js). O áudio não é guardado.
 
 import { PAGE_MEMBER_FIELD } from "../../../../lib/auth/page-member.js";
 import { chatProblem, pageCaller, SERVER_PROBLEM } from "../../../../lib/ock/chat-request.js";
