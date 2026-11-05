@@ -10,7 +10,8 @@ if (process.env.NODE_ENV !== "development") {
 }
 
 const { createApp } = await import("./app.js");
-const port = Number(process.env.PORT ?? 3001);
+// `||` e não `??`: no modelo do .env.local o PORT vem vazio, e vazio também quer dizer 3001.
+const port = Number(process.env.PORT || 3001);
 
 createApp().listen(port, () => {
   console.log(`Servidor do Multi-IA em http://localhost:${port} (${process.env.NODE_ENV})`);

@@ -188,6 +188,7 @@ comentários automaticamente: quem muda um formato atualiza o comentário e os t
 
 1. Cada tarefa nasce como uma **issue** com descrição e **critério de pronto**, aprovada pelo Luis.
 2. Trabalhe num **branch** próprio: `feat/descricao-curta`, `fix/descricao-curta` ou `Docs/descricao-curta`.
+   Além da `main`, cada dev tem a sua branch no repositório: `matheus`, `leandro` e `luis-gustavo` (criadas em 05/11/2026).
 3. **Commits** pequenos, com mensagem em português no imperativo (ex.: `adiciona tela de receitas`).
 4. Abra um **pull request** dizendo: o que mudou, por quê, e como testar. Referencie a issue (`Closes #12`).
 5. A outra IA revisa e comenta no PR. Divergências ficam registradas lá.

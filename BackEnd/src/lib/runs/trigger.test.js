@@ -31,6 +31,11 @@ describe("endereço da chamada interna (F39)", () => {
     expect(resolveSelfOrigin()).toBe("http://interno.example.com");
   });
 
+  it("usa a porta 3001 quando o PORT está vazio, como no modelo do .env.local", () => {
+    process.env.PORT = "";
+    expect(resolveSelfOrigin()).toBe("http://127.0.0.1:3001");
+  });
+
   it("dispara a continuação no próprio site, com o segredo interno no cabeçalho", async () => {
     const fetchMock = vi.fn(async () => new Response(null, { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);

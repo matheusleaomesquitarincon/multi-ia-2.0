@@ -9,9 +9,9 @@ import { useSession } from "../lib/session.jsx";
 export function HomePage() {
   const { loading, viewer, demo } = useSession();
   if (loading) return null;
-  // No modo raio-x (só no computador), o fundador entra direto na sua porta, sem passar pela tela de login dos usuários.
-  if (demo) return <Navigate to="/raiox" replace />;
   if (viewer.status === "member") return <Navigate to={homePathFor(viewer.member.role)} replace />;
+  // No modo raio-x (só no computador), quem ainda não entrou vai direto para a porta do fundador, sem a tela de login.
+  if (demo) return <Navigate to="/raiox" replace />;
   if (viewer.status === "signed-out") return <OckEntry demo={demo} />;
   return <AccountNotice kind={viewer.status} />;
 }

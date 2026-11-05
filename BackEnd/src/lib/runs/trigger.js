@@ -14,7 +14,7 @@ import { INTERNAL_SECRET_HEADER, internalRunSecret } from "./internal-secret.js"
 export function resolveSelfOrigin() {
   const base = process.env.INTERNAL_BASE_URL;
   if (base) return base.replace(/\/+$/, "");
-  return `http://127.0.0.1:${process.env.PORT ?? 3001}`;
+  return `http://127.0.0.1:${process.env.PORT || 3001}`;
 }
 
 /**

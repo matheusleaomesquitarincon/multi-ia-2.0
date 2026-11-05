@@ -80,6 +80,9 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F60 | Regras simples existem em duas cópias (BackEnd e FrontEnd) | Código | Baixa | Aceita |
 | F61 | Sem TypeScript, nada confere os formatos dos dados automaticamente | Código | Média | Aceita |
 | F62 | A nova arquitetura ainda não foi testada de ponta a ponta com o banco de verdade | Processo | Alta | Aberta |
+| F63 | O guia do projeto de testes ainda mostra os nomes antigos das variáveis do Supabase nos passos | Processo | Baixa | Aberta |
+| F64 | Com `PORT=` vazio, como no modelo do `.env.local`, o servidor ligava numa porta aleatória | Código | Média | Resolvida |
+| F65 | Com a visão raio-x ligada, o logo e o login mandavam para `/raiox` mesmo quem já tinha entrado | Código | Baixa | Resolvida |
 
 ## Negócio
 
@@ -830,3 +833,18 @@ podem ficar desatualizados, inclusive no código de dinheiro. A proteção passa
 **Status:** Aberta (05/11/2026). Testado: os testes automáticos, o servidor e as telas ligados de verdade sem banco, e as telas com
 dados de exemplo num navegador. Falta o login de verdade, as regras de acesso, a carteira e uma receita até o fim, seguindo os
 `GUIA-TESTE-*.md`. **Não publicar antes disso.**
+
+### F63 — O guia do projeto de testes ainda mostra os nomes antigos das variáveis do Supabase nos passos
+**Status:** Aberta (05/11/2026). O aviso no começo de `Docs/GUIA-PROJETO-DE-TESTES.md` já traz os nomes certos (`SUPABASE_URL` e
+`SUPABASE_PUBLISHABLE_KEY`), mas os passos das linhas 97 a 106 ainda mostram `NEXT_PUBLIC_...`. Quem copiar direto dos passos fica
+com o login desligado. **Correção:** atualizar os nomes nos passos.
+
+### F64 — Com `PORT=` vazio, como no modelo do `.env.local`, o servidor ligava numa porta aleatória
+**Status:** Resolvida (05/11/2026). `BackEnd/.env.example` traz `PORT=` e diz que vazio é 3001, mas o código usava `??`, que não troca texto
+vazio: a porta virava 0, o sistema escolhia outra, e o FrontEnd não achava o servidor (erro 500 em tudo). O `trigger.js` tinha o mesmo
+erro. Agora `server.js` e `lib/runs/trigger.js` usam `||`, com teste do caso vazio.
+
+### F65 — Com a visão raio-x ligada, o logo e o login mandavam para `/raiox` mesmo quem já tinha entrado
+**Status:** Resolvida (05/11/2026). `HomePage.jsx` testava o raio-x antes do login, então o `/` nunca levava à página da pessoa. Só no
+computador: no site publicado o raio-x não liga. Agora quem entrou vai para a própria página (dono em `/dono`, funcionário em
+`/trabalho`, na primeira aba); só quem não entrou vai para `/raiox`.
