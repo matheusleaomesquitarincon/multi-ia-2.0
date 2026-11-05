@@ -1,0 +1,67 @@
+// Quem está vendo a página: ninguém, uma pessoa sem empresa, uma pessoa desativada ou alguém da empresa.
+// Toda página e rota protegida passa por aqui (requireMember), no servidor. O cookie sozinho não basta: o login é
+// conferido pela assinatura e o cadastro é lido do banco a cada pedido, então desativar alguém vale na hora.
+
+import { redirect } from "../../http/navigation.js";
+import { cachedInRequest } from "../../http/request-context.js";
+import { supabaseAdmin } from "../runs/supabase-server.js";
+import { homePathFor, parseMemberRow } from "./member.js";
+import { createSessionClient } from "./session.js";
+
+/**
+ * @typedef {| { status: "signed-out" }
+ * // Logou, mas não há empresa ligada ao login (ex.: o cadastro da empresa falhou no meio).
+ * | { status: "no-company" }
+ * // Foi desativado pelo dono: o banco já não mostra nada da empresa para ele.
+ * | { status: "disabled" }
+ * | { status: "member"; member: CurrentMember }} Viewer
+ */
+
+/** Lê quem está logado. Guardado durante o pedido: consultas repetidas no mesmo pedido vão ao banco uma vez só. */
+export function getViewer() {
+  return cachedInRequest("viewer", readViewer);
+}
+
+async function readViewer() {
+  const supabase = await createSessionClient();
+  if (!supabase) return { status: "signed-out" };
+
+  const { data: auth } = await supabase.auth.getClaims();
+  const userId = auth?.claims.sub;
+  if (!userId) return { status: "signed-out" };
+
+  // Com a sessão: as regras de acesso devolvem o próprio cadastro (e, para o dono, os da empresa; daí o filtro).
+  const { data: row, error } = await supabase
+    .from("members")
+    .select("id, company_id, name, email, role, must_change_password, companies (name)")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw new Error(`Não deu para ler o cadastro de quem está logado: ${error.message}`);
+  if (row) return { status: "member", member: parseMemberRow(row) };
+
+  // Nada visível: ou a pessoa foi desativada (as regras escondem tudo dela), ou ainda não tem empresa.
+  // Só o servidor enxerga o cadastro desativado; daqui sai apenas a situação, nenhum dado.
+  const { data: hidden, error: hiddenError } = await supabaseAdmin()
+    .from("members")
+    .select("status")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (hiddenError) throw new Error(`Não deu para conferir a situação do cadastro: ${hiddenError.message}`);
+  return hidden ? { status: "disabled" } : { status: "no-company" };
+}
+
+/**
+ * Para páginas protegidas: devolve quem está logado ou manda embora. Sem login vai para "Entrar"; sem empresa ou
+ * desativado, para a entrada, que explica o que houve; papel errado (funcionário no painel do dono), para a sua página.
+ * @param {MemberRole} [role]
+ * @returns {Promise<CurrentMember>}
+ */
+export async function requireMember(role) {
+  const viewer = await getViewer();
+  if (viewer.status === "signed-out") redirect("/entrar");
+  if (viewer.status !== "member") redirect("/");
+  // Entrou com senha temporária: só sai do lugar depois de criar a própria senha.
+  if (viewer.member.mustChangePassword) redirect("/trocar-senha");
+  if (role && viewer.member.role !== role) redirect(homePathFor(viewer.member.role));
+  return viewer.member;
+}

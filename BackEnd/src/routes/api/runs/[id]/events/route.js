@@ -1,0 +1,53 @@
+// GET /api/runs/[id]/events?after=<seq>: as novidades da narração (eventos com posição maior que <seq>, em ordem),
+// o status da execução e quanto já foi cobrado dela. É o replay (do início, com after=0) e a busca de novidades que a
+// tela faz a cada segundo. Lido com a sessão de quem está logado: só a própria pessoa lê a narração e os gastos dela.
+// Cada busca também confere se a execução parou no meio e, se parou, a retoma (lib/runs/resume.ts).
+
+import { signedInSession } from "../../../../../lib/auth/session.js";
+import { isRunId } from "../../../../../lib/runs/parse-request.js";
+import { resumeIfStalled } from "../../../../../lib/runs/resume.js";
+import { EVENTS_PAGE_SIZE, loadOwnEventsAfter, loadOwnRun } from "../../../../../lib/runs/store.js";
+import { sumOwnRunCharges } from "../../../../../lib/runs/wallet.js";
+
+/**
+ * @param {Request} request
+ * @param {RouteContext<"/api/runs/[id]/events">} context
+ * @returns {Promise<Response>}
+ */
+export async function GET(request, context) {
+  const { id } = await context.params;
+  const session = await signedInSession();
+  if (!session) return problem(401, "Entre de novo para acompanhar esta execução.");
+  if (!isRunId(id)) return problem(404, "Execução não encontrada.");
+
+  const after = Number(new URL(request.url).searchParams.get("after"));
+  const afterSeq = Number.isFinite(after) && after > 0 ? Math.floor(after) : 0;
+
+  try {
+    // O status vem ANTES dos eventos: o servidor grava a narração inteira antes de marcar o fim, então, se o status
+    // já é de fim, os eventos lidos logo depois trazem tudo até o fim.
+    const run = await loadOwnRun(session, id);
+    if (!run) return problem(404, "Execução não encontrada.");
+    const events = await loadOwnEventsAfter(session, id, afterSeq);
+    const chargedCents = await sumOwnRunCharges(session, id);
+
+    if (run.status === "queued" || run.status === "running") {
+      // Se a conferência falhar, as novidades saem do mesmo jeito.
+      await resumeIfStalled(id).catch((error) => {
+        console.error(`[api/runs/events] Não consegui conferir se ${id} parou:`, error);
+      });
+    }
+
+    return Response.json(
+      { status: run.status, events, more: events.length === EVENTS_PAGE_SIZE, chargedCents },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  } catch (error) {
+    console.error(`[api/runs/events] Falha ao carregar os eventos de ${id}:`, error);
+    return problem(500, "Algo deu errado do nosso lado.");
+  }
+}
+
+function problem(status, message) {
+  return Response.json({ problems: [message] }, { status, headers: { "Cache-Control": "no-store" } });
+}

@@ -1,0 +1,59 @@
+import { describe, expect, it } from "vitest";
+import { createSiteRecipe } from "../recipes/create-site.js";
+import { isRunId, parseRunRequest } from "./parse-request.js";
+
+const VALID = { recipeId: "create-site", request: "Quero um site para minha confeitaria." };
+
+function refusal(...problems) {
+  return { ok: false, problems };
+}
+
+describe("conferência do pedido que chega pela internet", () => {
+  it("aceita um pedido válido e entrega ao motor a receita completa, com o time escolhido", () => {
+    expect(parseRunRequest({ ...VALID, team: { frontend: "claude" } })).toEqual({
+      ok: true,
+      input: { recipe: createSiteRecipe, request: VALID.request, team: { frontend: "claude" } },
+    });
+    expect(parseRunRequest(VALID).ok).toBe(true);
+  });
+
+  it("recusa o que nem é um pedido", () => {
+    for (const body of [null, "Quero um site.", 42, [VALID]]) {
+      expect(parseRunRequest(body)).toEqual(refusal("Não entendemos o pedido enviado."));
+    }
+  });
+
+  it("recusa receita que não existe ou que ainda está em breve", () => {
+    for (const recipeId of [undefined, 7, "receita-inventada", "write-review-text"]) {
+      expect(parseRunRequest({ ...VALID, recipeId })).toEqual(refusal("Receita não encontrada."));
+    }
+  });
+
+  it("recusa pedido que não é texto, vazio ou acima de 4.000 caracteres", () => {
+    expect(parseRunRequest({ ...VALID, request: 123 })).toEqual(refusal("Escreva o que você quer que o time faça."));
+    expect(parseRunRequest({ ...VALID, request: "  \n " })).toEqual(
+      refusal("Escreva o que você quer que o time faça."),
+    );
+    expect(parseRunRequest({ ...VALID, request: "a".repeat(4001) })).toEqual(
+      refusal("O pedido passou do limite de 4.000 caracteres (tem 4.001)."),
+    );
+  });
+
+  it("recusa time em formato errado, papel que a receita não tem e IA que não existe", () => {
+    for (const team of [null, "claude", ["claude"]]) {
+      expect(parseRunRequest({ ...VALID, team })).toEqual(refusal("O time enviado não é válido."));
+    }
+    expect(parseRunRequest({ ...VALID, team: { designer: "claude", frontend: "llama" } })).toEqual(
+      refusal('A receita não tem o papel "designer".', 'IA desconhecida para o papel "frontend": "llama".'),
+    );
+  });
+});
+
+describe("id de execução que vem no endereço", () => {
+  it("só aceita o formato de um id do banco", () => {
+    expect(isRunId("0f8fad5b-d9cb-469f-a165-70867728950e")).toBe(true);
+    for (const id of ["", "run-123", "0f8fad5b-d9cb-469f-a165-70867728950", "' or 1=1 --"]) {
+      expect(isRunId(id)).toBe(false);
+    }
+  });
+});

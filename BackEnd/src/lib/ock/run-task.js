@@ -1,0 +1,494 @@
+// Uma mensagem do chat (a tarefa rápida), do pedido à resposta. SÓ do servidor. O Chefe decide quem responde, a IA
+// responde e a OCK cobra da carteira da empresa, com as regras das receitas (AGENTS.md, seção 5):
+//  1. Antes de qualquer IA, reserva o máximo que o Chefe pode gastar: o banco confere saldo, teto do mês e se a pessoa
+//     está ativa, numa operação só (F24). Recusou: nenhuma IA trabalha.
+//  2. O Chefe decide, numa tentativa só (se falhar, vale a regra simples), e essa reserva fecha.
+//  3. Reserva o que o Chefe gastou mais o máximo que a resposta pode custar. Recusou: nada é cobrado (o Chefe, frações
+//     de centavo, fica por conta da plataforma, no registro interno).
+//  4. A IA responde, com até 2 novas tentativas. Deu certo: a resposta é gravada e vira uma linha de gasto só, pelo
+//     consumo real do Chefe e da resposta. Falhou: a mensagem fica com o aviso, e nada é cobrado.
+// No fim, as reservas fecham (a sobra volta) e toda chamada às IAs vai para ai_calls, cobrada ou não (F26).
+// No chat não há estimativa antes de cada mensagem (decisão do Luis de 25/10/2026, issue #39): a tela mostra o custo
+// depois, em cada resposta.
+
+import { randomUUID } from "node:crypto";
+
+import { aiTools } from "../providers/mode.js";
+
+import { getImageGenerator, getProvider as platformProvider } from "../providers/registry.js";
+import { ProviderError } from "../providers/types.js";
+import { recordAiCalls } from "../runs/store.js";
+import { chargeTask, closeHold, reserveForTask, taskRefusalMessage, WalletRefusedError } from "../runs/wallet.js";
+import { agentPersona } from "./agent-persona.js";
+import { findAgent } from "./agents.js";
+import { callAi, callImage } from "./ai-call.js";
+import { readAttachment } from "./attachments.js";
+import { isUuid } from "./chat-request.js";
+import { loadCompanyAgentPersona } from "./company-agents.js";
+import { parseChartSpec, renderChart } from "./chart.js";
+import { ATTACHMENTS_ONLY_PROMPT } from "./chat.js";
+import { heuristicRoute, parseRoute, ROUTER, routerRequest } from "./chief.js";
+import { CHART_MIME, previewDataUrl } from "./conversation-view.js";
+import { generateDocument } from "./document.js";
+import { linkUploadsToTask, loadOwnUploads, readStoredFile, storeFile } from "./files.js";
+import { generateZip, parseProjectFiles } from "./project.js";
+import {
+  actionNotice,
+  AI_FAILED,
+  answerHoldCents,
+  attachmentContext,
+  buildWorkerInput,
+  callUsd,
+  CHART_FAILED,
+  chargeDescription,
+  chiefMaxCents,
+  conversationTitle,
+  documentTitle,
+  historyText,
+  IMAGE_FAILED,
+  IMAGE_READY,
+  IMAGE_UNAVAILABLE,
+  planWork,
+  PROJECT_FAILED,
+  taskAiCallRows,
+  taskChargeCents,
+  toolNotes,
+  workRequest,
+} from "./quick-task.js";
+import { loadMonth } from "./spending.js";
+import {
+  createOwnConversation,
+  createTask,
+  finishTask,
+  loadOwnConversation,
+  loadOwnTasks,
+  touchConversation,
+} from "./task-store.js";
+
+/** Os nomes das chamadas no registro interno. */
+const CHIEF_STEP = "chief";
+const ANSWER_STEP = "answer";
+
+/** Quantas mensagens anteriores são lidas para montar o contexto (só as respondidas entram). */
+const HISTORY_ROWS = 20;
+
+const FILE_FAILED = "Não consegui gerar o arquivo. Nada foi cobrado. Tente de novo.";
+
+/**
+ * @typedef {{
+ * // A mensagem (pode vir vazia quando há anexos).
+ * message: string;
+ * // A conversa em que a mensagem entra; vazio começa uma conversa nova.
+ * conversationId: string | null;
+ * // Os anexos, já enviados para a pasta da pessoa (/api/ock/files).
+ * fileIds: string[];
+ * // Ao começar uma conversa nova, o agente pronto escolhido (lib/ock/agents.ts); null é um chat comum.
+ * agentId?: string | null;
+ * }} QuickTaskRequest
+ */
+
+/** @typedef {{ ok: true; result: SendResult } | { ok: false; status: 402 | 404; problem: string }} QuickTaskResult */
+
+/**
+ * @typedef {{
+ * // Quem entrega as IAs. Sem valor, o mesmo das receitas: a simulada ou a de verdade, conforme OCK_AI_MODE.
+ * getProvider?: (id: ProviderId) => AiProvider;
+ * // As ferramentas ligadas (pesquisa, código, imagem). Sem valor, as do interruptor OCK_AI_TOOLS.
+ * tools?: ReadonlySet<ToolSwitch>;
+ * // Quem cria as imagens. Sem valor, o mesmo das IAs: o simulado ou o GPT Image de verdade, conforme OCK_AI_MODE.
+ * getImageGenerator?: () => ImageGenerator;
+ * // Os testes trocam a espera entre as tentativas.
+ * wait?: (ms: number) => Promise<void>;
+ * }} QuickTaskOptions
+ */
+
+/** O que acontece durante a mensagem e precisa ser acertado no fim, dê certo ou não. */
+/**
+ * @typedef {{
+ * holds: string[];
+ * calls: AiCallReport[];
+ * charged: boolean;
+ * }} Ledger
+ */
+
+/**
+ * Responde uma mensagem de quem está logado (`me`, com a sessão dele). Erro inesperado (banco fora do ar, defeito no
+ * nosso código) é repassado, mas antes as reservas fecham e as chamadas às IAs ficam registradas.
+ * @param {CurrentMember} me
+ * @param {SupabaseClient} session
+ * @param {QuickTaskRequest} request
+ * @param {QuickTaskOptions} [options]
+ * @returns {Promise<QuickTaskResult>}
+ */
+export async function runQuickTask(me, session, request, options = {}) {
+  const taskId = randomUUID();
+  const ledger = { holds: [], calls: [], charged: false };
+  try {
+    return await answerMessage(me, session, request, options, taskId, ledger);
+  } finally {
+    await settle(ledger, { companyId: me.companyId, memberId: me.id, taskId });
+  }
+}
+
+async function answerMessage(me, session, request, options, taskId, ledger) {
+  const getProvider = options.getProvider ?? platformProvider;
+  const onCall = (report) => ledger.calls.push(report);
+  const isOwner = me.role === "owner";
+
+  // A conversa e os anexos: só os da própria pessoa (a sessão não devolve os de outra).
+  const existing = request.conversationId ? await loadOwnConversation(session, request.conversationId) : null;
+  if (request.conversationId && !existing) {
+    return refuse(404, "Esta conversa não foi encontrada. Abra outra ou comece um chat novo.");
+  }
+  // O agente da conversa: numa que continua, o que ela já tem; numa nova, o escolhido. Resolve a persona (de fábrica,
+  // em código, ou da empresa, no banco); um agente desconhecido é ignorado (conversa comum). A persona só o servidor vê.
+  const resolved = await resolveAgent(existing ? existing.agentId : (request.agentId ?? null), me.companyId);
+  const newAgentId = existing ? null : resolved.id;
+  const persona = resolved.persona;
+
+  const uploads = await loadAttachments(session, me.id, request.fileIds);
+  if (!uploads) return refuse(404, "Um dos arquivos anexados não foi encontrado. Anexe de novo.");
+
+  const message = request.message.trim();
+  const prompt = message || ATTACHMENTS_ONLY_PROMPT;
+  const attachments = await readAttachments(uploads);
+  const history = existing ? await recentHistory(session, existing.id) : "";
+
+  // 1 e 2. O Chefe decide, com o máximo que ele pode gastar já reservado.
+  const chiefRequest = routerRequest(prompt, history);
+  const chiefHold = await reserve(me.id, taskId, chiefMaxCents(chiefRequest));
+  if (!chiefHold.ok) return refuse(402, taskRefusalMessage(chiefHold.reason, isOwner, null));
+  ledger.holds.push(chiefHold.id);
+  const route = await decide(getProvider, chiefRequest, prompt, onCall);
+  await closeHold(chiefHold.id);
+
+  const plan = planWork(route, prompt, options.tools ?? aiTools(), persona);
+  const newTask = (conversation) => ({
+    id: taskId,
+    company_id: me.companyId,
+    member_id: me.id,
+    conversation_id: conversation.id,
+    prompt,
+    action: plan.action,
+    // Até a escolha livre (etapa 6, F03), a pessoa fica com o que o Chefe recomendou.
+    recommended_provider: plan.provider,
+    recommended_tier: plan.tier,
+    recommended_effort: plan.effort,
+    chosen_provider: plan.provider,
+    chosen_tier: plan.tier,
+    chosen_effort: plan.effort,
+  });
+  const view = (conversation, outcome, costCents) => ({
+    id: taskId,
+    prompt,
+    answer: outcome.answer,
+    status: outcome.status,
+    action: plan.action,
+    provider: plan.provider,
+    tier: plan.tier,
+    effort: plan.effort,
+    reason: plan.reason ?? (route.reason || null),
+    notice: outcome.status === "finished" ? actionNotice(plan.action, outcome.answer) : null,
+    costCents,
+    attachmentsCut: attachments.cut,
+    createdAt: new Date().toISOString(),
+    attachments: uploads.map(toChatFile),
+    deliveries: outcome.deliveries,
+    chart: outcome.chart,
+  });
+
+  // Imagem ainda não existe aqui (decisão 2 da issue #39): responde sem chamar IA e sem cobrar.
+  if (plan.kind === "unavailable") {
+    const conversation =
+      existing ?? (await createOwnConversation(session, conversationTitle(message, names(uploads)), newAgentId));
+    await createTask({ ...newTask(conversation), status: "finished", answer: IMAGE_UNAVAILABLE, finished_at: now() });
+    await linkUploadsToTask(request.fileIds, taskId);
+    const outcome = { status: "finished", answer: IMAGE_UNAVAILABLE, deliveries: [], chart: null };
+    return done(session, me, conversation, view(conversation, outcome, 0));
+  }
+
+  // 3. A reserva da resposta: o que o Chefe gastou e o máximo da IA que vai responder.
+  // A imagem é criada só a partir do pedido; as outras respostas leem a conversa e os anexos.
+  const work =
+    plan.kind === "image"
+      ? workRequest(plan, prompt)
+      : workRequest(plan, buildWorkerInput(history, attachments.text, prompt), attachments.images);
+  const chiefUsd = ledger.calls.filter((call) => call.ok).reduce((total, call) => total + callUsd(call), 0);
+  const holdCents = answerHoldCents(chiefUsd, plan, work);
+  const answerHold = await reserve(me.id, taskId, holdCents);
+  if (!answerHold.ok) return refuse(402, taskRefusalMessage(answerHold.reason, isOwner, holdCents));
+  ledger.holds.push(answerHold.id);
+
+  const conversation =
+    existing ?? (await createOwnConversation(session, conversationTitle(message, names(uploads)), newAgentId));
+  await createTask(newTask(conversation));
+  await linkUploadsToTask(request.fileIds, taskId);
+
+  // 4. A IA responde. A resposta é gravada antes da cobrança: se o servidor cair entre as duas, ninguém paga por uma
+  // resposta perdida.
+  const outcome = await produce(plan, work, prompt, {
+    me,
+    taskId,
+    getProvider,
+    getImageGenerator: options.getImageGenerator ?? getImageGenerator,
+    onCall,
+    wait: options.wait,
+  });
+  await finishTask(taskId, outcome.status, outcome.answer);
+
+  let costCents = 0;
+  if (outcome.status === "finished") {
+    const amountCents = taskChargeCents(ledger.calls);
+    const remaining = await chargeTask(answerHold.id, taskId, {
+      amountCents,
+      description: chargeDescription(plan.action),
+      provider: plan.provider,
+    });
+    ledger.charged = remaining !== null;
+    if (ledger.charged) costCents = amountCents;
+  }
+  return done(session, me, conversation, view(conversation, outcome, costCents));
+}
+
+/** A resposta pronta (ou o aviso de que não deu), com os arquivos que a IA fez. */
+/**
+ * @typedef {{
+ * status: "finished" | "failed";
+ * answer: string;
+ * deliveries: ChatFile[];
+ * chart: string | null;
+ * }} Outcome
+ */
+
+/**
+ * @typedef {{
+ * me: CurrentMember;
+ * taskId: string;
+ * getProvider: (id: ProviderId) => AiProvider;
+ * getImageGenerator: () => ImageGenerator;
+ * onCall: (report: AiCallReport) => void;
+ * wait?: (ms: number) => Promise<void>;
+ * }} ProduceContext
+ */
+
+/** A IA responde e, quando foi pedido um arquivo, a OCK o monta e guarda na pasta da pessoa. */
+async function produce(plan, work, prompt, context) {
+  if (plan.kind === "image") return makeImage(work.input, context);
+  let text;
+  let notes;
+  try {
+    const answer = await callAi(context.getProvider(plan.provider), work, {
+      stepId: ANSWER_STEP,
+      onCall: context.onCall,
+      wait: context.wait,
+    });
+    text = answer.text;
+    notes = toolNotes(answer);
+  } catch (error) {
+    if (!(error instanceof ProviderError)) throw error;
+    console.error(
+      `[chat] A IA (${plan.provider}) não conseguiu responder a mensagem ${context.taskId}:`,
+      error.message,
+    );
+    return failed(AI_FAILED);
+  }
+
+  // As fontes da pesquisa e o aviso do programa rodado vão escritos no fim da resposta (e ficam no histórico).
+  if (plan.kind === "answer") return finished(text.trimEnd() + notes);
+  try {
+    return await makeDelivery(plan, text, context);
+  } catch (error) {
+    console.error(`[chat] Não consegui montar o arquivo da mensagem ${context.taskId}:`, error);
+    return failed(FILE_FAILED);
+  }
+}
+
+/** A IA cria a imagem, e a OCK a guarda como entrega da pessoa e a mostra na conversa. */
+async function makeImage(prompt, context) {
+  let image;
+  try {
+    image = await callImage(context.getImageGenerator(), prompt, {
+      stepId: ANSWER_STEP,
+      onCall: context.onCall,
+      wait: context.wait,
+    });
+  } catch (error) {
+    if (!(error instanceof ProviderError)) throw error;
+    console.error(`[chat] Não consegui criar a imagem da mensagem ${context.taskId}:`, error.message);
+    return failed(IMAGE_FAILED);
+  }
+  try {
+    const name = image.mime === "image/png" ? "imagem.png" : "imagem.jpg";
+    const file = await storeFile({
+      companyId: context.me.companyId,
+      memberId: context.me.id,
+      kind: "delivery",
+      name,
+      mime: image.mime,
+      bytes: image.bytes,
+      taskId: context.taskId,
+    });
+    return finished(IMAGE_READY, [file], previewDataUrl(image.bytes, image.mime));
+  } catch (error) {
+    console.error(`[chat] Não consegui guardar a imagem da mensagem ${context.taskId}:`, error);
+    return failed(FILE_FAILED);
+  }
+}
+
+async function makeDelivery(plan, text, context) {
+  const deliver = (name, mime, bytes) =>
+    storeFile({
+      companyId: context.me.companyId,
+      memberId: context.me.id,
+      kind: "delivery",
+      name,
+      mime,
+      bytes,
+      taskId: context.taskId,
+    });
+
+  if (plan.kind === "document") {
+    const format = plan.format ?? "pdf";
+    const doc = await generateDocument(documentTitle(text, format), text, format);
+    const file = await deliver(doc.name, doc.mime, doc.bytes);
+    return finished(`Pronto! Gerei o arquivo ${doc.name}. É só baixar aqui embaixo.`, [file]);
+  }
+  if (plan.kind === "chart") {
+    // A IA manda só os dados; quem desenha é a OCK, sem rodar nada do que a IA escreveu.
+    const spec = parseChartSpec(text);
+    if (!spec) return failed(CHART_FAILED);
+    const svg = new TextEncoder().encode(renderChart(spec));
+    const file = await deliver("grafico.svg", CHART_MIME, svg);
+    return finished(`Gráfico pronto: ${spec.title}`, [file], previewDataUrl(svg, CHART_MIME));
+  }
+  const files = parseProjectFiles(text);
+  if (files.length === 0) return failed(PROJECT_FAILED);
+  const file = await deliver("projeto.zip", "application/zip", await generateZip(files));
+  const list = files
+    .map((projectFile) => projectFile.path)
+    .slice(0, 8)
+    .join(", ");
+  return finished(`Projeto pronto com ${files.length} arquivo(s): ${list}. Baixe o .zip aqui embaixo.`, [file]);
+}
+
+function finished(answer, deliveries = [], chart = null) {
+  return { status: "finished", answer, deliveries, chart };
+}
+
+function failed(answer) {
+  return { status: "failed", answer, deliveries: [], chart: null };
+}
+
+/** Junta a persona do agente da empresa com o que ele sempre deve saber (o conhecimento, quando houver). */
+function companyPersona(agent) {
+  if (!agent.knowledge) return agent.persona;
+  return `${agent.persona}\n\nO que você sempre deve saber sobre esta empresa:\n${agent.knowledge}`;
+}
+
+/**
+ * Resolve o agente de uma conversa: o id válido e a persona dele. De fábrica (lib/ock/agents.ts, persona no código) ou da
+ * empresa (banco). Um id que não é de nenhum dos dois é ignorado (id null, persona undefined → conversa comum).
+ */
+async function resolveAgent(agentId, companyId) {
+  if (!agentId) return { id: null, persona: undefined };
+  if (findAgent(agentId)) return { id: agentId, persona: agentPersona(agentId) };
+  if (isUuid(agentId)) {
+    const agent = await loadCompanyAgentPersona(companyId, agentId);
+    if (agent) return { id: agentId, persona: companyPersona(agent) };
+  }
+  return { id: null, persona: undefined };
+}
+
+/** O Chefe decide numa tentativa só: se a IA falhar ou responder fora do formato, vale a regra simples. */
+async function decide(getProvider, request, prompt, onCall) {
+  try {
+    const answer = await callAi(getProvider(ROUTER.provider), request, {
+      stepId: CHIEF_STEP,
+      onCall,
+      retryDelaysMs: [],
+    });
+    const route = parseRoute(answer.text);
+    if (route) return route;
+  } catch (error) {
+    // Não adianta esperar: a regra simples resolve. Defeito no nosso código fica registrado.
+    if (!(error instanceof ProviderError)) console.error("[chat] Falha inesperada no Chefe:", error);
+  }
+  return heuristicRoute(prompt);
+}
+
+/** Os anexos, na ordem em que a pessoa os mandou, ou null se algum não é dela (ou não existe). */
+async function loadAttachments(session, memberId, fileIds) {
+  const rows = await loadOwnUploads(session, memberId, fileIds);
+  const ordered = fileIds.map((id) => rows.find((row) => row.id === id));
+  return ordered.every((row) => row !== undefined) ? ordered : null;
+}
+
+/** O que a IA recebe dos anexos: o texto (até o limite, F44) e as imagens. */
+async function readAttachments(uploads) {
+  const texts = [];
+  const images = [];
+  for (const file of uploads) {
+    const content = await readAttachment(file.name, await readStoredFile(file.storage_path));
+    if (content?.kind === "text") texts.push({ name: file.name, text: content.text });
+    if (content?.kind === "image") images.push({ mime: content.mime, base64: content.base64 });
+  }
+  const context = attachmentContext(texts);
+  return { text: context.text, cut: context.cut, images };
+}
+
+/** As últimas trocas respondidas da conversa, para a IA "lembrar" (as que falharam ficam de fora). */
+async function recentHistory(session, conversationId) {
+  const rows = await loadOwnTasks(session, conversationId, HISTORY_ROWS);
+  return historyText(rows.filter((row) => row.status === "finished"));
+}
+
+/** @typedef {{ ok: true; id: string } | { ok: false; reason: WalletRefusalReason }} Reservation */
+
+async function reserve(memberId, taskId, amountCents) {
+  try {
+    return { ok: true, id: await reserveForTask(memberId, taskId, amountCents) };
+  } catch (error) {
+    if (error instanceof WalletRefusedError) return { ok: false, reason: error.reason };
+    throw error;
+  }
+}
+
+/** Fim de uma mensagem que deu certo (ou que falhou com aviso): sobe a conversa na lista e lê o gasto do mês. */
+async function done(session, me, conversation, task) {
+  await touchConversation(conversation.id);
+  const month = await loadMonth(session, me.id);
+  return { ok: true, result: { conversation: { ...conversation, updatedAt: now() }, task, month } };
+}
+
+/** Fecha as reservas (a sobra volta ao saldo) e registra as chamadas às IAs. Nunca derruba a resposta. */
+async function settle(ledger, ids) {
+  for (const holdId of ledger.holds) {
+    try {
+      await closeHold(holdId);
+    } catch (error) {
+      // A reserva para de segurar o saldo sozinha quando vence (15 minutos).
+      console.error(`[chat] Não consegui fechar a reserva ${holdId}:`, error);
+    }
+  }
+  try {
+    await recordAiCalls(taskAiCallRows(ids, ledger.calls, ledger.charged));
+  } catch (error) {
+    console.error(`[chat] Não consegui registrar as chamadas às IAs da mensagem ${ids.taskId}:`, error);
+  }
+}
+
+function refuse(status, problem) {
+  return { ok: false, status, problem };
+}
+
+function names(files) {
+  return files.map((file) => file.name);
+}
+
+function toChatFile(file) {
+  return { id: file.id, name: file.name };
+}
+
+function now() {
+  return new Date().toISOString();
+}
