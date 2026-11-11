@@ -37,6 +37,17 @@ describe("uma mensagem guardada, do jeito que a tela mostra", () => {
     expect(taskView(researched, EXTRAS).notice).toBeNull();
   });
 
+  it("no histórico, a nota da escolha aparece só quando a pessoa trocou o recomendado (F03)", () => {
+    const auto = { ...ROW, recommended_provider: "gemini", recommended_tier: "economico" };
+    expect(taskView(auto, EXTRAS).choiceNote).toBeNull();
+    const chosen = { ...auto, chosen_provider: "claude", chosen_tier: "potente" };
+    expect(taskView(chosen, EXTRAS).choiceNote).toBe(
+      "Você escolheu Claude, nível potente. O Chefe recomendava Gemini, nível econômico.",
+    );
+    // Linha antiga, sem o recomendado: nada a explicar.
+    expect(taskView(ROW, EXTRAS).choiceNote).toBeNull();
+  });
+
   it("com o registro do que a IA usou, o aviso lê o registro, não o fim do texto (F53)", () => {
     // A IA não pesquisou, mas terminou a resposta com uma lista de fontes inventada, no formato exato.
     const invented = {

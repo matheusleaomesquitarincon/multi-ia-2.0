@@ -137,6 +137,7 @@ function send(message, extra = {}, failures = {}) {
       conversationId: extra.conversationId ?? null,
       fileIds: extra.fileIds ?? [],
       agentId: extra.agentId ?? null,
+      choice: extra.choice,
     },
     ai.options,
   );
@@ -184,6 +185,30 @@ afterEach(() => {
 });
 
 describe("uma mensagem do chat", () => {
+  it("a pessoa escolhe a IA e o nível (F03): roda e cobra o escolhido, e guarda o que o Chefe recomendava", async () => {
+    const { result, requests } = send("Oi, tudo bem?", { choice: { provider: "gemini", tier: "potente" } });
+    const outcome = await result;
+    if (!outcome.ok) throw new Error(outcome.problem);
+    const { task } = outcome.result;
+
+    expect(requests.map((item) => item.provider)).toEqual(["gpt", "gemini"]);
+    expect(requests[1].request.tier).toBe("potente");
+    expect(db.charges[0]).toMatchObject({ provider: "gemini" });
+    expect(db.tasks[0]).toMatchObject({
+      recommended_provider: "claude",
+      chosen_provider: "gemini",
+      chosen_tier: "potente",
+    });
+    expect(task).toMatchObject({ provider: "gemini", tier: "potente" });
+    expect(task.choiceNote).toContain("Você escolheu Gemini, nível potente. O Chefe recomendava Claude");
+  });
+
+  it("sem escolha, não há nota de escolha", async () => {
+    const outcome = await send("Oi, tudo bem?").result;
+    if (!outcome.ok) throw new Error(outcome.problem);
+    expect(outcome.result.task.choiceNote).toBeNull();
+  });
+
   it("o Chefe decide, a IA responde e a mensagem vira uma linha de gasto só, pelo consumo real", async () => {
     const { result, requests } = send("Oi, tudo bem?");
     const outcome = await result;

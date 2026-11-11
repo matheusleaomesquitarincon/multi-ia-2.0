@@ -12,7 +12,8 @@ import { MAX_WEB_SEARCHES, maxInputTokens, outputTokenCap, toolInputTokens } fro
 
 import { UNKNOWN_MODEL } from "../runs/billing.js";
 
-import { MAX_ATTACHMENT_TEXT_CHARS } from "./chat.js";
+import { PROVIDERS } from "../providers/catalog.js";
+import { MAX_ATTACHMENT_TEXT_CHARS, TIER_LABEL } from "./chat.js";
 import { ROUTER } from "./chief.js";
 import { pickFormat } from "./document.js";
 import { CHART_SAMPLE, DOCUMENT_SAMPLE, PROJECT_SAMPLE, SHEET_SAMPLE } from "./quick-task.samples.js";
@@ -214,6 +215,56 @@ export function planWork(route, message, tools = new Set(), persona) {
         systemPrompt: persona ? `${persona}\n\n${WORKER_SYSTEM}` : WORKER_SYSTEM,
       };
   }
+}
+
+/** O nome de cada ferramenta, para explicar por que ela saiu quando a pessoa escolheu outra IA. */
+const TOOL_ACTIVITY = { pesquisa: "a pesquisa na internet", codigo: "rodar um programa" };
+
+/**
+ * A escolha livre (F03): o Chefe recomenda e a pessoa pode trocar a IA e o nível desta mensagem. Devolve o plano
+ * recomendado (fica guardado em tasks.recommended_*) e o que vai rodar de fato (tasks.chosen_*).
+ * - A imagem só existe no GPT: a escolha não vale para ela.
+ * - Pesquisa e código existem numa IA só. Se a pessoa escolhe outra, a resposta sai sem a ferramenta, com as instruções
+ *   de quando ela está desligada (e o aviso de sempre na resposta, F45).
+ * @param {Route} route
+ * @param {string} message
+ * @param {ReadonlySet<ToolSwitch>} tools
+ * @param {string | undefined} persona
+ * @param {ModelChoice} choice
+ * @returns {{ recommended: WorkPlan; chosen: WorkPlan }}
+ */
+export function planWithChoice(route, message, tools, persona, choice) {
+  const recommended = planWork(route, message, tools, persona);
+  const fixed = recommended.kind === "image" || recommended.kind === "unavailable";
+  if (fixed || (!choice.provider && !choice.tier)) return { recommended, chosen: recommended };
+
+  const provider = choice.provider ?? recommended.provider;
+  // Outra IA numa ação de ferramenta: o plano de quando a ferramenta está desligada.
+  const losesTool = Boolean(recommended.tools?.length) && provider !== recommended.provider;
+  const base = losesTool
+    ? planWork(route, message, new Set([...tools].filter((tool) => tool !== route.action)), persona)
+    : recommended;
+  const chosen = { ...base, provider, tier: choice.tier ?? recommended.tier };
+  if (losesTool) chosen.reason = `Só o ${providerName(recommended.provider)} faz ${TOOL_ACTIVITY[route.action]} aqui.`;
+  return { recommended, chosen };
+}
+
+/**
+ * A linha que explica a escolha da pessoa, quando ela mudou o que o Chefe recomendava (F03). Senão, null.
+ * @param {{ provider: ProviderId; tier: ModelTier }} recommended
+ * @param {{ provider: ProviderId; tier: ModelTier }} chosen
+ * @param {string} [extra] Por que a resposta mudou além da IA (ex.: ficou sem a pesquisa).
+ * @returns {string | null}
+ */
+export function choiceNote(recommended, chosen, extra) {
+  if (recommended.provider === chosen.provider && recommended.tier === chosen.tier) return null;
+  const describe = (plan) => `${providerName(plan.provider)}, nível ${TIER_LABEL[plan.tier]}`;
+  const note = `Você escolheu ${describe(chosen)}. O Chefe recomendava ${describe(recommended)}.`;
+  return extra ? `${note} ${extra}` : note;
+}
+
+function providerName(id) {
+  return PROVIDERS.find((provider) => provider.id === id)?.name ?? id;
 }
 
 /**

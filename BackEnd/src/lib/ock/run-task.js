@@ -26,7 +26,7 @@ import { readAttachment } from "./attachments.js";
 import { isUuid } from "./chat-request.js";
 import { loadCompanyAgentPersona } from "./company-agents.js";
 import { parseChartSpec, renderChart } from "./chart.js";
-import { ATTACHMENTS_ONLY_PROMPT } from "./chat.js";
+import { ATTACHMENTS_ONLY_PROMPT, AUTOMATIC_CHOICE } from "./chat.js";
 import { heuristicRoute, parseRoute, ROUTER, routerRequest } from "./chief.js";
 import { CHART_MIME, previewDataUrl } from "./conversation-view.js";
 import { generateDocument } from "./document.js";
@@ -42,13 +42,14 @@ import {
   CHART_FAILED,
   chargeDescription,
   chiefMaxCents,
+  choiceNote,
   conversationTitle,
   documentTitle,
   historyText,
   IMAGE_FAILED,
   IMAGE_READY,
   IMAGE_UNAVAILABLE,
-  planWork,
+  planWithChoice,
   PROJECT_FAILED,
   taskAiCallRows,
   taskChargeCents,
@@ -85,6 +86,8 @@ const FILE_FAILED = "Não consegui gerar o arquivo. Nada foi cobrado. Tente de n
  * fileIds: string[];
  * // Ao começar uma conversa nova, o agente pronto escolhido (lib/ock/agents.js); null é um chat comum.
  * agentId?: string | null;
+ * // A IA e o nível que a pessoa escolheu para esta mensagem (F03). Sem valor: o que o Chefe recomendar.
+ * choice?: ModelChoice;
  * }} QuickTaskRequest
  */
 
@@ -163,7 +166,14 @@ async function answerMessage(me, session, request, options, taskId, ledger) {
   const route = await decide(getProvider, chiefRequest, prompt, onCall);
   await closeHold(chiefHold.id);
 
-  const plan = planWork(route, prompt, options.tools ?? aiTools(), persona);
+  // O Chefe recomenda; a pessoa pode ter escolhido outra IA ou outro nível (F03). Roda, e é cobrado, o escolhido.
+  const { recommended, chosen: plan } = planWithChoice(
+    route,
+    prompt,
+    options.tools ?? aiTools(),
+    persona,
+    request.choice ?? AUTOMATIC_CHOICE,
+  );
   const newTask = (conversation) => ({
     id: taskId,
     company_id: me.companyId,
@@ -171,10 +181,9 @@ async function answerMessage(me, session, request, options, taskId, ledger) {
     conversation_id: conversation.id,
     prompt,
     action: plan.action,
-    // Até a escolha livre (etapa 6, F03), a pessoa fica com o que o Chefe recomendou.
-    recommended_provider: plan.provider,
-    recommended_tier: plan.tier,
-    recommended_effort: plan.effort,
+    recommended_provider: recommended.provider,
+    recommended_tier: recommended.tier,
+    recommended_effort: recommended.effort,
     chosen_provider: plan.provider,
     chosen_tier: plan.tier,
     chosen_effort: plan.effort,
@@ -190,6 +199,7 @@ async function answerMessage(me, session, request, options, taskId, ledger) {
     effort: plan.effort,
     reason: plan.reason ?? (route.reason || null),
     notice: outcome.status === "finished" ? actionNotice(plan.action, outcome.answer, outcome.used) : null,
+    choiceNote: choiceNote(recommended, plan, plan === recommended ? undefined : plan.reason),
     costCents,
     attachmentsCut: attachments.cut,
     createdAt: new Date().toISOString(),

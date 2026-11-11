@@ -365,6 +365,11 @@
   font-size: var(--text-sm);
 }
 
+.choiceNote {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
 .answerText {
   font-size: var(--text-md);
   line-height: var(--line-height-body);

@@ -10,7 +10,8 @@ const TASKS = "tasks";
 const ENTRIES = "wallet_entries";
 const CONVERSATION_COLUMNS = "id, title, updated_at, agent_id";
 const TASK_COLUMNS =
-  "id, prompt, answer, status, action, chosen_provider, chosen_tier, chosen_effort, researched, ran_code, created_at";
+  "id, prompt, answer, status, action, recommended_provider, recommended_tier, chosen_provider, chosen_tier, " +
+  "chosen_effort, researched, ran_code, created_at";
 
 /** Quantas mensagens de uma conversa a tela mostra (as mais recentes). */
 export const CONVERSATION_PAGE_SIZE = 100;
@@ -94,6 +95,9 @@ export async function touchConversation(id) {
  * answer: string | null;
  * status: "running" | "finished" | "failed";
  * action: ChatAction;
+ * // O que o Chefe recomendou e o que rodou de fato (diferentes quando a pessoa escolheu, F03).
+ * recommended_provider: ProviderId | null;
+ * recommended_tier: ModelTier | null;
  * chosen_provider: ProviderId;
  * chosen_tier: ModelTier;
  * chosen_effort: Effort;
@@ -112,7 +116,7 @@ export async function touchConversation(id) {
  * conversation_id: string;
  * prompt: string;
  * action: ChatAction;
- * // O que o Chefe recomendou e o que a pessoa escolheu. Iguais até a escolha livre (etapa 6, F03).
+ * // O que o Chefe recomendou e o que a pessoa escolheu (F03). Iguais quando ela deixa no "Automático".
  * recommended_provider: ProviderId;
  * recommended_tier: ModelTier;
  * recommended_effort: Effort;

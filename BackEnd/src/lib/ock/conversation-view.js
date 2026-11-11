@@ -2,7 +2,7 @@
 // gráficos desenhados. SÓ do servidor. Tudo é lido com a sessão de quem está logado, então só a própria pessoa vê.
 
 import { readStoredFile, loadTaskFiles } from "./files.js";
-import { actionNotice } from "./quick-task.js";
+import { actionNotice, choiceNote } from "./quick-task.js";
 import { loadOwnConversation, loadOwnTasks, sumOwnTaskCharges } from "./task-store.js";
 
 /** O tipo dos gráficos que a OCK desenha. */
@@ -97,6 +97,12 @@ export function taskView(row, extras) {
       status === "finished"
         ? actionNotice(row.action, row.answer, { researched: row.researched ?? null, ranCode: row.ran_code ?? null })
         : null,
+    choiceNote: row.recommended_provider
+      ? choiceNote(
+          { provider: row.recommended_provider, tier: row.recommended_tier ?? row.chosen_tier },
+          { provider: row.chosen_provider, tier: row.chosen_tier },
+        )
+      : null,
     costCents: extras.costCents,
     attachmentsCut: false,
     createdAt: row.created_at,

@@ -20,7 +20,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 |---|-------|-----------|-----------|--------|
 | F01 | Sem as receitas, o produto vira mais um chat com várias IAs | Negócio | Alta | Decidida |
 | F02 | Público "empresas pequenas e médias" é amplo demais | Negócio | Média | Aceita |
-| F03 | O Chefe escolher a IA mais barata pode entregar um resultado ruim | Produto | Alta | Decidida |
+| F03 | O Chefe escolher a IA mais barata pode entregar um resultado ruim | Produto | Alta | Resolvida |
 | F04 | Preço e margem não definidos | Negócio | Alta | Aberta |
 | F05 | LGPD: o que o dono vê e para onde vão os dados dos clientes | Negócio / Segurança | Alta | Aberta |
 | F06 | Vender para empresa é mais lento e trabalhoso | Negócio | Média | Aberta |
@@ -145,13 +145,20 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 ## Produto
 
 ### F03 — O Chefe escolher a IA mais barata pode entregar um resultado ruim
-- **Gravidade:** Alta · **Status:** Decidida · **Anotada:** 22/10/2026
+- **Gravidade:** Alta · **Status:** Resolvida · **Anotada:** 22/10/2026
 - **O problema:** no PR #19 o Chefe decide sozinho a IA, o nível do modelo e o esforço, buscando o mais barato que
   resolve. Se ele errar numa tarefa importante, o funcionário recebe algo fraco e culpa a plataforma.
 - **Decisão (Luis, 22/10):** a plataforma recomenda (IA, nível e esforço), mas o funcionário escolhe livremente
   ("quero o melhor", "quero o Claude nesta tarefa"). Falta construir.
 - **Andamento (25/10/2026, PR 3c):** no chat, cada mensagem guarda o que o Chefe recomendou e o que foi usado
   (`tasks.recommended_*` e `chosen_*`); por enquanto, os dois são iguais. A escolha livre é da etapa 6.
+- **Resolvida (11/11/2026):** a barra da mensagem do chat ganhou "IA" (Automática, Claude, GPT, Gemini) e "Nível"
+  (Automático, Econômico, Padrão, Potente). Automático é o padrão: o Chefe decide. Com uma escolha, o servidor roda e
+  cobra o escolhido, guarda o recomendado e o escolhido em `tasks`, e a resposta (e o histórico) mostra "Você escolheu
+  X. O Chefe recomendava Y." (`planWithChoice` e `choiceNote` em `lib/ock/quick-task.js`). A imagem continua no GPT
+  (é o único que cria). Pesquisa na internet e conta com programa existem numa IA só: escolhendo outra, a resposta sai
+  sem a ferramenta, com a explicação e o aviso de sempre (F45). Fora isso, o funcionário continua sem ver qual IA
+  respondeu. Nas receitas, a troca de IA de cada papel já existia na tela do time.
 
 ### F08 — As receitas não existem dentro do workspace do funcionário
 - **Gravidade:** Alta · **Status:** Aberta · **Anotada:** 22/10/2026

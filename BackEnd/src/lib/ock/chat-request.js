@@ -5,7 +5,7 @@
 import { checkPageMember } from "../auth/page-member.js";
 import { signedInSession } from "../auth/session.js";
 import { getViewer } from "../auth/viewer.js";
-import { MAX_ATTACHMENTS, MAX_MESSAGE_CHARS } from "./chat.js";
+import { MAX_ATTACHMENTS, MAX_MESSAGE_CHARS, parseModelChoice } from "./chat.js";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -73,6 +73,8 @@ function refuse(status, problem) {
  * fileIds: string[];
  * // O agente pronto escolhido ao começar a conversa (só o id; o servidor confere no catálogo).
  * agentId: string | null;
+ * // A IA e o nível que a pessoa escolheu para esta mensagem (F03). Vazio: o que o Chefe recomendar.
+ * choice: ModelChoice;
  * }} SendInput
  */
 
@@ -121,5 +123,5 @@ export function parseSendBody(body) {
   // O agente só vale ao começar uma conversa; o servidor ainda confere se o id existe no catálogo.
   const agentId = typeof data.agentId === "string" && AGENT_ID_PATTERN.test(data.agentId) ? data.agentId : null;
 
-  return { ok: true, input: { message, conversationId, fileIds, agentId } };
+  return { ok: true, input: { message, conversationId, fileIds, agentId, choice: parseModelChoice(data.choice) } };
 }
