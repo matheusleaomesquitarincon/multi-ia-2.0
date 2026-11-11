@@ -495,7 +495,7 @@ function clock(seconds) {
 }
 
 /** Quantas receitas o chat vazio sugere, no máximo. */
-const MAX_SUGGESTIONS = 3;
+const MAX_SUGGESTIONS = 4;
 
 function EmptyChat({ suggestions, onOpenRecipe }) {
   const shown = suggestions.slice(0, MAX_SUGGESTIONS);
