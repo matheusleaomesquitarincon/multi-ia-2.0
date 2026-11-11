@@ -520,6 +520,15 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 - **O que fazer:** antes da primeira empresa real, ligar um serviço de e-mail próprio no Supabase (*Authentication →
   Emails → SMTP Settings*). Sem domínio, dá para usar o Gmail do projeto com uma "senha de app", de graça; com marca e
   domínio, um serviço de e-mail com o endereço da marca. Junto, entra o "Esqueci minha senha" do dono.
+- **Andamento (11/11/2026): a parte do código está pronta; falta só a configuração.** O "Esqueci minha senha" existe
+  para o dono e para o funcionário: link em "Entrar" → `/esqueci-senha` → e-mail → `/confirmar?tipo=recuperar` (ou
+  `token_hash`, com o nosso modelo de e-mail) → a pessoa fica marcada como "precisa trocar a senha" e cai em
+  `/trocar-senha`, que derruba os outros aparelhos. A tela responde do mesmo jeito exista ou não a conta (ninguém
+  descobre quem tem conta por ela). O modelo de e-mail em português fica em `BackEnd/supabase/templates/recovery.html`
+  e faz o link funcionar em qualquer navegador. Conferido de ponta a ponta no Supabase local (e-mail na caixa de teste,
+  link aberto noutro "navegador", senha nova valendo, antiga recusada, link reusado cai em "link vencido").
+  **Falta (painel do Supabase, antes da primeira empresa real):** o SMTP próprio e colar o modelo em *Authentication →
+  Emails → Reset Password* (passos 4 e 5 do `GUIA-PUBLICACAO.md`). Com isso, a F33 e a F32 podem ser resolvidas.
 
 ### F31 — Next.js 16.4.0 com falhas de segurança graves conhecidas
 - **Gravidade:** Alta · **Status:** Resolvida · **Anotada:** 24/10/2026

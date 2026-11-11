@@ -9,6 +9,7 @@ import { CadastroPage } from "./pages/CadastroPage.jsx";
 import { ConvitePage } from "./pages/ConvitePage.jsx";
 import { DonoPage } from "./pages/DonoPage.jsx";
 import { EntrarPage } from "./pages/EntrarPage.jsx";
+import { EsqueciSenhaPage } from "./pages/EsqueciSenhaPage.jsx";
 import { HomePage } from "./pages/HomePage.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import { RaioXPage } from "./pages/RaioXPage.jsx";
@@ -26,6 +27,7 @@ export function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/entrar" element={<EntrarPage />} />
+          <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
           <Route path="/cadastro" element={<CadastroPage />} />
           <Route path="/convite/:token" element={<ConvitePage />} />
           <Route path="/trocar-senha" element={<TrocarSenhaPage />} />

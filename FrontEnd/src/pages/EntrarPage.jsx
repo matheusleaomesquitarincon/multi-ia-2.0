@@ -10,6 +10,10 @@ const NOTICES = new Map([
     "link-vencido",
     "Este link de confirmação venceu ou já foi usado. Se você já confirmou o e-mail, é só entrar; se não, faça o cadastro de novo.",
   ],
+  [
+    "link-senha-vencido",
+    "Este link para criar uma senha nova venceu ou já foi usado. Peça outro em “Esqueci minha senha”.",
+  ],
 ]);
 
 export function EntrarPage() {

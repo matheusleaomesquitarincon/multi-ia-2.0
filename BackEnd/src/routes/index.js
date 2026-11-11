@@ -15,6 +15,7 @@ import {
   updateBudgetAction,
 } from "./actions/dono.js";
 import { signIn, signOut } from "./actions/entrar.js";
+import { requestPasswordReset } from "./actions/esqueci-senha.js";
 import { entrarComoDemo } from "./actions/raiox.js";
 import { changePasswordAction } from "./actions/trocar-senha.js";
 import * as conversation from "./api/ock/conversations/[id]/route.js";
@@ -81,6 +82,7 @@ export function apiRoutes() {
 
   const actions = {
     "entrar/sign-in": signIn,
+    "esqueci-senha/request": requestPasswordReset,
     "cadastro/sign-up": signUpCompany,
     "convite/accept": acceptInviteAction,
     "trocar-senha/change": changePasswordAction,

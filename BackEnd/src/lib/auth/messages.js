@@ -33,6 +33,23 @@ export function signUpErrorMessage(code) {
 }
 
 /**
+ * O único erro do "Esqueci minha senha" que a tela mostra: o excesso de tentativas. Os outros (ex.: e-mail sem conta)
+ * não aparecem, para a tela não dizer quem tem conta. Devolve null para esses.
+ * @param {string | undefined} code
+ * @returns {string | null}
+ */
+export function passwordResetErrorMessage(code) {
+  switch (code) {
+    case "over_email_send_rate_limit":
+      return "Mandamos e-mails demais na última hora. Espere um pouco e tente de novo.";
+    case "over_request_rate_limit":
+      return RATE_LIMIT;
+    default:
+      return null;
+  }
+}
+
+/**
  * @param {string | undefined} code
  * @returns {string}
  */
