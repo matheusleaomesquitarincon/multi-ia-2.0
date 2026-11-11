@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import { getRecipe, listRecipeSummaries, RECIPES } from "./catalog.js";
 
 describe("catálogo de receitas", () => {
-  it("mostra as 4 receitas do MVP para PMEs: o site, a proposta e os posts prontos, o relatório em breve", () => {
+  it("mostra as 4 receitas do MVP para PMEs, todas prontas", () => {
     expect(listRecipeSummaries().map((recipe) => [recipe.name, recipe.available])).toEqual([
       ["Criar um site", true],
       ["Proposta comercial", true],
       ["Posts para redes sociais", true],
-      ["Relatório mensal para cliente", false],
+      ["Relatório mensal para cliente", true],
     ]);
   });
 
@@ -52,7 +52,7 @@ describe("catálogo de receitas", () => {
     expect(getRecipe("create-site")?.name).toBe("Criar um site");
     expect(getRecipe("commercial-proposal")?.name).toBe("Proposta comercial");
     expect(getRecipe("social-posts")?.name).toBe("Posts para redes sociais");
-    expect(getRecipe("client-report")).toBeUndefined();
+    expect(getRecipe("client-report")?.name).toBe("Relatório mensal para cliente");
     expect(getRecipe("nao-existe")).toBeUndefined();
   });
 });

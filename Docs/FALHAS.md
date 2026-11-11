@@ -177,6 +177,11 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   próximos PRs do bloco 1.
 - **Andamento (27/10/2026, bloco 1, PR 2):** a terceira receita pronta, "Posts para redes sociais", com dois redatores
   de IAs diferentes trabalhando ao mesmo tempo. Faltam a receita do relatório e a receita própria.
+- **Andamento (11/11/2026):** a quarta receita pronta, "Relatório mensal para cliente" (`lib/recipes/client-report.js`):
+  Analista (Claude) organiza os números e faz as contas, Redator (GPT) escreve, Conferente (Claude, de outra família que
+  o Redator, inclusive na reserva, F57) confere cada número contra os dados do pedido, e o Redator entrega a versão
+  final em Word. Não há mais "Em breve". Conferida de ponta a ponta no banco local (4 etapas cobradas, o Word nas
+  entregas, a reserva fechada); guia em `Docs/GUIA-TESTE-RELATORIO.md`. **Falta só a receita própria.**
 
 ### F09 — Resultado que um leigo não sabe usar
 - **Gravidade:** Média · **Status:** Aberta · **Anotada:** 09/10/2026 (no PROGRESSO), trazida para cá em 22/10/2026
