@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { costInUsd, usdToCents } from "./pricing.js";
 import { outputTokenCap } from "../providers/limits.js";
 
-import { MAX_ATTACHMENT_TEXT_CHARS } from "./chat.js";
+import { AUTOMATIC_CHOICE, MAX_ATTACHMENT_TEXT_CHARS } from "./chat.js";
 import { heuristicRoute, routerRequest } from "./chief.js";
 import {
   actionNotice,
@@ -13,18 +13,21 @@ import {
   callUsd,
   chargeDescription,
   chiefMaxCents,
+  choiceNote,
   CODE_RAN_NOTE,
   conversationTitle,
   documentTitle,
   HISTORY_MAX_CHARS,
   historyText,
   IMAGE_INPUT_TOKENS,
+  planWithChoice,
   planWork,
   requestInputTokens,
   SOURCES_HEADING,
   taskAiCallRows,
   taskChargeCents,
   toolNotes,
+  toolUse,
   workRequest,
 } from "./quick-task.js";
 
@@ -157,6 +160,16 @@ describe("o que cada tipo de resposta pede à IA", () => {
     expect(toolNotes({ sources: [], codeRuns: 0 })).toBe("");
   });
 
+  it("o que a IA usou vem do que a API contou, nunca do texto (F53)", () => {
+    expect(toolUse({ sources: [{ title: "Jornal", url: "https://example.com" }], codeRuns: 0 })).toEqual({
+      researched: true,
+      ranCode: false,
+    });
+    expect(toolUse({ sources: [], codeRuns: 1 })).toEqual({ researched: false, ranCode: true });
+    const invented = "Subiu.\n\nFontes consultadas:\n- Jornal: https://example.com";
+    expect(actionNotice("pesquisa", invented, { researched: false, ranCode: false })).toContain("não veio de uma pesquisa");
+  });
+
   it("no máximo 8 fontes aparecem no fim", () => {
     const sources = Array.from({ length: 12 }, (_, index) => ({
       title: `Página ${index}`,
@@ -183,6 +196,44 @@ describe("o que cada tipo de resposta pede à IA", () => {
     expect(taskChargeCents([maxCall])).toBeLessThanOrEqual(hold);
     // Uns R$ 1,80 no máximo (o consumo comum fica bem abaixo).
     expect(hold).toBeLessThanOrEqual(200);
+  });
+
+  it("escolha livre (F03): sem escolha, roda o recomendado; com escolha, a IA e o nível da pessoa", () => {
+    const auto = planWithChoice(route("responder"), "Oi", new Set(), undefined, AUTOMATIC_CHOICE);
+    expect(auto.chosen).toBe(auto.recommended);
+    expect(choiceNote(auto.recommended, auto.chosen)).toBeNull();
+
+    const { recommended, chosen } = planWithChoice(route("responder"), "Oi", new Set(), undefined, {
+      provider: "gpt",
+      tier: "potente",
+    });
+    expect(recommended).toMatchObject({ provider: "claude", tier: "padrao" });
+    expect(chosen).toMatchObject({ provider: "gpt", tier: "potente", effort: recommended.effort, kind: "answer" });
+    expect(choiceNote(recommended, chosen)).toBe(
+      "Você escolheu GPT, nível potente. O Chefe recomendava Claude, nível padrão.",
+    );
+    // Só o nível: a IA continua a recomendada.
+    const tierOnly = planWithChoice(route("responder"), "Oi", new Set(), undefined, { provider: null, tier: "economico" });
+    expect(tierOnly.chosen).toMatchObject({ provider: "claude", tier: "economico" });
+  });
+
+  it("escolher outra IA numa pesquisa tira a ferramenta e explica; a imagem continua no GPT", () => {
+    const tools = new Set(["pesquisa", "imagem"]);
+    const { recommended, chosen } = planWithChoice(route("pesquisa"), "Dólar hoje", tools, undefined, {
+      provider: "gemini",
+      tier: null,
+    });
+    expect(recommended).toMatchObject({ provider: "claude", tools: ["web_search"] });
+    expect(chosen.provider).toBe("gemini");
+    expect(chosen.tools).toBeUndefined();
+    expect(chosen.reason).toBe("Só o Claude faz a pesquisa na internet aqui.");
+    // Escolher a própria IA da ferramenta mantém a pesquisa.
+    const same = planWithChoice(route("pesquisa"), "Dólar hoje", tools, undefined, { provider: "claude", tier: "potente" });
+    expect(same.chosen).toMatchObject({ provider: "claude", tier: "potente", tools: ["web_search"] });
+
+    const image = planWithChoice(route("imagem"), "Um gato", tools, undefined, { provider: "claude", tier: "potente" });
+    expect(image.chosen).toBe(image.recommended);
+    expect(image.chosen.provider).toBe("gpt");
   });
 
   it("a linha do extrato diz o tipo de resposta, nunca o pedido", () => {

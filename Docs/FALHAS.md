@@ -20,7 +20,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 |---|-------|-----------|-----------|--------|
 | F01 | Sem as receitas, o produto vira mais um chat com várias IAs | Negócio | Alta | Decidida |
 | F02 | Público "empresas pequenas e médias" é amplo demais | Negócio | Média | Aceita |
-| F03 | O Chefe escolher a IA mais barata pode entregar um resultado ruim | Produto | Alta | Decidida |
+| F03 | O Chefe escolher a IA mais barata pode entregar um resultado ruim | Produto | Alta | Resolvida |
 | F04 | Preço e margem não definidos | Negócio | Alta | Aberta |
 | F05 | LGPD: o que o dono vê e para onde vão os dados dos clientes | Negócio / Segurança | Alta | Aberta |
 | F06 | Vender para empresa é mais lento e trabalhoso | Negócio | Média | Aberta |
@@ -60,7 +60,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F40 | Os conectores das IAs de verdade medem o consumo pelo tamanho do texto | Código | Alta | Resolvida |
 | F41 | "+ Adicionar agente" mostra o agente, mas ele nunca trabalha | Produto / Código | Baixa | Resolvida |
 | F42 | Sem a chave de uma IA, o site usa a IA simulada sem avisar | Código | Média | Resolvida |
-| F43 | Quedas raras do servidor na hora de cobrar | Código | Baixa | Aceita |
+| F43 | Quedas raras do servidor na hora de cobrar | Código | Baixa | Resolvida |
 | F44 | Anexos do chat: o texto vai inteiro para a IA, e o que ela não lê é aceito sem aviso | Código / Produto | Média | Resolvida |
 | F45 | Sem a pesquisa ou o código de verdade, a IA é instruída a esconder isso | Produto | Média | Resolvida |
 | F46 | O PR #40 entrou na `main` sem descrição e antes do teste pelo guia | Processo | Baixa | Resolvida |
@@ -70,8 +70,8 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F50 | Os conectores das IAs de verdade mandariam pedidos que as APIs de hoje recusam | Código | Alta | Resolvida |
 | F51 | Resposta cortada no meio, ou recusada pela IA, era aceita como resposta completa | Código | Média | Resolvida |
 | F52 | O código fala com as IAs sem as bibliotecas oficiais, ao contrário do que diz o AGENTS.md | Processo | Baixa | Aberta |
-| F53 | O aviso de "não pesquisou" depende do texto no fim da resposta | Produto / Código | Baixa | Aceita |
-| F54 | Uma fase com IA de verdade pode passar do tempo máximo da função na Vercel | Código | Média | Aberta |
+| F53 | O aviso de "não pesquisou" depende do texto no fim da resposta | Produto / Código | Baixa | Resolvida |
+| F54 | Uma fase com IA de verdade pode passar do tempo máximo da função na Vercel | Código | Média | Resolvida |
 | F55 | Com as IAs de verdade por último, o site é montado sem medir custo, tempo e qualidade de verdade | Processo / Produto | Média | Aceita |
 | F56 | A tela ao vivo das receitas de texto mostrava "Plano do chefe" | Produto / Código | Baixa | Resolvida |
 | F57 | O Editor dos posts é da mesma IA que um dos redatores | Produto | Baixa | Aceita |
@@ -145,13 +145,20 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 ## Produto
 
 ### F03 — O Chefe escolher a IA mais barata pode entregar um resultado ruim
-- **Gravidade:** Alta · **Status:** Decidida · **Anotada:** 22/10/2026
+- **Gravidade:** Alta · **Status:** Resolvida · **Anotada:** 22/10/2026
 - **O problema:** no PR #19 o Chefe decide sozinho a IA, o nível do modelo e o esforço, buscando o mais barato que
   resolve. Se ele errar numa tarefa importante, o funcionário recebe algo fraco e culpa a plataforma.
 - **Decisão (Luis, 22/10):** a plataforma recomenda (IA, nível e esforço), mas o funcionário escolhe livremente
   ("quero o melhor", "quero o Claude nesta tarefa"). Falta construir.
 - **Andamento (25/10/2026, PR 3c):** no chat, cada mensagem guarda o que o Chefe recomendou e o que foi usado
   (`tasks.recommended_*` e `chosen_*`); por enquanto, os dois são iguais. A escolha livre é da etapa 6.
+- **Resolvida (11/11/2026):** a barra da mensagem do chat ganhou "IA" (Automática, Claude, GPT, Gemini) e "Nível"
+  (Automático, Econômico, Padrão, Potente). Automático é o padrão: o Chefe decide. Com uma escolha, o servidor roda e
+  cobra o escolhido, guarda o recomendado e o escolhido em `tasks`, e a resposta (e o histórico) mostra "Você escolheu
+  X. O Chefe recomendava Y." (`planWithChoice` e `choiceNote` em `lib/ock/quick-task.js`). A imagem continua no GPT
+  (é o único que cria). Pesquisa na internet e conta com programa existem numa IA só: escolhendo outra, a resposta sai
+  sem a ferramenta, com a explicação e o aviso de sempre (F45). Fora isso, o funcionário continua sem ver qual IA
+  respondeu. Nas receitas, a troca de IA de cada papel já existia na tela do time.
 
 ### F08 — As receitas não existem dentro do workspace do funcionário
 - **Gravidade:** Alta · **Status:** Aberta · **Anotada:** 22/10/2026
@@ -170,6 +177,11 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   próximos PRs do bloco 1.
 - **Andamento (27/10/2026, bloco 1, PR 2):** a terceira receita pronta, "Posts para redes sociais", com dois redatores
   de IAs diferentes trabalhando ao mesmo tempo. Faltam a receita do relatório e a receita própria.
+- **Andamento (11/11/2026):** a quarta receita pronta, "Relatório mensal para cliente" (`lib/recipes/client-report.js`):
+  Analista (Claude) organiza os números e faz as contas, Redator (GPT) escreve, Conferente (Claude, de outra família que
+  o Redator, inclusive na reserva, F57) confere cada número contra os dados do pedido, e o Redator entrega a versão
+  final em Word. Não há mais "Em breve". Conferida de ponta a ponta no banco local (4 etapas cobradas, o Word nas
+  entregas, a reserva fechada); guia em `Docs/GUIA-TESTE-RELATORIO.md`. **Falta só a receita própria.**
 
 ### F09 — Resultado que um leigo não sabe usar
 - **Gravidade:** Média · **Status:** Aberta · **Anotada:** 09/10/2026 (no PROGRESSO), trazida para cá em 22/10/2026
@@ -242,7 +254,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   como anexo: o navegador só salva, e nem aberto direto o site roda. Os sites feitos antes desta parte não viraram entrega.
 
 ### F53 — O aviso de "não pesquisou" depende do texto no fim da resposta
-- **Gravidade:** Baixa · **Status:** Aceita · **Anotada:** 26/10/2026 (percebida pelo Claude no PR da pesquisa e do
+- **Gravidade:** Baixa · **Status:** Resolvida · **Anotada:** 26/10/2026 (percebida pelo Claude no PR da pesquisa e do
   código)
 - **O problema:** para o histórico saber se uma resposta foi pesquisada na internet (ou se a IA rodou um programa), sem
   coluna nova no banco, o servidor escreve no fim da resposta as fontes ("Fontes consultadas:") ou a frase do programa,
@@ -253,6 +265,11 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   26/10), e o efeito é só o aviso faltar numa resposta rara.
 - **O que fazer depois:** guardar numa coluna de `tasks` se a IA pesquisou ou rodou um programa (migração), junto com
   outra mudança de banco do chat (o apagar da F28 ou a escolha livre da etapa 6).
+- **Resolvida (11/11/2026, migração `20261111130000_task_tool_use.sql`):** `tasks` ganhou `researched` e `ran_code`,
+  gravadas pelo servidor com o que a API da IA contou (páginas citadas e programas rodados, `toolUse` em
+  `lib/ock/quick-task.js`), nunca com o texto. O aviso, na hora e no histórico, lê essas colunas; uma lista de fontes
+  inventada no fim da resposta não esconde mais o aviso. As mensagens de antes da migração (colunas vazias) continuam
+  lendo o fim do texto. As fontes e a frase do programa continuam escritas no fim da resposta, para a pessoa ler.
 
 ### F56 — A tela ao vivo das receitas de texto mostrava "Plano do chefe"
 - **Gravidade:** Baixa · **Status:** Resolvida · **Anotada:** 27/10/2026 (achada pelo Claude no teste de ponta a ponta
@@ -515,6 +532,15 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 - **O que fazer:** antes da primeira empresa real, ligar um serviço de e-mail próprio no Supabase (*Authentication →
   Emails → SMTP Settings*). Sem domínio, dá para usar o Gmail do projeto com uma "senha de app", de graça; com marca e
   domínio, um serviço de e-mail com o endereço da marca. Junto, entra o "Esqueci minha senha" do dono.
+- **Andamento (11/11/2026): a parte do código está pronta; falta só a configuração.** O "Esqueci minha senha" existe
+  para o dono e para o funcionário: link em "Entrar" → `/esqueci-senha` → e-mail → `/confirmar?tipo=recuperar` (ou
+  `token_hash`, com o nosso modelo de e-mail) → a pessoa fica marcada como "precisa trocar a senha" e cai em
+  `/trocar-senha`, que derruba os outros aparelhos. A tela responde do mesmo jeito exista ou não a conta (ninguém
+  descobre quem tem conta por ela). O modelo de e-mail em português fica em `BackEnd/supabase/templates/recovery.html`
+  e faz o link funcionar em qualquer navegador. Conferido de ponta a ponta no Supabase local (e-mail na caixa de teste,
+  link aberto noutro "navegador", senha nova valendo, antiga recusada, link reusado cai em "link vencido").
+  **Falta (painel do Supabase, antes da primeira empresa real):** o SMTP próprio e colar o modelo em *Authentication →
+  Emails → Reset Password* (passos 4 e 5 do `GUIA-PUBLICACAO.md`). Com isso, a F33 e a F32 podem ser resolvidas.
 
 ### F31 — Next.js 16.4.0 com falhas de segurança graves conhecidas
 - **Gravidade:** Alta · **Status:** Resolvida · **Anotada:** 24/10/2026
@@ -616,7 +642,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   acesso da Vercel deixa o site chamar a si mesmo por esse endereço.
 
 ### F54 — Uma fase com IA de verdade pode passar do tempo máximo da função na Vercel
-- **Gravidade:** Média · **Status:** Aberta · **Anotada:** 26/10/2026 (percebida pelo Claude no PR das IAs de verdade)
+- **Gravidade:** Média · **Status:** Resolvida · **Anotada:** 26/10/2026 (percebida pelo Claude no PR das IAs de verdade)
 - **O problema:** cada fase de uma receita roda numa chamada que o servidor faz a si mesmo (`/api/runs/[id]/continue`),
   com `maxDuration = 300` (5 minutos). Com as IAs de verdade, a fase do Front-end (até 6 mil tokens de site e, no esforço
   alto, até 16 mil de "pensamento") pode levar alguns minutos; se passar do limite no site publicado, a Vercel corta a
@@ -625,6 +651,15 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 - **O que fazer:** medir o tempo de cada fase nos primeiros testes com as IAs de verdade (Parte F do
   `docs/GUIA-TESTE-IAS-REAIS.md`) e, antes de publicar: conferir o limite do plano da Vercel (o tempo máximo depende do
   plano), dividir as etapas longas (cada etapa numa chamada, não a fase inteira) ou baixar o esforço do Front-end.
+- **Resolvida (11/11/2026, Multi-IA 2.0):** sem a Vercel, ninguém de fora corta a chamada; quem corta é o nosso teto
+  (`maxDuration` da rota, F58). Mas ele era de 5 minutos, igual ao de UMA chamada às IAs (`AI_CALL_TIMEOUT_MS`): se a IA
+  demorasse, as novas tentativas e a troca de IA já nasciam sem tempo e a fase falhava. Agora o teto da rota interna é
+  calculado do pior caminho de uma etapa (3 tentativas com a IA do papel e 3 com a que assume, cada uma até 5 minutos,
+  uns 31 minutos) e cabe na reserva de 1 hora (`WORST_STEP_MS` em `continue/route.js`). Hoje cada segmento já é uma
+  etapa só (ou várias em paralelo); um teste do catálogo falha se uma receita juntar etapas em sequência num segmento,
+  para quem fizer isso dividir antes. O chat continua com 5 minutos de propósito: a pessoa espera a resposta na tela e a
+  reserva da mensagem (15 minutos) conta com isso. O tempo real de cada fase ainda precisa ser medido com as IAs de
+  verdade (F55).
 
 ### F40 — Os conectores das IAs de verdade medem o consumo pelo tamanho do texto
 - **Gravidade:** Alta · **Status:** Resolvida · **Anotada:** 25/10/2026 (achada pelo Claude ao planejar o PR 3b)
@@ -662,7 +697,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   `ai_calls` guardou o erro sem cobrança e sem nenhuma resposta da simulada.
 
 ### F43 — Quedas raras do servidor na hora de cobrar
-- **Gravidade:** Baixa · **Status:** Aceita · **Anotada:** 25/10/2026 (achada pelo Claude no PR 3b)
+- **Gravidade:** Baixa · **Status:** Resolvida · **Anotada:** 25/10/2026 (achada pelo Claude no PR 3b)
 - **O problema:** o caso comum está coberto: se o servidor cai entre gravar uma fase e cobrar, a chamada seguinte cobra
   o que faltou, sem cobrar duas vezes. Ficam três casos raros: (1) se a pessoa cancela no mesmo instante em que o
   servidor cobra as etapas da fase que acabou de terminar, as que ainda não tinham sido cobradas saem de graça; (2) se o
@@ -672,6 +707,14 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 - **Por que aceitar:** os três dependem de uma queda ou de uma coincidência de segundos, e os valores são de centavos.
 - **O que fazer depois:** uma chave única na cobrança (migração: cada etapa só vira uma linha de gasto) e uma limpeza que
   fecha as reservas esquecidas.
+- **Resolvida (11/11/2026, migração `20261111120000_charge_once_per_step.sql`):** (3) cada cobrança de etapa leva a
+  posição da etapa (`wallet_entries.step_seq`), e o banco cobra cada posição uma vez só (índice único e a função
+  `wallet_charge` recusa com `step_already_charged`; o servidor pula a etapa). (1) Com isso, etapa concluída passa a ser
+  cobrada mesmo se a reserva acabou de fechar, como manda a regra "paga as etapas concluídas"; a cobrança do chat, sem
+  posição, continua recusada em reserva fechada. (2) A função `wallet_close_stale_holds` fecha as reservas de execuções
+  e mensagens que terminaram e que ninguém roda; o servidor a chama ao ligar e a cada 5 minutos
+  (`lib/runs/housekeeping.js`). Testes do banco em `06_charge_once.test.sql`. Conferido no banco local com a receita
+  "Proposta comercial": 4 etapas, 4 linhas numeradas de 0 a 3 e a reserva fechada no fim.
 
 ### F44 — Anexos do chat: o texto vai inteiro para a IA, e o que ela não lê é aceito sem aviso
 - **Gravidade:** Média · **Status:** Resolvida · **Anotada:** 25/10/2026 (achada pelo Claude ao planejar a parte 3c)

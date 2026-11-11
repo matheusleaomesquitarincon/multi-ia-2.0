@@ -10,6 +10,7 @@ import {
   ATTACHMENT_ACCEPT,
   ATTACHMENTS_CUT_NOTICE,
   ATTACHMENTS_ONLY_PROMPT,
+  AUTOMATIC_CHOICE,
   MAX_ATTACHMENTS,
   MAX_MESSAGE_CHARS,
   MAX_VOICE_SECONDS,
@@ -17,6 +18,7 @@ import {
 
 import { findAgent } from "../lib/ock/agents.js";
 import { fileUrl, loadConversation, sendMessage, transcribeAudio, uploadAttachment } from "../lib/ock/chat-client.js";
+import { ModelChoicePicker } from "./ModelChoicePicker.jsx";
 
 import styles from "./QuickChat.module.css";
 
@@ -85,6 +87,8 @@ export function QuickChat({
   const [transcribing, setTranscribing] = useState(false);
   const [problem, setProblem] = useState(null);
   const [announcement, setAnnouncement] = useState("");
+  // A IA e o nível que a pessoa escolheu (F03). Vale para as próximas mensagens, até ela mudar.
+  const [choice, setChoice] = useState(AUTOMATIC_CHOICE);
   const listRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -277,6 +281,7 @@ export function QuickChat({
       pageMemberId,
       // O agente só vale ao começar uma conversa nova; numa que já existe, o servidor usa o que ela já guardou.
       agentId: activeId ? null : activeAgentId,
+      choice,
     });
     setSending(false);
     if (!result.ok) {
@@ -448,6 +453,7 @@ export function QuickChat({
             >
               Anexar arquivo
             </button>
+            <ModelChoicePicker choice={choice} onChange={setChoice} disabled={sending} />
             {voice && (
               <button
                 type="button"
@@ -489,7 +495,7 @@ function clock(seconds) {
 }
 
 /** Quantas receitas o chat vazio sugere, no máximo. */
-const MAX_SUGGESTIONS = 3;
+const MAX_SUGGESTIONS = 4;
 
 function EmptyChat({ suggestions, onOpenRecipe }) {
   const shown = suggestions.slice(0, MAX_SUGGESTIONS);
@@ -574,9 +580,11 @@ function UserBubble({ prompt, attachments }) {
 }
 
 function Answer({ task }) {
-  // O funcionário não vê qual IA respondeu nem o custo (isso é do painel do dono): só a resposta.
+  // O funcionário não vê qual IA respondeu nem o custo (isso é do painel do dono): só a resposta. A exceção é quando ele
+  // mesmo escolheu a IA ou o nível (F03): aí a nota diz o que ele escolheu e o que o Chefe recomendava.
   return (
     <article className={styles.answer}>
+      {task.choiceNote && <p className={styles.choiceNote}>{task.choiceNote}</p>}
       {task.notice && <p className={styles.notice}>{task.notice}</p>}
       {task.attachmentsCut && <p className={styles.notice}>{ATTACHMENTS_CUT_NOTICE}</p>}
       <p className={styles.answerText}>{task.answer}</p>

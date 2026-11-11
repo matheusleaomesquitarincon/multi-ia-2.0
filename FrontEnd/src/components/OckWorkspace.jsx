@@ -9,6 +9,7 @@
 // A aba e a receita aberta ficam no endereço (components/workspace-view.js): recarregar volta para o mesmo lugar.
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { PageHeader } from "./PageHeader.jsx";
 import { QuickChat } from "./QuickChat.jsx";
 import { MAX_FOLDER_NAME } from "../lib/ock/chat.js";
 
@@ -113,30 +114,24 @@ export function OckWorkspace({
 
   return (
     <main className={styles.main}>
-      <header className={styles.bar}>
-        <div className={styles.greeting}>
-          <h1 className={styles.title}>Olá, {firstName}!</h1>
-          <p className={styles.lead}>Peça o que precisar em português. O Chefe cuida do resto.</p>
-        </div>
-        <div className={styles.side}>
-          <p className={styles.month}>
-            {isOwner ? (
-              <>
-                Gasto do mês: <strong>{formatBRL(month.spentCents)}</strong>
-                {month.budgetCents === null ? " (sem teto)" : ` de ${formatBRL(month.budgetCents)}`}
-              </>
-            ) : month.budgetCents === null ? (
-              <>
-                Créditos: <strong>ilimitados</strong>
-              </>
-            ) : (
-              <>
-                Créditos restantes: <strong>{formatCredits(Math.max(0, month.budgetCents - month.spentCents))}</strong>
-              </>
-            )}
-          </p>
-        </div>
-      </header>
+      <PageHeader
+        eyebrow="Espaço de trabalho"
+        title={`Olá, ${firstName}.`}
+        titleEm="O que vamos fazer hoje?"
+        lead="Peça o que precisar em português. O Chefe monta o time e cuida do resto."
+        stats={[
+          { label: "Gasto do mês", value: formatBRL(month.spentCents) },
+          isOwner
+            ? { label: "Teto", value: month.budgetCents === null ? "sem teto" : formatBRL(month.budgetCents) }
+            : {
+                label: "Créditos restantes",
+                value:
+                  month.budgetCents === null
+                    ? "ilimitados"
+                    : formatCredits(Math.max(0, month.budgetCents - month.spentCents)),
+              },
+        ]}
+      />
 
       <div role="tablist" aria-label="Partes do espaço de trabalho" className={styles.tabs} onKeyDown={handleTabKey}>
         {TABS.map((item, index) => (

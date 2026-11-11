@@ -34,8 +34,9 @@ export function chargeDescription(recipe, stepId) {
 
 /**
  * Cobra na reserva, na ordem em que terminaram, as etapas concluídas (`results`) que ainda não viraram linha de gasto.
- * Assim, se o servidor cair entre gravar uma fase e cobrar, a próxima chamada cobra o que faltou, e nada é cobrado
- * duas vezes. Devolve as etapas cobradas agora. Se a reserva foi fechada no meio (a pessoa cancelou), para de cobrar.
+ * Assim, se o servidor cair entre gravar uma fase e cobrar, a próxima chamada cobra o que faltou. Cada etapa vai com a
+ * posição dela, e o banco cobra cada posição uma vez só (F43): se outro servidor cobrou antes, ela é pulada. Devolve as
+ * etapas cobradas agora.
  * @param {string} runId
  * @param {Recipe} recipe
  * @param {readonly StepResult[]} results
@@ -45,14 +46,15 @@ export function chargeDescription(recipe, stepId) {
 export async function chargeCompletedSteps(runId, recipe, results, holdId) {
   const charged = [];
   const alreadyCharged = await countRunCharges(runId);
-  for (const result of results.slice(alreadyCharged)) {
+  for (let stepSeq = alreadyCharged; stepSeq < results.length; stepSeq++) {
+    const result = results[stepSeq];
     const remaining = await chargeStep(holdId, runId, {
       amountCents: stepChargeCents(result),
       description: chargeDescription(recipe, result.stepId),
       provider: result.provider,
+      stepSeq,
     });
-    if (remaining === null) break;
-    charged.push(result);
+    if (remaining !== null) charged.push(result);
   }
   return charged;
 }

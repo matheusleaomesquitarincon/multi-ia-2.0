@@ -10,7 +10,7 @@
 
 .title {
   font-family: var(--font-display);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-display);
   font-size: var(--text-title);
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-title);

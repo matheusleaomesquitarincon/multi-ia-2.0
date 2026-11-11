@@ -63,7 +63,10 @@ describe("rota POST /api/ock (mensagem do chat)", () => {
     expect(await response.json()).toEqual(result);
     // Quem pede vem do login: um memberId no corpo é ignorado.
     expect(state.calls).toEqual([
-      { me: CARLA, request: { message: "Oi", conversationId: null, fileIds: [], agentId: null } },
+      {
+        me: CARLA,
+        request: { message: "Oi", conversationId: null, fileIds: [], agentId: null, choice: { provider: null, tier: null } },
+      },
     ]);
   });
 

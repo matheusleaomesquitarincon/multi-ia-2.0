@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseNewPassword, parseSignIn, parseSignUp } from "./forms.js";
+import { parseForgotPassword, parseNewPassword, parseSignIn, parseSignUp } from "./forms.js";
 
 function form(fields) {
   const data = new FormData();
@@ -127,5 +127,23 @@ describe("conferência da senha criada no convite", () => {
       values: {},
     });
     expect(parseNewPassword(new FormData()).ok).toBe(false);
+  });
+});
+
+describe("conferência do \"Esqueci minha senha\" (F30)", () => {
+  it("aceita um e-mail, já sem espaços e em minúsculas", () => {
+    expect(parseForgotPassword(form({ email: " Ana@Example.com " }))).toEqual({
+      ok: true,
+      values: { email: "ana@example.com" },
+    });
+  });
+
+  it("recusa vazio e e-mail incompleto, devolvendo o que foi digitado", () => {
+    expect(parseForgotPassword(form({}))).toMatchObject({ ok: false, errors: { email: "Preencha o e-mail." } });
+    expect(parseForgotPassword(form({ email: "ana@" }))).toEqual({
+      ok: false,
+      errors: { email: "Confira o e-mail: ele parece incompleto." },
+      values: { email: "ana@" },
+    });
   });
 });

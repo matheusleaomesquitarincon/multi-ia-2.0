@@ -21,6 +21,8 @@ export const SERVER_PROBLEM = "Algo deu errado do nosso lado. Tente de novo daqu
  * pageMemberId: string;
  * // Ao começar uma conversa nova com um agente pronto, o id dele (lib/ock/agents.js).
  * agentId?: string | null;
+ * // A IA e o nível escolhidos pela pessoa (F03). Sem valor: o Chefe decide.
+ * choice?: ModelChoice;
  * }} SendBody
  */
 

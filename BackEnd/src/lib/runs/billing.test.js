@@ -9,14 +9,14 @@ const wallet = vi.hoisted(() => ({
   charges: [],
   /** Quantas linhas de gasto a execução já tinha antes. */
   alreadyCharged: 0,
-  /** Depois de quantas cobranças a reserva aparece fechada (a pessoa cancelou). */
-  closesAfter: Infinity,
+  /** Posições que outro servidor cobrou entre a contagem e a cobrança (o banco recusa de novo). */
+  chargedElsewhere: new Set(),
 }));
 
 vi.mock("./wallet.js", () => ({
   countRunCharges: async () => wallet.alreadyCharged,
   chargeStep: async (_holdId, _runId, charge) => {
-    if (wallet.charges.length >= wallet.closesAfter) return null;
+    if (wallet.chargedElsewhere.has(charge.stepSeq)) return null;
     wallet.charges.push(charge);
     return 100;
   },
@@ -41,7 +41,7 @@ function result(stepId, provider, inputTokens, outputTokens) {
 afterEach(() => {
   wallet.charges = [];
   wallet.alreadyCharged = 0;
-  wallet.closesAfter = Infinity;
+  wallet.chargedElsewhere = new Set();
 });
 
 describe("a conta de uma execução", () => {
@@ -68,16 +68,17 @@ describe("a conta de uma execução", () => {
     const charged = await chargeCompletedSteps("run-1", recipe, results, "hold-1");
     expect(charged.map((step) => step.stepId)).toEqual(["front", "back"]);
     expect(wallet.charges).toEqual([
-      { amountCents: stepChargeCents(results[1]), description: "Criar um site · Front-end", provider: "gpt" },
-      { amountCents: stepChargeCents(results[2]), description: "Criar um site · Back-end", provider: "claude" },
+      { amountCents: stepChargeCents(results[1]), description: "Criar um site · Front-end", provider: "gpt", stepSeq: 1 },
+      { amountCents: stepChargeCents(results[2]), description: "Criar um site · Back-end", provider: "claude", stepSeq: 2 },
     ]);
   });
 
-  it("se a reserva fechou no meio (a pessoa cancelou), para de cobrar", async () => {
-    wallet.closesAfter = 1;
+  it("se outro servidor cobrou uma etapa antes, ela é pulada e as seguintes são cobradas (F43)", async () => {
+    wallet.chargedElsewhere = new Set([0]);
     const results = [result("front", "gpt", 2000, 3000), result("back", "claude", 2000, 400)];
     const charged = await chargeCompletedSteps("run-1", recipe, results, "hold-1");
-    expect(charged.map((step) => step.stepId)).toEqual(["front"]);
+    expect(charged.map((step) => step.stepId)).toEqual(["back"]);
+    expect(wallet.charges.map((charge) => charge.stepSeq)).toEqual([1]);
   });
 
   it("registra cada chamada com o custo em dólar e o câmbio; só a chamada que deu certo de uma etapa cobrada é cobrada", () => {

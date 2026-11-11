@@ -79,7 +79,7 @@ vi.mock("./task-store.js", () => ({
     if (db.failCreateTask) throw new Error("banco fora do ar");
     db.tasks.push(task);
   },
-  finishTask: async (id, status, answer) => void db.finished.push({ id, status, answer }),
+  finishTask: async (id, status, answer, used) => void db.finished.push({ id, status, answer, used }),
   touchConversation: async () => {},
 }));
 vi.mock("./files.js", () => ({
@@ -137,6 +137,7 @@ function send(message, extra = {}, failures = {}) {
       conversationId: extra.conversationId ?? null,
       fileIds: extra.fileIds ?? [],
       agentId: extra.agentId ?? null,
+      choice: extra.choice,
     },
     ai.options,
   );
@@ -184,6 +185,30 @@ afterEach(() => {
 });
 
 describe("uma mensagem do chat", () => {
+  it("a pessoa escolhe a IA e o nível (F03): roda e cobra o escolhido, e guarda o que o Chefe recomendava", async () => {
+    const { result, requests } = send("Oi, tudo bem?", { choice: { provider: "gemini", tier: "potente" } });
+    const outcome = await result;
+    if (!outcome.ok) throw new Error(outcome.problem);
+    const { task } = outcome.result;
+
+    expect(requests.map((item) => item.provider)).toEqual(["gpt", "gemini"]);
+    expect(requests[1].request.tier).toBe("potente");
+    expect(db.charges[0]).toMatchObject({ provider: "gemini" });
+    expect(db.tasks[0]).toMatchObject({
+      recommended_provider: "claude",
+      chosen_provider: "gemini",
+      chosen_tier: "potente",
+    });
+    expect(task).toMatchObject({ provider: "gemini", tier: "potente" });
+    expect(task.choiceNote).toContain("Você escolheu Gemini, nível potente. O Chefe recomendava Claude");
+  });
+
+  it("sem escolha, não há nota de escolha", async () => {
+    const outcome = await send("Oi, tudo bem?").result;
+    if (!outcome.ok) throw new Error(outcome.problem);
+    expect(outcome.result.task.choiceNote).toBeNull();
+  });
+
   it("o Chefe decide, a IA responde e a mensagem vira uma linha de gasto só, pelo consumo real", async () => {
     const { result, requests } = send("Oi, tudo bem?");
     const outcome = await result;
@@ -226,7 +251,9 @@ describe("uma mensagem do chat", () => {
       recommended_tier: task.tier,
       chosen_tier: task.tier,
     });
-    expect(db.finished).toEqual([{ id: task.id, status: "finished", answer: task.answer }]);
+    expect(db.finished).toEqual([
+      { id: task.id, status: "finished", answer: task.answer, used: { researched: false, ranCode: false } },
+    ]);
     expect(task).toMatchObject({ status: "finished", action: "responder", provider: "claude", notice: null });
     expect(task.answer).toContain("resposta simulada");
     expect(month).toEqual({ spentCents: 42, budgetCents: 5000 });
@@ -488,8 +515,9 @@ describe("uma mensagem do chat", () => {
     expect(task).toMatchObject({ action: "pesquisa", provider: "claude", tier: "padrao", notice: null });
     expect(task.reason).toContain("Claude pesquisa");
     expect(task.answer).toContain(`\n\n${SOURCES_HEADING}\n- ${MOCK_SOURCE.title}: ${MOCK_SOURCE.url}`);
-    // A resposta guardada é a mesma que a tela mostra (com as fontes), para o histórico reconhecer.
+    // A resposta guardada é a mesma que a tela mostra (com as fontes), e o registro diz que ela pesquisou (F53).
     expect(db.finished[0].answer).toBe(task.answer);
+    expect(db.finished[0].used).toEqual({ researched: true, ranCode: false });
     expect(ai.requests.find((item) => item.provider === "claude")?.request.tools).toEqual(["web_search"]);
     const answerRow = db.aiCalls.find((row) => row.step_id === "answer");
     // A pesquisa simulada custa US$ 0,01, além dos tokens.
