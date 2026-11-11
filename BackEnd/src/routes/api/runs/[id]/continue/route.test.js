@@ -11,7 +11,9 @@ import { stepChargeCents } from "../../../../../lib/runs/billing.js";
 import { estimateCents, stepCosts } from "../../../../../lib/runs/estimate.js";
 import { INTERNAL_SECRET_HEADER, internalRunSecret } from "../../../../../lib/runs/internal-secret.js";
 
-import { POST } from "./route.js";
+import { AI_CALL_TIMEOUT_MS } from "../../../../../lib/providers/deadline.js";
+
+import { maxDuration, POST, WORST_STEP_MS } from "./route.js";
 
 // Nada de rede: a IA simulada responde (na hora, ou devagar nos testes de cancelamento), e o banco, a carteira e o
 // disparo são dublês em memória.
@@ -240,6 +242,13 @@ describe("rota interna POST /api/runs/[id]/continue", () => {
     const response = await callContinue("errado");
     expect(response.status).toBe(401);
     expect(claimRun).not.toHaveBeenCalled();
+  });
+
+  it("o teto de tempo cobre todas as tentativas e a troca de IA de uma etapa e cabe na reserva de 1 hora (F54)", () => {
+    // Antes era igual ao de uma chamada (5 min): a nova tentativa depois de uma IA lenta já nascia sem tempo.
+    expect(maxDuration * 1000).toBeGreaterThan(WORST_STEP_MS);
+    expect(WORST_STEP_MS).toBeGreaterThanOrEqual(6 * AI_CALL_TIMEOUT_MS);
+    expect(maxDuration).toBeLessThan(60 * 60);
   });
 
   it("quando não dá para reivindicar, não faz nada (200)", async () => {

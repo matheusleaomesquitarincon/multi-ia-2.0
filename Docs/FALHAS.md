@@ -71,7 +71,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F51 | Resposta cortada no meio, ou recusada pela IA, era aceita como resposta completa | Código | Média | Resolvida |
 | F52 | O código fala com as IAs sem as bibliotecas oficiais, ao contrário do que diz o AGENTS.md | Processo | Baixa | Aberta |
 | F53 | O aviso de "não pesquisou" depende do texto no fim da resposta | Produto / Código | Baixa | Aceita |
-| F54 | Uma fase com IA de verdade pode passar do tempo máximo da função na Vercel | Código | Média | Aberta |
+| F54 | Uma fase com IA de verdade pode passar do tempo máximo da função na Vercel | Código | Média | Resolvida |
 | F55 | Com as IAs de verdade por último, o site é montado sem medir custo, tempo e qualidade de verdade | Processo / Produto | Média | Aceita |
 | F56 | A tela ao vivo das receitas de texto mostrava "Plano do chefe" | Produto / Código | Baixa | Resolvida |
 | F57 | O Editor dos posts é da mesma IA que um dos redatores | Produto | Baixa | Aceita |
@@ -616,7 +616,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   acesso da Vercel deixa o site chamar a si mesmo por esse endereço.
 
 ### F54 — Uma fase com IA de verdade pode passar do tempo máximo da função na Vercel
-- **Gravidade:** Média · **Status:** Aberta · **Anotada:** 26/10/2026 (percebida pelo Claude no PR das IAs de verdade)
+- **Gravidade:** Média · **Status:** Resolvida · **Anotada:** 26/10/2026 (percebida pelo Claude no PR das IAs de verdade)
 - **O problema:** cada fase de uma receita roda numa chamada que o servidor faz a si mesmo (`/api/runs/[id]/continue`),
   com `maxDuration = 300` (5 minutos). Com as IAs de verdade, a fase do Front-end (até 6 mil tokens de site e, no esforço
   alto, até 16 mil de "pensamento") pode levar alguns minutos; se passar do limite no site publicado, a Vercel corta a
@@ -625,6 +625,15 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 - **O que fazer:** medir o tempo de cada fase nos primeiros testes com as IAs de verdade (Parte F do
   `docs/GUIA-TESTE-IAS-REAIS.md`) e, antes de publicar: conferir o limite do plano da Vercel (o tempo máximo depende do
   plano), dividir as etapas longas (cada etapa numa chamada, não a fase inteira) ou baixar o esforço do Front-end.
+- **Resolvida (11/11/2026, Multi-IA 2.0):** sem a Vercel, ninguém de fora corta a chamada; quem corta é o nosso teto
+  (`maxDuration` da rota, F58). Mas ele era de 5 minutos, igual ao de UMA chamada às IAs (`AI_CALL_TIMEOUT_MS`): se a IA
+  demorasse, as novas tentativas e a troca de IA já nasciam sem tempo e a fase falhava. Agora o teto da rota interna é
+  calculado do pior caminho de uma etapa (3 tentativas com a IA do papel e 3 com a que assume, cada uma até 5 minutos,
+  uns 31 minutos) e cabe na reserva de 1 hora (`WORST_STEP_MS` em `continue/route.js`). Hoje cada segmento já é uma
+  etapa só (ou várias em paralelo); um teste do catálogo falha se uma receita juntar etapas em sequência num segmento,
+  para quem fizer isso dividir antes. O chat continua com 5 minutos de propósito: a pessoa espera a resposta na tela e a
+  reserva da mensagem (15 minutos) conta com isso. O tempo real de cada fase ainda precisa ser medido com as IAs de
+  verdade (F55).
 
 ### F40 — Os conectores das IAs de verdade medem o consumo pelo tamanho do texto
 - **Gravidade:** Alta · **Status:** Resolvida · **Anotada:** 25/10/2026 (achada pelo Claude ao planejar o PR 3b)
