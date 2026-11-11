@@ -93,7 +93,10 @@ export function taskView(row, extras) {
     tier: row.chosen_tier,
     effort: row.chosen_effort,
     reason: null,
-    notice: status === "finished" ? actionNotice(row.action, row.answer) : null,
+    notice:
+      status === "finished"
+        ? actionNotice(row.action, row.answer, { researched: row.researched ?? null, ranCode: row.ran_code ?? null })
+        : null,
     costCents: extras.costCents,
     attachmentsCut: false,
     createdAt: row.created_at,

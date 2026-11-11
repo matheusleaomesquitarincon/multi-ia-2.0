@@ -53,6 +53,7 @@ import {
   taskAiCallRows,
   taskChargeCents,
   toolNotes,
+  toolUse,
   workRequest,
 } from "./quick-task.js";
 import { loadMonth } from "./spending.js";
@@ -188,7 +189,7 @@ async function answerMessage(me, session, request, options, taskId, ledger) {
     tier: plan.tier,
     effort: plan.effort,
     reason: plan.reason ?? (route.reason || null),
-    notice: outcome.status === "finished" ? actionNotice(plan.action, outcome.answer) : null,
+    notice: outcome.status === "finished" ? actionNotice(plan.action, outcome.answer, outcome.used) : null,
     costCents,
     attachmentsCut: attachments.cut,
     createdAt: new Date().toISOString(),
@@ -203,7 +204,7 @@ async function answerMessage(me, session, request, options, taskId, ledger) {
       existing ?? (await createOwnConversation(session, conversationTitle(message, names(uploads)), newAgentId));
     await createTask({ ...newTask(conversation), status: "finished", answer: IMAGE_UNAVAILABLE, finished_at: now() });
     await linkUploadsToTask(request.fileIds, taskId);
-    const outcome = { status: "finished", answer: IMAGE_UNAVAILABLE, deliveries: [], chart: null };
+    const outcome = finished(IMAGE_UNAVAILABLE);
     return done(session, me, conversation, view(conversation, outcome, 0));
   }
 
@@ -234,7 +235,7 @@ async function answerMessage(me, session, request, options, taskId, ledger) {
     onCall,
     wait: options.wait,
   });
-  await finishTask(taskId, outcome.status, outcome.answer);
+  await finishTask(taskId, outcome.status, outcome.answer, outcome.used);
 
   let costCents = 0;
   if (outcome.status === "finished") {
@@ -257,6 +258,8 @@ async function answerMessage(me, session, request, options, taskId, ledger) {
  * answer: string;
  * deliveries: ChatFile[];
  * chart: string | null;
+ * // Se a IA pesquisou ou rodou um programa (F53): o aviso da resposta e a linha guardada em tasks leem daqui.
+ * used: ToolUse;
  * }} Outcome
  */
 
@@ -276,6 +279,7 @@ async function produce(plan, work, prompt, context) {
   if (plan.kind === "image") return makeImage(work.input, context);
   let text;
   let notes;
+  let used;
   try {
     const answer = await callAi(context.getProvider(plan.provider), work, {
       stepId: ANSWER_STEP,
@@ -284,6 +288,7 @@ async function produce(plan, work, prompt, context) {
     });
     text = answer.text;
     notes = toolNotes(answer);
+    used = toolUse(answer);
   } catch (error) {
     if (!(error instanceof ProviderError)) throw error;
     console.error(
@@ -294,7 +299,7 @@ async function produce(plan, work, prompt, context) {
   }
 
   // As fontes da pesquisa e o aviso do programa rodado vão escritos no fim da resposta (e ficam no histórico).
-  if (plan.kind === "answer") return finished(text.trimEnd() + notes);
+  if (plan.kind === "answer") return finished(text.trimEnd() + notes, [], null, used);
   try {
     return await makeDelivery(plan, text, context);
   } catch (error) {
@@ -371,12 +376,15 @@ async function makeDelivery(plan, text, context) {
   return finished(`Projeto pronto com ${files.length} arquivo(s): ${list}. Baixe o .zip aqui embaixo.`, [file]);
 }
 
-function finished(answer, deliveries = [], chart = null) {
-  return { status: "finished", answer, deliveries, chart };
+/** Sem pesquisa nem programa (um arquivo, uma imagem, uma recusa): é o que de fato aconteceu, não "não se sabe". */
+const NO_TOOLS = { researched: false, ranCode: false };
+
+function finished(answer, deliveries = [], chart = null, used = NO_TOOLS) {
+  return { status: "finished", answer, deliveries, chart, used };
 }
 
 function failed(answer) {
-  return { status: "failed", answer, deliveries: [], chart: null };
+  return { status: "failed", answer, deliveries: [], chart: null, used: NO_TOOLS };
 }
 
 /** Junta a persona do agente da empresa com o que ele sempre deve saber (o conhecimento, quando houver). */

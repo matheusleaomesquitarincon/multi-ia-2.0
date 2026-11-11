@@ -255,19 +255,40 @@ export function chargeDescription(action) {
   return `Tarefa rápida · ${ACTION_LABEL[action]}`;
 }
 
+/** O que a IA de fato usou numa resposta. null: mensagem de antes da F53, sem esse registro. */
 /**
- * O aviso fixo de cada tipo de resposta, mostrado junto dela (F45). Quando a IA pesquisou ou rodou um programa, a própria
- * resposta diz isso no fim (SOURCES_HEADING, CODE_RAN_NOTE) e não há aviso; senão, o aviso diz que ela não pesquisou ou
- * não rodou o programa, esteja a ferramenta desligada ou a IA tenha preferido não usar.
+ * @typedef {{
+ * researched: boolean | null;
+ * ranCode: boolean | null;
+ * }} ToolUse
+ */
+
+/**
+ * O que a IA usou, tirado do que a API dela contou (as páginas citadas e os programas rodados), nunca do texto.
+ * @param {{ sources: readonly WebSource[]; codeRuns: number }} answer
+ * @returns {ToolUse}
+ */
+export function toolUse(answer) {
+  return { researched: answer.sources.length > 0, ranCode: answer.codeRuns > 0 };
+}
+
+/**
+ * O aviso fixo de cada tipo de resposta, mostrado junto dela (F45). Quando a IA pesquisou ou rodou um programa, não há
+ * aviso; senão, o aviso diz que ela não pesquisou ou não rodou o programa, esteja a ferramenta desligada ou a IA tenha
+ * preferido não usar. Quem diz o que aconteceu é o registro gravado pelo servidor (F53); nas mensagens antigas, sem ele,
+ * é o fim do texto (SOURCES_HEADING, CODE_RAN_NOTE).
  * @param {ChatAction} action
  * @param {string | null} [answer]
+ * @param {ToolUse} [used]
  * @returns {string | null}
  */
-export function actionNotice(action, answer = null) {
-  if (action === "pesquisa" && !answer?.includes(`\n\n${SOURCES_HEADING}\n`)) {
+export function actionNotice(action, answer = null, used = { researched: null, ranCode: null }) {
+  const researched = used.researched ?? Boolean(answer?.includes(`\n\n${SOURCES_HEADING}\n`));
+  const ranCode = used.ranCode ?? Boolean(answer?.endsWith(CODE_RAN_NOTE));
+  if (action === "pesquisa" && !researched) {
     return "Esta resposta não veio de uma pesquisa na internet: a IA usou o que já sabia, e a informação pode estar desatualizada.";
   }
-  if (action === "codigo" && !answer?.endsWith(CODE_RAN_NOTE)) {
+  if (action === "codigo" && !ranCode) {
     return "A IA fez esta conta sem rodar um programa. Confira os números antes de usar.";
   }
   return null;

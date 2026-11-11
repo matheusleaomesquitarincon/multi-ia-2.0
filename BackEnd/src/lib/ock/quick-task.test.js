@@ -25,6 +25,7 @@ import {
   taskAiCallRows,
   taskChargeCents,
   toolNotes,
+  toolUse,
   workRequest,
 } from "./quick-task.js";
 
@@ -155,6 +156,16 @@ describe("o que cada tipo de resposta pede à IA", () => {
     expect(ran).toBe(`\n\n${CODE_RAN_NOTE}`);
     expect(actionNotice("codigo", "Dá 1.268,25." + ran)).toBeNull();
     expect(toolNotes({ sources: [], codeRuns: 0 })).toBe("");
+  });
+
+  it("o que a IA usou vem do que a API contou, nunca do texto (F53)", () => {
+    expect(toolUse({ sources: [{ title: "Jornal", url: "https://example.com" }], codeRuns: 0 })).toEqual({
+      researched: true,
+      ranCode: false,
+    });
+    expect(toolUse({ sources: [], codeRuns: 1 })).toEqual({ researched: false, ranCode: true });
+    const invented = "Subiu.\n\nFontes consultadas:\n- Jornal: https://example.com";
+    expect(actionNotice("pesquisa", invented, { researched: false, ranCode: false })).toContain("não veio de uma pesquisa");
   });
 
   it("no máximo 8 fontes aparecem no fim", () => {

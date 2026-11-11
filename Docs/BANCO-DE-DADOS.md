@@ -59,7 +59,7 @@ Nomes em inglês, como pede o AGENTS.md. Valores em centavos de real.
 | `runs` | Cada execução de receita: pedido, time, etapas, resultado, status (com o novo `paused`), estimativa e o estado do motor para continuar de onde parou. Três colunas são só internas: o erro técnico e o controle de quem está rodando a execução. |
 | `run_events` | A narração ao vivo (o que aparece nos cartões enquanto as IAs trabalham). |
 | `conversations` | As conversas da tarefa rápida. |
-| `tasks` | Cada pedido dentro de uma conversa: pedido, resposta, o que a plataforma fez (responder, documento...), o que ela recomendou (IA, nível, esforço) e o que o funcionário escolheu de fato. Dá para medir quantas vezes as pessoas trocam a recomendação (F03). |
+| `tasks` | Cada pedido dentro de uma conversa: pedido, resposta, o que a plataforma fez (responder, documento...), o que ela recomendou (IA, nível, esforço) e o que o funcionário escolheu de fato. Dá para medir quantas vezes as pessoas trocam a recomendação (F03). Guarda também se a IA pesquisou na internet (`researched`) ou rodou um programa (`ran_code`), para o aviso da resposta (F53). |
 | `files` | Arquivos que o funcionário envia (`upload`) e entregas que as IAs produzem (`delivery`), ligados à tarefa ou execução de origem. O conteúdo fica na pasta fechada `files` do Storage, no caminho `<empresa>/<pessoa>/...`, e só sai por link temporário gerado pelo servidor depois de conferir quem pede. |
 
 **Uso interno** (migração 4; nenhuma regra libera a leitura: só o nosso servidor enxerga)

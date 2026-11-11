@@ -79,7 +79,7 @@ vi.mock("./task-store.js", () => ({
     if (db.failCreateTask) throw new Error("banco fora do ar");
     db.tasks.push(task);
   },
-  finishTask: async (id, status, answer) => void db.finished.push({ id, status, answer }),
+  finishTask: async (id, status, answer, used) => void db.finished.push({ id, status, answer, used }),
   touchConversation: async () => {},
 }));
 vi.mock("./files.js", () => ({
@@ -226,7 +226,9 @@ describe("uma mensagem do chat", () => {
       recommended_tier: task.tier,
       chosen_tier: task.tier,
     });
-    expect(db.finished).toEqual([{ id: task.id, status: "finished", answer: task.answer }]);
+    expect(db.finished).toEqual([
+      { id: task.id, status: "finished", answer: task.answer, used: { researched: false, ranCode: false } },
+    ]);
     expect(task).toMatchObject({ status: "finished", action: "responder", provider: "claude", notice: null });
     expect(task.answer).toContain("resposta simulada");
     expect(month).toEqual({ spentCents: 42, budgetCents: 5000 });
@@ -488,8 +490,9 @@ describe("uma mensagem do chat", () => {
     expect(task).toMatchObject({ action: "pesquisa", provider: "claude", tier: "padrao", notice: null });
     expect(task.reason).toContain("Claude pesquisa");
     expect(task.answer).toContain(`\n\n${SOURCES_HEADING}\n- ${MOCK_SOURCE.title}: ${MOCK_SOURCE.url}`);
-    // A resposta guardada é a mesma que a tela mostra (com as fontes), para o histórico reconhecer.
+    // A resposta guardada é a mesma que a tela mostra (com as fontes), e o registro diz que ela pesquisou (F53).
     expect(db.finished[0].answer).toBe(task.answer);
+    expect(db.finished[0].used).toEqual({ researched: true, ranCode: false });
     expect(ai.requests.find((item) => item.provider === "claude")?.request.tools).toEqual(["web_search"]);
     const answerRow = db.aiCalls.find((row) => row.step_id === "answer");
     // A pesquisa simulada custa US$ 0,01, além dos tokens.

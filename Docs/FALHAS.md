@@ -70,7 +70,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F50 | Os conectores das IAs de verdade mandariam pedidos que as APIs de hoje recusam | Código | Alta | Resolvida |
 | F51 | Resposta cortada no meio, ou recusada pela IA, era aceita como resposta completa | Código | Média | Resolvida |
 | F52 | O código fala com as IAs sem as bibliotecas oficiais, ao contrário do que diz o AGENTS.md | Processo | Baixa | Aberta |
-| F53 | O aviso de "não pesquisou" depende do texto no fim da resposta | Produto / Código | Baixa | Aceita |
+| F53 | O aviso de "não pesquisou" depende do texto no fim da resposta | Produto / Código | Baixa | Resolvida |
 | F54 | Uma fase com IA de verdade pode passar do tempo máximo da função na Vercel | Código | Média | Resolvida |
 | F55 | Com as IAs de verdade por último, o site é montado sem medir custo, tempo e qualidade de verdade | Processo / Produto | Média | Aceita |
 | F56 | A tela ao vivo das receitas de texto mostrava "Plano do chefe" | Produto / Código | Baixa | Resolvida |
@@ -242,7 +242,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   como anexo: o navegador só salva, e nem aberto direto o site roda. Os sites feitos antes desta parte não viraram entrega.
 
 ### F53 — O aviso de "não pesquisou" depende do texto no fim da resposta
-- **Gravidade:** Baixa · **Status:** Aceita · **Anotada:** 26/10/2026 (percebida pelo Claude no PR da pesquisa e do
+- **Gravidade:** Baixa · **Status:** Resolvida · **Anotada:** 26/10/2026 (percebida pelo Claude no PR da pesquisa e do
   código)
 - **O problema:** para o histórico saber se uma resposta foi pesquisada na internet (ou se a IA rodou um programa), sem
   coluna nova no banco, o servidor escreve no fim da resposta as fontes ("Fontes consultadas:") ou a frase do programa,
@@ -253,6 +253,11 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   26/10), e o efeito é só o aviso faltar numa resposta rara.
 - **O que fazer depois:** guardar numa coluna de `tasks` se a IA pesquisou ou rodou um programa (migração), junto com
   outra mudança de banco do chat (o apagar da F28 ou a escolha livre da etapa 6).
+- **Resolvida (11/11/2026, migração `20261111130000_task_tool_use.sql`):** `tasks` ganhou `researched` e `ran_code`,
+  gravadas pelo servidor com o que a API da IA contou (páginas citadas e programas rodados, `toolUse` em
+  `lib/ock/quick-task.js`), nunca com o texto. O aviso, na hora e no histórico, lê essas colunas; uma lista de fontes
+  inventada no fim da resposta não esconde mais o aviso. As mensagens de antes da migração (colunas vazias) continuam
+  lendo o fim do texto. As fontes e a frase do programa continuam escritas no fim da resposta, para a pessoa ler.
 
 ### F56 — A tela ao vivo das receitas de texto mostrava "Plano do chefe"
 - **Gravidade:** Baixa · **Status:** Resolvida · **Anotada:** 27/10/2026 (achada pelo Claude no teste de ponta a ponta
