@@ -125,9 +125,10 @@ vi.mock("../../../../../lib/runs/wallet.js", async (importOriginal) => {
     closeRunHolds: async () => {
       for (const hold of wallet.holds) hold.open = false;
     },
+    // Como o banco (F43): cada posição uma vez só, e etapa concluída é cobrada mesmo com a reserva fechada.
     chargeStep: async (holdId, _runId, charge) => {
       const hold = wallet.holds.find((candidate) => candidate.id === holdId);
-      if (!hold?.open) return null;
+      if (wallet.charges.some((done) => done.stepSeq === charge.stepSeq)) return null;
       hold.chargedCents += charge.amountCents;
       wallet.charges.push({ holdId, ...charge });
       return hold.amountCents - hold.chargedCents;

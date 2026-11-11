@@ -74,7 +74,7 @@ select results_eq(
   $$,
   $$
     values ('current_company_id'), ('current_member_id'), ('current_member_is_owner'),
-      ('wallet_charge'), ('wallet_close_hold'), ('wallet_reserve')
+      ('wallet_charge'), ('wallet_close_hold'), ('wallet_close_stale_holds'), ('wallet_reserve')
   $$,
   'O servidor chama as funções de reservar, cobrar e fechar, mas não as de recarga e ajuste (F25)'
 );

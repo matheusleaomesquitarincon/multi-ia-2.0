@@ -10,9 +10,11 @@ if (process.env.NODE_ENV !== "development") {
 }
 
 const { createApp } = await import("./app.js");
+const { startHousekeeping } = await import("./lib/runs/housekeeping.js");
 // `||` e não `??`: o .env.example traz "PORT=" vazio, que deve valer 3001 (com `??` virava a porta 0, uma aleatória).
 const port = Number(process.env.PORT || 3001);
 
 createApp().listen(port, () => {
   console.log(`Servidor do Multi-IA em http://localhost:${port} (${process.env.NODE_ENV})`);
+  startHousekeeping();
 });

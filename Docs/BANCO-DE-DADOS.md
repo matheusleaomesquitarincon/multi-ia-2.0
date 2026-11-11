@@ -150,8 +150,9 @@ O mês conta como o teto: do dia 1º, à meia-noite de Brasília. Para essas con
 | Função | Quem chama | O que faz |
 |---|---|---|
 | `wallet_reserve` | o servidor | Reserva o valor estimado. Recusa com `insufficient_balance` (sem saldo), `monthly_budget_exceeded` (passaria do teto) ou `member_inactive` (pessoa desativada). |
-| `wallet_charge` | o servidor | Cobra uma etapa ou tarefa concluída e devolve quanto sobra da reserva (negativo = passou da estimativa). |
+| `wallet_charge` | o servidor | Cobra uma etapa ou tarefa concluída e devolve quanto sobra da reserva (negativo = passou da estimativa). A etapa de uma execução vai com a posição dela (`p_step_seq`, guardada em `wallet_entries.step_seq`): cada posição é cobrada uma vez só (`step_already_charged`) e também numa reserva recém-fechada (F43). |
 | `wallet_close_hold` | o servidor | Fecha a reserva e devolve o total cobrado. |
+| `wallet_close_stale_holds` | o servidor, a cada 5 minutos | Fecha as reservas de execuções e mensagens que já terminaram e que ninguém está rodando (F43). |
 | `private.wallet_topup` | **só o painel do Supabase** | Recarga, depois de receber o Pix (F25). |
 | `private.wallet_adjust` | **só o painel do Supabase** | Ajuste para corrigir um lançamento (+ devolve, − cobra). |
 

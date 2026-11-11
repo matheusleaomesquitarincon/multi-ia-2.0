@@ -60,7 +60,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F40 | Os conectores das IAs de verdade medem o consumo pelo tamanho do texto | Código | Alta | Resolvida |
 | F41 | "+ Adicionar agente" mostra o agente, mas ele nunca trabalha | Produto / Código | Baixa | Resolvida |
 | F42 | Sem a chave de uma IA, o site usa a IA simulada sem avisar | Código | Média | Resolvida |
-| F43 | Quedas raras do servidor na hora de cobrar | Código | Baixa | Aceita |
+| F43 | Quedas raras do servidor na hora de cobrar | Código | Baixa | Resolvida |
 | F44 | Anexos do chat: o texto vai inteiro para a IA, e o que ela não lê é aceito sem aviso | Código / Produto | Média | Resolvida |
 | F45 | Sem a pesquisa ou o código de verdade, a IA é instruída a esconder isso | Produto | Média | Resolvida |
 | F46 | O PR #40 entrou na `main` sem descrição e antes do teste pelo guia | Processo | Baixa | Resolvida |
@@ -671,7 +671,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   `ai_calls` guardou o erro sem cobrança e sem nenhuma resposta da simulada.
 
 ### F43 — Quedas raras do servidor na hora de cobrar
-- **Gravidade:** Baixa · **Status:** Aceita · **Anotada:** 25/10/2026 (achada pelo Claude no PR 3b)
+- **Gravidade:** Baixa · **Status:** Resolvida · **Anotada:** 25/10/2026 (achada pelo Claude no PR 3b)
 - **O problema:** o caso comum está coberto: se o servidor cai entre gravar uma fase e cobrar, a chamada seguinte cobra
   o que faltou, sem cobrar duas vezes. Ficam três casos raros: (1) se a pessoa cancela no mesmo instante em que o
   servidor cobra as etapas da fase que acabou de terminar, as que ainda não tinham sido cobradas saem de graça; (2) se o
@@ -681,6 +681,14 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 - **Por que aceitar:** os três dependem de uma queda ou de uma coincidência de segundos, e os valores são de centavos.
 - **O que fazer depois:** uma chave única na cobrança (migração: cada etapa só vira uma linha de gasto) e uma limpeza que
   fecha as reservas esquecidas.
+- **Resolvida (11/11/2026, migração `20261111120000_charge_once_per_step.sql`):** (3) cada cobrança de etapa leva a
+  posição da etapa (`wallet_entries.step_seq`), e o banco cobra cada posição uma vez só (índice único e a função
+  `wallet_charge` recusa com `step_already_charged`; o servidor pula a etapa). (1) Com isso, etapa concluída passa a ser
+  cobrada mesmo se a reserva acabou de fechar, como manda a regra "paga as etapas concluídas"; a cobrança do chat, sem
+  posição, continua recusada em reserva fechada. (2) A função `wallet_close_stale_holds` fecha as reservas de execuções
+  e mensagens que terminaram e que ninguém roda; o servidor a chama ao ligar e a cada 5 minutos
+  (`lib/runs/housekeeping.js`). Testes do banco em `06_charge_once.test.sql`. Conferido no banco local com a receita
+  "Proposta comercial": 4 etapas, 4 linhas numeradas de 0 a 3 e a reserva fechada no fim.
 
 ### F44 — Anexos do chat: o texto vai inteiro para a IA, e o que ela não lê é aceito sem aviso
 - **Gravidade:** Média · **Status:** Resolvida · **Anotada:** 25/10/2026 (achada pelo Claude ao planejar a parte 3c)
