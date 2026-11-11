@@ -1161,14 +1161,33 @@ empilhado sobre o PR #55). No ar: o Luis fez o merge do #55 e do #56 na noite de
   (`MOCK_AI_FAILURES`, só naquele terminal).
 - **Ideia de ajuste (para a lista de depois do MVP):** um "Copiar" para cada opção de post (hoje o botão copia as 3).
 
+## Manutenção das seções 3 e 4 do relatório de pendências (11/11/2026, branch `matheus`)
+
+Pedido do Matheus: atacar as pendências de front-end (seção 3) e de back-end e infraestrutura (seção 4) do PDF
+"Pendências por área". Cada item virou um commit separado na branch `matheus`.
+
+- **Rodar no computador sem o projeto de testes:** o Supabase pode rodar local (`npx supabase start` em `BackEnd/`, com
+  Docker), com as migrações e o seed; o `.env.local` aponta para ele e liga a visão raio-x.
+- **Dois defeitos achados ao rodar:** com `PORT=` vazio (como vem no `.env.example`), o servidor ligava numa porta
+  aleatória e a chamada interna das receitas ia para a porta 80, deixando toda receita parada na fila. Corrigidos.
+- **F54 (resolvida):** o teto da rota interna das receitas agora cobre todas as tentativas e a troca de IA de uma etapa.
+- **F43 (resolvida, migração):** cada etapa é cobrada uma vez só (chave única), etapa concluída é cobrada mesmo com a
+  reserva recém-fechada, e uma limpeza a cada 5 minutos fecha as reservas de execuções terminadas.
+- **F53 (resolvida, migração):** `tasks.researched` e `tasks.ran_code` guardam se a IA pesquisou ou rodou um programa.
+- **F30 (código pronto):** "Esqueci minha senha" para dono e funcionário, com modelo de e-mail em português. Falta só
+  ligar o SMTP e colar o modelo no painel do Supabase (`GUIA-PUBLICACAO.md`, passos 4 e 5).
+- **F03 (resolvida):** no chat, a pessoa escolhe a IA e o nível (ou deixa no Automático); o recomendado e o escolhido
+  ficam guardados.
+- **F08 (falta a receita própria):** a receita "Relatório mensal para cliente" ficou pronta; não há mais "Em breve".
+- **Ficaram de fora:** F09 (decisão do Matheus: depois), F19 (teste manual no Firefox e no Safari) e F29 (aceita).
+- **Como foi conferido:** lint, 595 testes do servidor, 87 das telas, 150 do banco, build, e cada item de ponta a ponta
+  no Supabase local (receitas, chat, e-mail de senha nova na caixa de teste).
+
 ## Próximo passo
 
-1. **Luis:** contar ao Claude Code como foi o teste da Proposta comercial (`docs/GUIA-TESTE-PROPOSTA.md`), se ele foi
-   feito antes do merge do #56. Depois, testar o PR dos Posts com o `docs/GUIA-TESTE-POSTS.md` (uns 25 minutos, com o
-   chat do Claude) e contar como foi. O merge vem depois do teste.
-2. **Claude Code, numa conversa nova:** o PR 3 do bloco 1, a receita "Relatório mensal para cliente" (analista dos
-   números, redator e conferente que checa cada número contra os dados colados no pedido), e com ela sai o último
-   "Em breve". Parte da `main` se o PR dos posts já tiver entrado; senão, empilhado sobre ele.
+1. **Matheus:** testar no `localhost` o que mudou (o "Esqueci minha senha" em `/entrar`, a escolha de IA no chat e a
+   receita do relatório, com o `Docs/GUIA-TESTE-RELATORIO.md`) e decidir o desenho da receita própria (F08).
+2. **Claude Code:** a receita própria (F08), depois da decisão acima. A tabela `custom_recipes` já existe.
 3. **Luis, quando quiser (no chat do Claude, sem código):** as decisões provisórias da madrugada, o câmbio e a F52
    (lista no resumo da madrugada, acima). A sessão 2 do guia das IAs de verdade ficou para o bloco 6.
 4. **Com o parceiro (sem código):** avisar da F27, caso o banco dele esteja no ar com dados de verdade; confirmar a
