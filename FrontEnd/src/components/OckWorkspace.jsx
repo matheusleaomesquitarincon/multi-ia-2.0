@@ -21,7 +21,7 @@ import {
   loadSpending,
   moveDelivery,
 } from "../lib/ock/chat-client.js";
-import { formatBRL } from "../lib/ock/pricing.js";
+import { formatBRL, formatCredits } from "../lib/ock/pricing.js";
 import { formatDateTime, STATEMENT_PAGE_SIZE } from "../lib/ock/statement.js";
 
 import { BudgetBar } from "./BudgetBar.jsx";
@@ -471,7 +471,7 @@ function SpendingPanel({ isOwner, onMonthChange }) {
             {month.budgetCents !== null && (
               <div className={`${styles.usageItem} ${styles.usageRight}`}>
                 <span className={styles.muted}>Do total do mês</span>
-                <span className={styles.usageLimit}>{formatCredits(month.budgetCents)} créditos</span>
+                <span className={styles.usageLimit}>{formatCredits(month.budgetCents)}</span>
               </div>
             )}
           </div>
@@ -527,11 +527,6 @@ function SpendingPanel({ isOwner, onMonthChange }) {
       {more && <p className={styles.muted}>Mostrando os {STATEMENT_PAGE_SIZE} gastos mais recentes.</p>}
     </section>
   );
-}
-
-/** Os créditos da OCK que o funcionário vê (1 crédito = R$ 0,01): esconde o valor em dinheiro, mostra um número. */
-function formatCredits(cents) {
-  return Math.round(cents).toLocaleString("pt-BR");
 }
 
 function nextTabIndex(key, current, count) {

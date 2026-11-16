@@ -80,6 +80,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F60 | Regras simples existem em duas cópias (BackEnd e FrontEnd) | Código | Baixa | Aceita |
 | F61 | Sem TypeScript, nada confere os formatos dos dados automaticamente | Código | Média | Aceita |
 | F62 | A nova arquitetura ainda não foi testada de ponta a ponta com o banco de verdade | Processo | Alta | Aberta |
+| F63 | O funcionário via os créditos 100 vezes maiores que o dono | Produto / Código | Média | Resolvida |
 
 ## Negócio
 
@@ -884,3 +885,10 @@ dados de exemplo num navegador. Falta o login de verdade, as regras de acesso, a
   foram conferidos de ponta a ponta o login, o "Esqueci minha senha", o chat com a escolha de IA, as receitas (a do
   relatório até a entrega em Word) e a cobrança de cada etapa. **Falta** repetir os `GUIA-TESTE-*.md` no projeto de
   testes do Supabase (o que está na internet), que é o mais parecido com o site publicado.
+
+### F63 — O funcionário via os créditos 100 vezes maiores que o dono
+**Status:** Resolvida (16/11/2026, percebida pelo Claude). O espaço de trabalho (`FrontEnd/src/components/OckWorkspace.jsx`)
+tinha uma conta própria de créditos, com 1 crédito = R$ 0,01, enquanto o painel do dono usa a de `lib/ock/pricing.js`, com
+1 crédito = R$ 1,00 (convenção de 04/11/2026). Um teto de R$ 50,00 aparecia como "50,00 créditos" para o dono e "5.000"
+para o funcionário, o que confundiria os dois numa conversa. Agora as duas telas usam a mesma `formatCredits`. A
+convenção de 04/11 continua a confirmar com o Leandro e o Luis: se mudar, muda num lugar só.
