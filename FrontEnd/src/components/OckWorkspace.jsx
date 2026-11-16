@@ -15,6 +15,7 @@ import { MAX_FOLDER_NAME } from "../lib/ock/chat.js";
 
 import {
   createFolder,
+  deleteFile,
   deleteFolder,
   fileUrl,
   loadDeliveries,
@@ -267,6 +268,23 @@ function DeliveriesPanel({ isOwner, pageMemberId }) {
     reload();
   }
 
+  // Apaga uma entrega de vez: o arquivo e o conteúdo (F28). O gasto continua no extrato.
+  async function removeDelivery(delivery) {
+    const confirmed = window.confirm(
+      `Apagar “${delivery.name}”? O arquivo some para sempre, inclusive para o dono da empresa. O gasto continua no extrato.`,
+    );
+    if (!confirmed) return;
+    setBusy(true);
+    setProblem(null);
+    const result = await deleteFile(delivery.id, pageMemberId);
+    setBusy(false);
+    if (!result.ok) {
+      setProblem(result.problem);
+      return;
+    }
+    reload();
+  }
+
   if (state.state === "loading") return <p className={`${styles.panel} ${styles.muted}`}>Carregando…</p>;
   if (state.state === "error") {
     return (
@@ -360,18 +378,26 @@ function DeliveriesPanel({ isOwner, pageMemberId }) {
           folders={folders}
           busy={busy}
           onMove={move}
+          onRemove={removeDelivery}
           onDelete={() => void removeFolder(folder.id)}
         />
       ))}
 
       {(loose.length > 0 || folders.length > 0) && (
-        <FolderBlock title="Sem tarefa" items={loose} folders={folders} busy={busy} onMove={move} />
+        <FolderBlock
+          title="Sem tarefa"
+          items={loose}
+          folders={folders}
+          busy={busy}
+          onMove={move}
+          onRemove={removeDelivery}
+        />
       )}
     </section>
   );
 }
 
-function FolderBlock({ title, items, folders, busy, onMove, onDelete }) {
+function FolderBlock({ title, items, folders, busy, onMove, onRemove, onDelete }) {
   return (
     <section className={styles.folder} aria-label={`Tarefa: ${title}`}>
       <div className={styles.folderHead}>
@@ -414,6 +440,14 @@ function FolderBlock({ title, items, folders, busy, onMove, onDelete }) {
               <a className={styles.rowLink} href={fileUrl(delivery.id)} download={delivery.name}>
                 Baixar<span className={styles.visuallyHidden}> {delivery.name}</span>
               </a>
+              <button
+                type="button"
+                className={styles.folderDelete}
+                onClick={() => void onRemove(delivery)}
+                disabled={busy}
+              >
+                Apagar<span className={styles.visuallyHidden}> {delivery.name}</span>
+              </button>
             </li>
           ))}
         </ul>

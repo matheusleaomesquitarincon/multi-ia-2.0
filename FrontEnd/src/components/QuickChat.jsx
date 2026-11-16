@@ -17,7 +17,14 @@ import {
 } from "../lib/ock/chat.js";
 
 import { findAgent } from "../lib/ock/agents.js";
-import { fileUrl, loadConversation, sendMessage, transcribeAudio, uploadAttachment } from "../lib/ock/chat-client.js";
+import {
+  deleteConversation,
+  fileUrl,
+  loadConversation,
+  sendMessage,
+  transcribeAudio,
+  uploadAttachment,
+} from "../lib/ock/chat-client.js";
 import { ModelChoicePicker } from "./ModelChoicePicker.jsx";
 
 import styles from "./QuickChat.module.css";
@@ -78,6 +85,8 @@ export function QuickChat({
   const [activeAgentId, setActiveAgentId] = useState(null);
   const [entries, setEntries] = useState([]);
   const [opening, setOpening] = useState(false);
+  // A conversa que está sendo apagada (os botões da lista ficam parados até o servidor responder).
+  const [deletingId, setDeletingId] = useState(null);
   const [message, setMessage] = useState("");
   const [attached, setAttached] = useState([]);
   const [uploading, setUploading] = useState(0);
@@ -164,6 +173,28 @@ export function QuickChat({
     setProblem(null);
     setOpening(false);
     inputRef.current?.focus();
+  }
+
+  /** Apaga uma conversa (F28): as mensagens e os anexos somem; as entregas e o extrato ficam. */
+  async function removeConversation(conversation) {
+    if (sending || deletingId) return;
+    const confirmed = window.confirm(
+      `Apagar a conversa “${conversation.title}”? As mensagens e os arquivos que você anexou nela somem para sempre. ` +
+        "O que as IAs entregaram continua na aba Entregas, e o gasto continua no extrato.",
+    );
+    if (!confirmed) return;
+    setProblem(null);
+    setDeletingId(conversation.id);
+    const result = await deleteConversation(conversation.id, pageMemberId);
+    setDeletingId(null);
+    if (!result.ok) {
+      setProblem(result.problem);
+      setAnnouncement(result.problem);
+      return;
+    }
+    setConversations((current) => current.filter((item) => item.id !== conversation.id));
+    if (conversation.id === activeId) startNewChat();
+    setAnnouncement("Conversa apagada.");
   }
 
   async function attachFiles(event) {
@@ -330,19 +361,29 @@ export function QuickChat({
         ) : (
           <ul className={styles.conversationList}>
             {conversations.map((conversation) => (
-              <li key={conversation.id}>
+              <li key={conversation.id} className={styles.conversationItem}>
                 <button
                   type="button"
                   className={styles.conversation}
                   aria-current={conversation.id === activeId ? "true" : undefined}
                   title={conversation.title}
                   onClick={() => void openConversation(conversation.id)}
-                  disabled={sending}
+                  disabled={sending || deletingId === conversation.id}
                 >
                   <span className={styles.conversationTitle}>{conversation.title}</span>
                   {conversation.agentId && agentById(conversation.agentId) && (
                     <span className={styles.conversationAgent}>{agentById(conversation.agentId).name}</span>
                   )}
+                </button>
+                <button
+                  type="button"
+                  className={styles.conversationDelete}
+                  onClick={() => void removeConversation(conversation)}
+                  disabled={sending || deletingId !== null}
+                  title="Apagar conversa"
+                >
+                  <span aria-hidden="true">×</span>
+                  <span className={styles.visuallyHidden}>Apagar a conversa {conversation.title}</span>
                 </button>
               </li>
             ))}

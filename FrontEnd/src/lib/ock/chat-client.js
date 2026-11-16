@@ -173,6 +173,44 @@ export function deleteFolder(id, pageMemberId, send = fetch) {
 }
 
 /**
+ * Apaga uma conversa: as mensagens e os anexos mandados nela (F28). As entregas e o extrato ficam.
+ * @param {string} id
+ * @param {string} pageMemberId
+ * @param {typeof fetch} [send]
+ * @returns {Promise<Fetched<{ ok: true }>>}
+ */
+export function deleteConversation(id, pageMemberId, send = fetch) {
+  return request(
+    `/api/ock/conversations/${encodeURIComponent(id)}`,
+    {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [PAGE_MEMBER_FIELD]: pageMemberId }),
+    },
+    send,
+  );
+}
+
+/**
+ * Apaga um arquivo da própria pessoa (ex.: uma entrega), o registro e o conteúdo (F28).
+ * @param {string} id
+ * @param {string} pageMemberId
+ * @param {typeof fetch} [send]
+ * @returns {Promise<Fetched<{ ok: true }>>}
+ */
+export function deleteFile(id, pageMemberId, send = fetch) {
+  return request(
+    `/api/ock/files/${encodeURIComponent(id)}`,
+    {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [PAGE_MEMBER_FIELD]: pageMemberId }),
+    },
+    send,
+  );
+}
+
+/**
  * Move uma entrega para uma pasta (folderId) ou para "sem pasta" (folderId null).
  * @param {string} deliveryId
  * @param {string | null} folderId

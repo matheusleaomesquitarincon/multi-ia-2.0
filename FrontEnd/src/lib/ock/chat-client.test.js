@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { OFFLINE_PROBLEM, SERVER_PROBLEM, sendMessage, transcribeAudio, uploadAttachment } from "./chat-client.js";
+import {
+  deleteConversation,
+  deleteFile,
+  OFFLINE_PROBLEM,
+  SERVER_PROBLEM,
+  sendMessage,
+  transcribeAudio,
+  uploadAttachment,
+} from "./chat-client.js";
 
 const PAGE_MEMBER = "11111111-1111-4111-8111-111111111111";
 
@@ -56,5 +64,18 @@ describe("o chat no navegador", () => {
     expect(url).toBe("/api/ock/transcribe");
     expect(form.get("pageMemberId")).toBe(PAGE_MEMBER);
     expect(form.get("audio").type).toBe("audio/webm");
+  });
+  it("apagar conversa e arquivo (F28): DELETE no endereço de cada um, com o id de quem abriu a página", async () => {
+    const sent = [];
+    const fake = async (url, init) => {
+      sent.push({ url, method: init.method, body: JSON.parse(String(init.body)) });
+      return Response.json({ ok: true });
+    };
+    expect(await deleteConversation("c-1", PAGE_MEMBER, fake)).toEqual({ ok: true, data: { ok: true } });
+    expect(await deleteFile("f-1", PAGE_MEMBER, fake)).toEqual({ ok: true, data: { ok: true } });
+    expect(sent).toEqual([
+      { url: "/api/ock/conversations/c-1", method: "DELETE", body: { pageMemberId: PAGE_MEMBER } },
+      { url: "/api/ock/files/f-1", method: "DELETE", body: { pageMemberId: PAGE_MEMBER } },
+    ]);
   });
 });
