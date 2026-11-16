@@ -109,6 +109,37 @@
   cursor: default;
 }
 
+/* Cada conversa da lista: o título (abre) e o botão de apagar ao lado (F28). */
+.conversationItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.conversationDelete {
+  flex: none;
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
+  border: none;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: var(--text-lg);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.conversationDelete:hover:not(:disabled) {
+  background: var(--color-surface-subtle);
+  color: var(--color-error-text);
+}
+
+.conversationDelete:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .main {
   flex: 999 1 var(--chat-main-min-width);
   min-width: 0;

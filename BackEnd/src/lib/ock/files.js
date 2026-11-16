@@ -312,6 +312,87 @@ export async function downloadLink(file) {
   return data.signedUrl;
 }
 
+// ===== Apagar (F28, LGPD): o registro sai pela sessão de quem está logado (o banco só deixa apagar os próprios
+// arquivos) e o conteúdo sai da pasta pela chave-mestra. Se apagar o conteúdo falhar, ele fica sem registro e a limpeza
+// periódica (removeOrphanFiles, em lib/runs/housekeeping.js) apaga depois: nunca fica guardado para sempre.
+
+/** Quantos ids vão num pedido só ao banco (o filtro vai no endereço, que tem tamanho limitado). */
+const IDS_PER_REQUEST = 100;
+
+/**
+ * Apaga conteúdo da pasta. Um erro aqui não volta para quem pediu: o registro já saiu e a limpeza termina o serviço.
+ * @param {readonly string[]} paths
+ * @returns {Promise<void>}
+ */
+export async function removeStoredFiles(paths) {
+  if (paths.length === 0) return;
+  const { error } = await supabaseAdmin().storage.from(BUCKET).remove([...paths]);
+  if (error) console.error("[files] Não consegui apagar o conteúdo da pasta; a limpeza periódica tenta de novo:", error);
+}
+
+/**
+ * Apaga um arquivo da própria pessoa (anexo ou entrega): o registro e o conteúdo. Devolve false se o arquivo não é
+ * dela (ou não existe). O dono não apaga entregas dos funcionários por aqui: o banco só deixa apagar as próprias.
+ * @param {SupabaseClient} session
+ * @param {string} memberId
+ * @param {string} id
+ * @returns {Promise<boolean>}
+ */
+export async function deleteOwnFile(session, memberId, id) {
+  const { data, error } = await session
+    .from(FILES)
+    .delete()
+    .eq("id", id)
+    .eq("member_id", memberId)
+    .select("storage_path");
+  if (error) throw error;
+  const paths = (data ?? []).map((row) => row.storage_path);
+  if (paths.length === 0) return false;
+  await removeStoredFiles(paths);
+  return true;
+}
+
+/**
+ * Apaga os registros dos anexos que a pessoa mandou nestas mensagens e devolve onde estava o conteúdo (para apagar da
+ * pasta depois). As entregas não entram: elas continuam na aba Entregas, onde a pessoa apaga se quiser.
+ * @param {SupabaseClient} session
+ * @param {string} memberId
+ * @param {readonly string[]} taskIds
+ * @returns {Promise<string[]>}
+ */
+export async function deleteTaskUploads(session, memberId, taskIds) {
+  const paths = [];
+  for (let start = 0; start < taskIds.length; start += IDS_PER_REQUEST) {
+    const { data, error } = await session
+      .from(FILES)
+      .delete()
+      .in("task_id", taskIds.slice(start, start + IDS_PER_REQUEST))
+      .eq("member_id", memberId)
+      .eq("kind", "upload")
+      .select("storage_path");
+    if (error) throw error;
+    for (const row of data ?? []) paths.push(row.storage_path);
+  }
+  return paths;
+}
+
+/**
+ * Apaga da pasta o conteúdo que perdeu o registro há mais de 1 hora (quem apagou o registro direto no banco, ou um
+ * apagar que falhou no meio). Devolve quantos apagou.
+ * @param {number} [limit]
+ * @returns {Promise<number>}
+ */
+export async function removeOrphanFiles(limit = 100) {
+  const db = supabaseAdmin();
+  const { data, error } = await db.rpc("files_orphan_paths", { p_limit: limit });
+  if (error) throw error;
+  const paths = /** @type {string[]} */ (data ?? []);
+  if (paths.length === 0) return 0;
+  const { error: removeError } = await db.storage.from(BUCKET).remove(paths);
+  if (removeError) throw removeError;
+  return paths.length;
+}
+
 /**
  * O nome mostrado na tela e usado ao baixar: sem caminho de pasta, com até 255 caracteres.
  * @param {string} name

@@ -14,7 +14,7 @@ import { runSegment } from "../../../../../lib/engine/segment.js";
 
 import { AI_CALL_TIMEOUT_MS } from "../../../../../lib/providers/deadline.js";
 import { getProvider } from "../../../../../lib/providers/registry.js";
-import { getRecipe } from "../../../../../lib/recipes/catalog.js";
+import { recipeOfRun } from "../../../../../lib/runs/recipe-of-run.js";
 
 import { aiCallRows, chargeCompletedSteps } from "../../../../../lib/runs/billing.js";
 import { estimateCents, stepCosts } from "../../../../../lib/runs/estimate.js";
@@ -79,7 +79,7 @@ export async function POST(request, context) {
  * a próxima (ou encerra). `claimedAt` é quando este servidor reivindicou a execução, no relógio dele.
  */
 async function runOneSegment(row, claimedAt) {
-  const recipe = getRecipe(row.recipe_id);
+  const recipe = await recipeOfRun(row);
   if (!recipe) throw new Error(`Receita desconhecida: "${row.recipe_id}".`);
 
   // Todas as fases já rodaram: o servidor caiu entre gravar a última e encerrar. Cobra o que faltou e só encerra.

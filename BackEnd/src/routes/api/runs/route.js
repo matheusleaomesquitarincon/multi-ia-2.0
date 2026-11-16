@@ -8,8 +8,12 @@
 
 import { randomUUID } from "node:crypto";
 import { checkPageMember, PAGE_MEMBER_FIELD } from "../../../lib/auth/page-member.js";
+import { signedInSession } from "../../../lib/auth/session.js";
 import { getViewer } from "../../../lib/auth/viewer.js";
 import { resolveTeam } from "../../../lib/engine/run.js";
+import { loadCustomRecipe } from "../../../lib/ock/custom-recipes.js";
+import { getRecipe } from "../../../lib/recipes/catalog.js";
+import { buildCustomRecipe, customRecipeDbId } from "../../../lib/recipes/custom.js";
 
 import { stageSteps } from "../../../lib/recipes/types.js";
 import { estimateCents, stepCosts } from "../../../lib/runs/estimate.js";
@@ -26,6 +30,8 @@ export const maxDuration = 15;
 const MAX_BODY_SIZE = 64 * 1024;
 
 const SERVER_PROBLEM = "Algo deu errado do nosso lado. Tente de novo daqui a pouco.";
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * @param {Request} request
@@ -56,7 +62,26 @@ export async function POST(request) {
   if (!check.ok) return refuse(check.status, [check.message]);
   const { me } = check;
 
-  const parsed = parseRunRequest(body);
+  // Receita própria (F08): o time salvo é lido com a sessão de quem pede (o banco só devolve os dela e os da empresa)
+  // e fica guardado na execução como está agora.
+  let custom = null;
+  const customId = isPlainObject(body) && typeof body.recipeId === "string" ? customRecipeDbId(body.recipeId) : null;
+  if (customId !== null) {
+    const session = await signedInSession();
+    if (!session) return refuse(401, ["Entre de novo para continuar."]);
+    try {
+      const saved = UUID_PATTERN.test(customId) ? await loadCustomRecipe(session, me.id, customId) : null;
+      if (saved) custom = { id: saved.id, form: saved.form };
+    } catch (error) {
+      console.error("[api/runs] Não consegui ler o time salvo:", error);
+      return refuse(500, [SERVER_PROBLEM]);
+    }
+  }
+  const customRecipe = custom ? buildCustomRecipe(custom) : null;
+
+  const parsed = parseRunRequest(body, (recipeId) =>
+    customRecipe ? (recipeId === customRecipe.id ? customRecipe : undefined) : getRecipe(recipeId),
+  );
   if (!parsed.ok) return refuse(400, parsed.problems);
 
   const { recipe, request: userRequest, team: teamChoice } = parsed.input;
@@ -86,6 +111,7 @@ export async function POST(request) {
       team,
       plan: buildPlan(recipe, team),
       estimate_cents: estimate,
+      ...(custom ? { custom_recipe_id: custom.id, custom_recipe: custom } : {}),
     });
   } catch (error) {
     console.error("[api/runs] Não consegui criar a execução:", error);

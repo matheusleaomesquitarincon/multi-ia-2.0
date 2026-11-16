@@ -30,13 +30,15 @@ import { getRecipe } from "../recipes/catalog.js";
 /**
  * Transforma o que chegou num pedido pronto para o motor ou na lista de problemas, em português.
  * @param {unknown} body
+ * @param {(recipeId: string) => Recipe | undefined} [findRecipe] Onde procurar a receita. Padrão: as prontas. A rota de
+ *   começar passa a receita própria já lida do banco (F08).
  * @returns {ParsedRunRequest}
  */
-export function parseRunRequest(body) {
+export function parseRunRequest(body, findRecipe = getRecipe) {
   if (!isPlainObject(body)) return refuse("Não entendemos o pedido enviado.");
 
   // Receita "Em breve" também não existe aqui: só as prontas rodam.
-  const recipe = typeof body.recipeId === "string" ? getRecipe(body.recipeId) : undefined;
+  const recipe = typeof body.recipeId === "string" ? findRecipe(body.recipeId) : undefined;
   if (!recipe) return refuse("Receita não encontrada.");
   if (typeof body.request !== "string") return refuse("Escreva o que você quer que o time faça.");
   if (body.team !== undefined && !isPlainObject(body.team)) {

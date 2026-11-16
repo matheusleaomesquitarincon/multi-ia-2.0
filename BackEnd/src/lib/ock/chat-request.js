@@ -2,7 +2,7 @@
 // chegou pela internet. SÓ do servidor. Quem pede vem sempre do login, nunca do endereço nem do corpo do pedido (F13,
 // F16); o id de quem abriu a página, que a tela manda, só serve para recusar quando o login mudou em outra aba (F34).
 
-import { checkPageMember } from "../auth/page-member.js";
+import { checkPageMember, PAGE_MEMBER_FIELD } from "../auth/page-member.js";
 import { signedInSession } from "../auth/session.js";
 import { getViewer } from "../auth/viewer.js";
 import { MAX_ATTACHMENTS, MAX_MESSAGE_CHARS, parseModelChoice } from "./chat.js";
@@ -53,6 +53,23 @@ export async function pageCaller(pageMemberId) {
   const check = checkPageMember(await getViewer(), pageMemberId);
   if (!check.ok) return refuse(check.status, check.message);
   return withSession(check.me);
+}
+
+/**
+ * Para um pedido que muda algo e manda um corpo JSON só com o id de quem abriu a página (ex.: apagar): lê o corpo e
+ * confere quem pede, como `pageCaller`.
+ * @param {Request} request
+ * @returns {Promise<ChatCaller>}
+ */
+export async function pageCallerFromJson(request) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return refuse(400, "Não entendemos o pedido enviado.");
+  }
+  const data = typeof body === "object" && body !== null ? body : {};
+  return pageCaller(data[PAGE_MEMBER_FIELD]);
 }
 
 async function withSession(me) {

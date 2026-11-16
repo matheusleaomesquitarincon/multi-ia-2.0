@@ -25,7 +25,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F05 | LGPD: o que o dono vê e para onde vão os dados dos clientes | Negócio / Segurança | Alta | Aberta |
 | F06 | Vender para empresa é mais lento e trabalhoso | Negócio | Média | Aberta |
 | F07 | O resultado precisa ser claramente melhor que "abrir o ChatGPT e pedir" | Negócio | Média | Aberta |
-| F08 | As receitas não existem dentro do workspace do funcionário | Produto | Alta | Aberta |
+| F08 | As receitas ainda não estão completas no workspace do funcionário (falta a receita própria) | Produto | Alta | Resolvida |
 | F09 | Resultado que um leigo não sabe usar (ex.: arquivo .html) | Produto | Média | Aberta |
 | F10 | Login de mentira: o código na URL é o "estar logado" | Segurança | Alta | Resolvida |
 | F11 | Painel do dono sem login e senhas temporárias expostas | Segurança | Alta | Resolvida |
@@ -45,7 +45,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F25 | O próprio dono define o crédito da empresa | Negócio / Segurança | Alta | Resolvida |
 | F26 | O custo das tentativas que falharam não fica registrado | Código | Média | Resolvida |
 | F27 | Qualquer pessoa pode ler as execuções direto no banco | Segurança | Alta | Resolvida |
-| F28 | Apagar um arquivo direto pelo banco deixa o conteúdo guardado | Segurança / LGPD | Baixa | Aberta |
+| F28 | Apagar um arquivo direto pelo banco deixa o conteúdo guardado | Segurança / LGPD | Baixa | Resolvida |
 | F29 | O saldo da empresa pode ficar negativo | Negócio | Baixa | Aceita |
 | F30 | E-mails do login só chegam para a equipe do Supabase | Código | Média | Aberta |
 | F31 | Next.js 16.4.0 com falhas de segurança graves conhecidas | Segurança | Alta | Resolvida |
@@ -69,7 +69,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F49 | O nome e o título dos documentos do chat saíam do pedido do funcionário | Segurança / LGPD | Média | Resolvida |
 | F50 | Os conectores das IAs de verdade mandariam pedidos que as APIs de hoje recusam | Código | Alta | Resolvida |
 | F51 | Resposta cortada no meio, ou recusada pela IA, era aceita como resposta completa | Código | Média | Resolvida |
-| F52 | O código fala com as IAs sem as bibliotecas oficiais, ao contrário do que diz o AGENTS.md | Processo | Baixa | Aberta |
+| F52 | O código fala com as IAs sem as bibliotecas oficiais, ao contrário do que diz o AGENTS.md | Processo | Baixa | Resolvida |
 | F53 | O aviso de "não pesquisou" depende do texto no fim da resposta | Produto / Código | Baixa | Resolvida |
 | F54 | Uma fase com IA de verdade pode passar do tempo máximo da função na Vercel | Código | Média | Resolvida |
 | F55 | Com as IAs de verdade por último, o site é montado sem medir custo, tempo e qualidade de verdade | Processo / Produto | Média | Aceita |
@@ -80,6 +80,9 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F60 | Regras simples existem em duas cópias (BackEnd e FrontEnd) | Código | Baixa | Aceita |
 | F61 | Sem TypeScript, nada confere os formatos dos dados automaticamente | Código | Média | Aceita |
 | F62 | A nova arquitetura ainda não foi testada de ponta a ponta com o banco de verdade | Processo | Alta | Aberta |
+| F63 | O funcionário via os créditos 100 vezes maiores que o dono | Produto / Código | Média | Resolvida |
+| F64 | Ainda não dá para apagar uma execução de receita nem a conta inteira | Segurança / LGPD | Média | Resolvida |
+| F65 | O funcionário vê o "Gasto do mês" em reais no alto da página, mas créditos no resto | Produto | Baixa | Aberta |
 
 ## Negócio
 
@@ -160,8 +163,8 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   sem a ferramenta, com a explicação e o aviso de sempre (F45). Fora isso, o funcionário continua sem ver qual IA
   respondeu. Nas receitas, a troca de IA de cada papel já existia na tela do time.
 
-### F08 — As receitas não existem dentro do workspace do funcionário
-- **Gravidade:** Alta · **Status:** Aberta · **Anotada:** 22/10/2026
+### F08 — As receitas ainda não estão completas no workspace do funcionário
+- **Gravidade:** Alta · **Status:** Resolvida · **Anotada:** 22/10/2026
 - **O problema:** o workspace (`/trabalho`) só tem o chat. A receita "Criar um site" ficou no código
   (`/recipes/create-site`), mas fora da página inicial e sem ligação com a empresa, o funcionário ou os gastos.
 - **O que fazer:** trazer os três modos (receita pronta, receita própria, tarefa rápida) para o workspace, com o gasto
@@ -182,6 +185,14 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   o Redator, inclusive na reserva, F57) confere cada número contra os dados do pedido, e o Redator entrega a versão
   final em Word. Não há mais "Em breve". Conferida de ponta a ponta no banco local (4 etapas cobradas, o Word nas
   entregas, a reserva fechada); guia em `Docs/GUIA-TESTE-RELATORIO.md`. **Falta só a receita própria.**
+- **Resolvida (16/11/2026, branch `matheus`):** a receita própria, na aba nova **Meu time**. O funcionário monta um time
+  de 2 a 5 membros (nome, IA e o que cada um faz, com modelos prontos), salva só para ele ou para a empresa toda, e usa
+  pelo mesmo caminho das receitas prontas (estimativa, reserva, cobrança por etapa, troca de IA, Word no fim). A
+  execução guarda o time como estava ao começar (`runs.custom_recipe`), então mudar ou apagar o time não mexe no que já
+  rodou. O dono lê no extrato e no nome do Word só textos fixos ("Receita própria · Etapa N"), nunca o que o funcionário
+  escreveu (F49). A mesma aba mostra o dia da pessoa: usado hoje, tarefas, pendências (com Abrir), tarefas recentes e o
+  uso dos últimos 14 dias em barras. Conferido: testes do servidor, das telas e do banco (`08_custom_recipe_runs`), um
+  time rodado de ponta a ponta no Supabase local e as telas olhadas no Chrome, no computador e no celular.
 
 ### F09 — Resultado que um leigo não sabe usar
 - **Gravidade:** Média · **Status:** Aberta · **Anotada:** 09/10/2026 (no PROGRESSO), trazida para cá em 22/10/2026
@@ -411,6 +422,10 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   cache das empresas tem preço próprio (na OpenAI, gravar no cache custa 1,25 vez a entrada). **Falta o câmbio:**
   continua R$ 5,50 (decisão do Luis de 25/10), mas cada dólar pago com cartão brasileiro sai por uns R$ 5,6 a 5,7
   (dólar comercial de R$ 5,22 em 28/09, mais o IOF de 3,5% e a margem do banco). A decidir com o Luis.
+- **Nota (16/11/2026, Multi-IA 2.0):** o câmbio e a margem agora ficam em `BackEnd/src/lib/ock/pricing.js`
+  (`USD_TO_BRL` e `USAGE_MARGIN`), com uma cópia idêntica em `FrontEnd/src/lib/ock/pricing.js`. Quem mudar o câmbio muda
+  nos dois; o teste `FrontEnd/src/lib/copies.test.js` falha se ficarem diferentes. Os preços dos modelos ficam em
+  `BackEnd/src/lib/providers/models.js`.
 
 ### F18 — Prévia de site: o Chrome "aquece" uma conexão antes de bloquear
 - **Gravidade:** Baixa · **Status:** Aceita · **Anotada:** etapa 4 (T7), trazida para cá em 22/10/2026
@@ -501,7 +516,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   avisar o parceiro, caso o banco antigo dele esteja no ar com dados de verdade (sem código; está no próximo passo).
 
 ### F28 — Apagar um arquivo direto pelo banco deixa o conteúdo guardado
-- **Gravidade:** Baixa · **Status:** Aberta · **Anotada:** 24/10/2026
+- **Gravidade:** Baixa · **Status:** Resolvida · **Anotada:** 24/10/2026
 - **O problema:** pelo desenho do banco novo, o funcionário pode apagar os próprios arquivos (LGPD) com a sessão dele.
   Pelas nossas telas, o servidor apaga o registro e o conteúdo na pasta fechada. Mas quem usar a chave pública e a
   própria sessão direto no banco apaga só o registro: o conteúdo fica na pasta. Ninguém consegue mais abri-lo (o link
@@ -509,6 +524,20 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 - **O que fazer:** no PR 3, uma limpeza que apaga da pasta todo conteúdo sem registro (por exemplo, uma vez por dia).
 - **Andamento (25/10/2026, PR 3c):** o chat ainda não tem "apagar" (nem conversa nem arquivo); a limpeza entra junto com o
   apagar, no histórico.
+- **Resolvida (16/11/2026, branch `matheus`):** três peças.
+  (1) **Limpeza:** a função `files_orphan_paths` (migração `20261116120000_orphan_files.sql`, só o servidor chama) acha o
+  conteúdo da pasta sem registro há mais de 1 hora, e a limpeza periódica do servidor (`lib/runs/housekeeping.js`, a cada
+  5 minutos) apaga pela API do Storage. A 1 hora de folga protege o arquivo que acabou de ser gravado e cujo registro
+  ainda vai entrar.
+  (2) **Apagar conversa:** um "×" ao lado de cada conversa do chat (`DELETE /api/ock/conversations/:id`). Somem a conversa,
+  as mensagens e os anexos mandados nela (registro e conteúdo). Ficam as entregas (na aba Entregas) e as linhas do extrato.
+  Com uma resposta a caminho, recusa ("Espere a resposta chegar").
+  (3) **Apagar entrega:** "Apagar" em cada entrega da aba Entregas do funcionário (`DELETE /api/ock/files/:id`). O dono não
+  apaga entregas dos funcionários: o banco só deixa cada um apagar as próprias.
+  Se apagar o conteúdo falhar no meio, o registro já saiu e a limpeza termina o serviço. Conferido: testes do servidor, das
+  telas e do banco (`07_orphan_files.test.sql`) e, de ponta a ponta no Supabase local, conversa com anexo apagada (conversa,
+  mensagem, anexo e conteúdo sumiram; a linha do extrato ficou), outra conta na aba recusada (409), arquivo solto apagado e
+  conteúdo esquecido apagado pela limpeza. O que ainda falta do apagar (execuções de receita e a conta inteira) virou a F64.
 
 ### F29 — O saldo da empresa pode ficar negativo
 - **Gravidade:** Baixa · **Status:** Aceita · **Anotada:** 24/10/2026
@@ -826,7 +855,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   parte 3d, issue #43) e tudo deu o resultado esperado: não houve defeito para corrigir. A regra continua: PR com
   descrição antes de parar, e merge só depois do teste.
 ### F52 — O código fala com as IAs sem as bibliotecas oficiais, ao contrário do que diz o AGENTS.md
-- **Gravidade:** Baixa · **Status:** Aberta · **Anotada:** 26/10/2026 (percebida pelo Claude no PR das IAs de verdade)
+- **Gravidade:** Baixa · **Status:** Resolvida · **Anotada:** 26/10/2026 (percebida pelo Claude no PR das IAs de verdade)
 - **O problema:** a decisão de 09/10 (AGENTS.md, seção 3) diz "SDKs oficiais de cada empresa". O conector do PR #19
   chama as APIs direto pelo endereço delas (`fetch`), sem as bibliotecas oficiais, e o PR das IAs de verdade manteve
   assim. A regra escrita e o código não batem. Na prática, o efeito é pequeno: o preço e o comportamento são os mesmos,
@@ -834,6 +863,9 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   o conector (com as bibliotecas, viria numa atualização delas).
 - **O que fazer (Luis decidir):** (a) manter as chamadas diretas e corrigir o AGENTS.md (recomendação do Claude, por
   ser o que está testado e não trazer dependência nova), ou (b) trocar pelas três bibliotecas oficiais num PR próprio.
+- **Resolvida (16/11/2026):** caminho (a). Na mudança para o Multi-IA 2.0, o `AGENTS.md` (seção 3) passou a dizer
+  "ligação direta com cada empresa (Anthropic, OpenAI, Google), sem intermediário", que é o que o código faz: a regra e
+  o código voltaram a bater. Se o grupo quiser as bibliotecas oficiais, isso vira uma falha nova, num PR próprio.
 
 ### F55 — Com as IAs de verdade por último, o site é montado sem medir custo, tempo e qualidade de verdade
 - **Gravidade:** Média · **Status:** Aceita · **Anotada:** 26/10/2026 (percebida pelo Claude na mudança de ordem)
@@ -873,3 +905,37 @@ podem ficar desatualizados, inclusive no código de dinheiro. A proteção passa
 **Status:** Aberta (05/11/2026). Testado: os testes automáticos, o servidor e as telas ligados de verdade sem banco, e as telas com
 dados de exemplo num navegador. Falta o login de verdade, as regras de acesso, a carteira e uma receita até o fim, seguindo os
 `GUIA-TESTE-*.md`. **Não publicar antes disso.**
+- **Andamento (11/11/2026):** com o Supabase rodando no computador (`npx supabase start`, com as migrações e o seed),
+  foram conferidos de ponta a ponta o login, o "Esqueci minha senha", o chat com a escolha de IA, as receitas (a do
+  relatório até a entrega em Word) e a cobrança de cada etapa. **Falta** repetir os `GUIA-TESTE-*.md` no projeto de
+  testes do Supabase (o que está na internet), que é o mais parecido com o site publicado.
+
+### F63 — O funcionário via os créditos 100 vezes maiores que o dono
+**Status:** Resolvida (16/11/2026, percebida pelo Claude). O espaço de trabalho (`FrontEnd/src/components/OckWorkspace.jsx`)
+tinha uma conta própria de créditos, com 1 crédito = R$ 0,01, enquanto o painel do dono usa a de `lib/ock/pricing.js`, com
+1 crédito = R$ 1,00 (convenção de 04/11/2026). Um teto de R$ 50,00 aparecia como "50,00 créditos" para o dono e "5.000"
+para o funcionário, o que confundiria os dois numa conversa. Agora as duas telas usam a mesma `formatCredits`. A
+convenção de 04/11 continua a confirmar com o Leandro e o Luis: se mudar, muda num lugar só.
+
+### F64 — Ainda não dá para apagar uma execução de receita nem a conta inteira
+**Status:** Resolvida (16/11/2026; percebida pelo Claude ao resolver a F28). O `AGENTS.md` (seção 5, Histórico) diz que a pessoa
+pode apagar qualquer item ou a conta inteira (LGPD). Depois da F28 dá para apagar conversas e entregas, mas não há tela nem
+rota para apagar uma execução de receita (o banco já deixa, `runs_delete_own`, para as que pararam) nem para apagar a conta.
+**O que fazer:** antes da primeira empresa de verdade, uma lista das receitas rodadas com "Apagar" e um "Apagar minha conta"
+que desative a pessoa e apague o trabalho dela (o extrato fica, porque o dono acompanha o gasto por ele). O texto da
+política de privacidade (F05) precisa dizer o mesmo.
+- **Resolvida (16/11/2026, branch `matheus`):** (1) **Apagar receita rodada:** "Apagar" em cada tarefa recente da aba Meu
+  time (`DELETE /api/runs/:id`). Só a que parou; a pausada devolve antes a reserva. Somem o pedido, as etapas e o
+  resultado; ficam a entrega e o extrato. (2) **Apagar minha conta** (só funcionário, digitando APAGAR;
+  `DELETE /api/ock/account`): somem conversas, anexos, receitas rodadas, pastas, times "só eu" e o login; o e-mail é
+  trocado e fica livre (resolve a parte 2 da F32 para quem apaga a conta). Ficam com a empresa as entregas, os times da
+  empresa e o extrato com o nome da pessoa. O dono é recusado (a empresa depende da conta dele).
+  **A confirmar com o grupo:** se as entregas também devem sumir ao apagar a conta (hoje ficam, por serem documentos de
+  trabalho que o dono já vê) e o texto da política de privacidade (F05). Conferido de ponta a ponta no Chrome, com o
+  Supabase local.
+
+### F65 — O funcionário vê o "Gasto do mês" em reais no alto da página, mas créditos no resto
+**Status:** Aberta (16/11/2026, percebida pelo Claude ao testar a F08). O alto do espaço de trabalho (`OckWorkspace`)
+mostra "Gasto do mês R$ 0,02" para o funcionário, enquanto a aba Meus gastos diz que ele vê só créditos ("nunca valores
+em dinheiro"). Com 1 crédito = R$ 1,00 os números batem, mas a tela mistura as duas unidades. **A decidir:** o
+funcionário vê reais ou só créditos? Mudar é uma linha.

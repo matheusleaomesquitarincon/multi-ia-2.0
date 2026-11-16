@@ -13,7 +13,9 @@ import { listOwnConversations } from "../lib/ock/task-store.js";
 import { listTeam } from "../lib/ock/team.js";
 import { aiTools } from "../lib/providers/mode.js";
 import { getRecipe, listRecipeSummaries, RECIPES } from "../lib/recipes/catalog.js";
+import { buildCustomRecipe } from "../lib/recipes/custom.js";
 import { recipeScreen } from "../lib/recipes/screen.js";
+import { listCustomRecipes } from "../lib/ock/custom-recipes.js";
 import { stepCosts } from "../lib/runs/estimate.js";
 import { notFound } from "../http/navigation.js";
 
@@ -37,11 +39,18 @@ export async function workspaceView() {
   const me = await requireMember();
   const session = await signedInSession();
   if (!session) throw new Error("O login sumiu entre conferir a pessoa e ler as conversas.");
-  const [conversations, month, companyAgents] = await Promise.all([
+  const [conversations, month, companyAgents, saved] = await Promise.all([
     listOwnConversations(session),
     loadMonth(session, me.id),
     listCompanyAgents(session),
+    listCustomRecipes(session, me.id),
   ]);
+  // Os times de IA (receitas próprias, F08): o que o montador precisa (nome, quem vê, membros) e a tela de cada um,
+  // igual à das receitas prontas, para rodar pelo mesmo caminho.
+  const customRecipes = saved.map((item) => {
+    const recipe = buildCustomRecipe({ id: item.id, form: item.form });
+    return { ...recipeScreen(recipe), stepCosts: stepCosts(recipe), mine: item.mine, form: item.form };
+  });
   return json({
     me,
     conversations,
@@ -49,6 +58,7 @@ export async function workspaceView() {
     companyAgents,
     // Só o que a tela de cada receita mostra e os números do custo máximo de cada etapa com cada IA.
     recipes: RECIPES.map((recipe) => ({ ...recipeScreen(recipe), stepCosts: stepCosts(recipe) })),
+    customRecipes,
     recipeCards: listRecipeSummaries(),
     voice: aiTools().has("voz"),
   });

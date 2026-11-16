@@ -56,7 +56,7 @@ Nomes em inglês, como pede o AGENTS.md. Valores em centavos de real.
 | Tabela | O que guarda |
 |---|---|
 | `custom_recipes` | As receitas próprias, no mesmo formato das prontas, e se cada uma é só de quem criou (`private`) ou da empresa toda (`company`). As receitas prontas continuam no código (`lib/recipes/`), porque assim passam por revisão e pelos testes. |
-| `runs` | Cada execução de receita: pedido, time, etapas, resultado, status (com o novo `paused`), estimativa e o estado do motor para continuar de onde parou. Três colunas são só internas: o erro técnico e o controle de quem está rodando a execução. |
+| `runs` | Cada execução de receita: pedido, time, etapas, resultado, status (com o novo `paused`), estimativa e o estado do motor para continuar de onde parou. Três colunas são só internas: o erro técnico e o controle de quem está rodando a execução. Na receita própria (`recipe_id` = `custom:<id do time>`), `custom_recipe` guarda o time como estava ao começar, só para o servidor (16/11/2026, F08). |
 | `run_events` | A narração ao vivo (o que aparece nos cartões enquanto as IAs trabalham). |
 | `conversations` | As conversas da tarefa rápida. |
 | `tasks` | Cada pedido dentro de uma conversa: pedido, resposta, o que a plataforma fez (responder, documento...), o que ela recomendou (IA, nível, esforço) e o que o funcionário escolheu de fato. Dá para medir quantas vezes as pessoas trocam a recomendação (F03). Guarda também se a IA pesquisou na internet (`researched`) ou rodou um programa (`ran_code`), para o aviso da resposta (F53). |
@@ -140,6 +140,7 @@ tabelas valem dentro delas, então cada um só soma o que já podia ler. Nenhuma
 | `company_credit()` | Só o dono: o saldo (o extrato inteiro), o que está reservado agora (reservas abertas e no prazo) e o gasto das pessoas no mês. O disponível é o saldo menos o reservado. Para o funcionário, nenhuma linha. |
 | `company_month_by_provider()` | Só o dono: o gasto do mês por IA; os ajustes, que não têm IA, numa linha à parte. A soma bate com o gasto do mês. |
 | `member_month_summary(pessoa)` | O mês de cada pessoa que quem chama enxerga (o dono, a equipe; o funcionário, ele mesmo): gasto, reservado, mensagens do chat cobradas, receitas e entregas do mês. |
+| `my_daily_spending(dias)` | O uso de cada um dos últimos dias (até 60) da própria pessoa, no horário de Brasília: quanto gastou e em quantas tarefas e receitas. Para o gráfico da aba Meu time (16/11/2026, F08). |
 | `month_statement(pessoa, limite)` | O extrato do mês, das linhas mais novas para as mais antigas, com **cada execução de receita numa linha só** (as etapas somadas, as IAs que trabalharam e a hora da última cobrança). Para o dono, com as recargas; com uma pessoa, só os gastos dela. Até 500 linhas por pedido. |
 
 O mês conta como o teto: do dia 1º, à meia-noite de Brasília. Para essas contas, quem está logado passou a poder usar

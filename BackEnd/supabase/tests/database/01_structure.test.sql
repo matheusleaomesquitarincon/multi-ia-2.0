@@ -45,7 +45,8 @@ select results_eq(
   $$,
   $$
     values ('company_credit'), ('company_month_by_provider'), ('current_company_id'), ('current_member_id'),
-      ('current_member_is_owner'), ('member_month_summary'), ('month_start'), ('month_statement')
+      ('current_member_is_owner'), ('member_month_summary'), ('month_start'), ('month_statement'),
+      ('my_daily_spending')
   $$,
   'Quem está logado só chama as funções que dizem quem ele é e as contas do mês (que só somam o que ele pode ver)'
 );
@@ -55,7 +56,8 @@ select ok(
     select 1 from pg_proc p
     where p.oid in (
       'public.company_credit()'::regprocedure, 'public.company_month_by_provider()'::regprocedure,
-      'public.member_month_summary(uuid)'::regprocedure, 'public.month_statement(uuid, integer)'::regprocedure
+      'public.member_month_summary(uuid)'::regprocedure, 'public.month_statement(uuid, integer)'::regprocedure,
+      'public.my_daily_spending(integer)'::regprocedure
     )
     and p.prosecdef
   ),
@@ -73,10 +75,10 @@ select results_eq(
     order by 1
   $$,
   $$
-    values ('current_company_id'), ('current_member_id'), ('current_member_is_owner'),
+    values ('current_company_id'), ('current_member_id'), ('current_member_is_owner'), ('files_orphan_paths'),
       ('wallet_charge'), ('wallet_close_hold'), ('wallet_close_stale_holds'), ('wallet_reserve')
   $$,
-  'O servidor chama as funções de reservar, cobrar e fechar, mas não as de recarga e ajuste (F25)'
+  'O servidor chama as funções de reservar, cobrar e fechar e a de achar arquivos esquecidos, mas não as de recarga e ajuste (F25)'
 );
 
 select ok(

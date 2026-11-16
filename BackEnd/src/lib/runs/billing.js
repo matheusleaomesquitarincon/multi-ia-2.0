@@ -4,6 +4,7 @@
 
 import { costInCents, costInUsd, USD_TO_BRL } from "../ock/pricing.js";
 import { DEFAULT_TIER } from "../providers/types.js";
+import { CUSTOM_RECIPE_LABEL } from "../recipes/custom.js";
 import { stageSteps } from "../recipes/types.js";
 
 import { chargeStep, countRunCharges } from "./wallet.js";
@@ -22,13 +23,20 @@ export function stepChargeCents(result) {
 }
 
 /**
- * A descrição da linha de gasto no extrato: a receita e a etapa ("Criar um site · Front-end"), nunca o pedido.
- * @param {Recipe} recipe
+ * A descrição da linha de gasto no extrato: a receita e a etapa ("Criar um site · Front-end"), nunca o pedido. Numa
+ * receita própria, os nomes foram escritos pelo funcionário, e o dono lê o extrato: a linha sai fixa,
+ * "Receita própria · Etapa 2" (F08, F49).
+ * @param {Recipe & { custom?: boolean }} recipe
  * @param {string} stepId
  * @returns {string}
  */
 export function chargeDescription(recipe, stepId) {
-  const step = recipe.stages.flatMap(stageSteps).find((candidate) => candidate.id === stepId);
+  const steps = recipe.stages.flatMap(stageSteps);
+  if (recipe.custom) {
+    const position = steps.findIndex((candidate) => candidate.id === stepId) + 1;
+    return `${CUSTOM_RECIPE_LABEL} · Etapa ${position > 0 ? position : "?"}`;
+  }
+  const step = steps.find((candidate) => candidate.id === stepId);
   return `${recipe.name} · ${step?.name ?? stepId}`.slice(0, 200);
 }
 
