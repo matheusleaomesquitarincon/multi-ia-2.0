@@ -25,7 +25,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F05 | LGPD: o que o dono vê e para onde vão os dados dos clientes | Negócio / Segurança | Alta | Aberta |
 | F06 | Vender para empresa é mais lento e trabalhoso | Negócio | Média | Aberta |
 | F07 | O resultado precisa ser claramente melhor que "abrir o ChatGPT e pedir" | Negócio | Média | Aberta |
-| F08 | As receitas ainda não estão completas no workspace do funcionário (falta a receita própria) | Produto | Alta | Aberta |
+| F08 | As receitas ainda não estão completas no workspace do funcionário (falta a receita própria) | Produto | Alta | Resolvida |
 | F09 | Resultado que um leigo não sabe usar (ex.: arquivo .html) | Produto | Média | Aberta |
 | F10 | Login de mentira: o código na URL é o "estar logado" | Segurança | Alta | Resolvida |
 | F11 | Painel do dono sem login e senhas temporárias expostas | Segurança | Alta | Resolvida |
@@ -81,7 +81,8 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F61 | Sem TypeScript, nada confere os formatos dos dados automaticamente | Código | Média | Aceita |
 | F62 | A nova arquitetura ainda não foi testada de ponta a ponta com o banco de verdade | Processo | Alta | Aberta |
 | F63 | O funcionário via os créditos 100 vezes maiores que o dono | Produto / Código | Média | Resolvida |
-| F64 | Ainda não dá para apagar uma execução de receita nem a conta inteira | Segurança / LGPD | Média | Aberta |
+| F64 | Ainda não dá para apagar uma execução de receita nem a conta inteira | Segurança / LGPD | Média | Resolvida |
+| F65 | O funcionário vê o "Gasto do mês" em reais no alto da página, mas créditos no resto | Produto | Baixa | Aberta |
 
 ## Negócio
 
@@ -163,7 +164,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   respondeu. Nas receitas, a troca de IA de cada papel já existia na tela do time.
 
 ### F08 — As receitas ainda não estão completas no workspace do funcionário
-- **Gravidade:** Alta · **Status:** Aberta · **Anotada:** 22/10/2026
+- **Gravidade:** Alta · **Status:** Resolvida · **Anotada:** 22/10/2026
 - **O problema:** o workspace (`/trabalho`) só tem o chat. A receita "Criar um site" ficou no código
   (`/recipes/create-site`), mas fora da página inicial e sem ligação com a empresa, o funcionário ou os gastos.
 - **O que fazer:** trazer os três modos (receita pronta, receita própria, tarefa rápida) para o workspace, com o gasto
@@ -184,6 +185,14 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   o Redator, inclusive na reserva, F57) confere cada número contra os dados do pedido, e o Redator entrega a versão
   final em Word. Não há mais "Em breve". Conferida de ponta a ponta no banco local (4 etapas cobradas, o Word nas
   entregas, a reserva fechada); guia em `Docs/GUIA-TESTE-RELATORIO.md`. **Falta só a receita própria.**
+- **Resolvida (16/11/2026, branch `matheus`):** a receita própria, na aba nova **Meu time**. O funcionário monta um time
+  de 2 a 5 membros (nome, IA e o que cada um faz, com modelos prontos), salva só para ele ou para a empresa toda, e usa
+  pelo mesmo caminho das receitas prontas (estimativa, reserva, cobrança por etapa, troca de IA, Word no fim). A
+  execução guarda o time como estava ao começar (`runs.custom_recipe`), então mudar ou apagar o time não mexe no que já
+  rodou. O dono lê no extrato e no nome do Word só textos fixos ("Receita própria · Etapa N"), nunca o que o funcionário
+  escreveu (F49). A mesma aba mostra o dia da pessoa: usado hoje, tarefas, pendências (com Abrir), tarefas recentes e o
+  uso dos últimos 14 dias em barras. Conferido: testes do servidor, das telas e do banco (`08_custom_recipe_runs`), um
+  time rodado de ponta a ponta no Supabase local e as telas olhadas no Chrome, no computador e no celular.
 
 ### F09 — Resultado que um leigo não sabe usar
 - **Gravidade:** Média · **Status:** Aberta · **Anotada:** 09/10/2026 (no PROGRESSO), trazida para cá em 22/10/2026
@@ -909,9 +918,24 @@ para o funcionário, o que confundiria os dois numa conversa. Agora as duas tela
 convenção de 04/11 continua a confirmar com o Leandro e o Luis: se mudar, muda num lugar só.
 
 ### F64 — Ainda não dá para apagar uma execução de receita nem a conta inteira
-**Status:** Aberta (16/11/2026, percebida pelo Claude ao resolver a F28). O `AGENTS.md` (seção 5, Histórico) diz que a pessoa
+**Status:** Resolvida (16/11/2026; percebida pelo Claude ao resolver a F28). O `AGENTS.md` (seção 5, Histórico) diz que a pessoa
 pode apagar qualquer item ou a conta inteira (LGPD). Depois da F28 dá para apagar conversas e entregas, mas não há tela nem
 rota para apagar uma execução de receita (o banco já deixa, `runs_delete_own`, para as que pararam) nem para apagar a conta.
 **O que fazer:** antes da primeira empresa de verdade, uma lista das receitas rodadas com "Apagar" e um "Apagar minha conta"
 que desative a pessoa e apague o trabalho dela (o extrato fica, porque o dono acompanha o gasto por ele). O texto da
 política de privacidade (F05) precisa dizer o mesmo.
+- **Resolvida (16/11/2026, branch `matheus`):** (1) **Apagar receita rodada:** "Apagar" em cada tarefa recente da aba Meu
+  time (`DELETE /api/runs/:id`). Só a que parou; a pausada devolve antes a reserva. Somem o pedido, as etapas e o
+  resultado; ficam a entrega e o extrato. (2) **Apagar minha conta** (só funcionário, digitando APAGAR;
+  `DELETE /api/ock/account`): somem conversas, anexos, receitas rodadas, pastas, times "só eu" e o login; o e-mail é
+  trocado e fica livre (resolve a parte 2 da F32 para quem apaga a conta). Ficam com a empresa as entregas, os times da
+  empresa e o extrato com o nome da pessoa. O dono é recusado (a empresa depende da conta dele).
+  **A confirmar com o grupo:** se as entregas também devem sumir ao apagar a conta (hoje ficam, por serem documentos de
+  trabalho que o dono já vê) e o texto da política de privacidade (F05). Conferido de ponta a ponta no Chrome, com o
+  Supabase local.
+
+### F65 — O funcionário vê o "Gasto do mês" em reais no alto da página, mas créditos no resto
+**Status:** Aberta (16/11/2026, percebida pelo Claude ao testar a F08). O alto do espaço de trabalho (`OckWorkspace`)
+mostra "Gasto do mês R$ 0,02" para o funcionário, enquanto a aba Meus gastos diz que ele vê só créditos ("nunca valores
+em dinheiro"). Com 1 crédito = R$ 1,00 os números batem, mas a tela mistura as duas unidades. **A decidir:** o
+funcionário vê reais ou só créditos? Mudar é uma linha.
