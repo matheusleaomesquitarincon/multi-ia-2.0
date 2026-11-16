@@ -324,3 +324,43 @@ export function deleteCustomRecipe(id, pageMemberId, send = fetch) {
 export function loadMyDay(send = fetch) {
   return request("/api/ock/my-day", {}, send);
 }
+
+// ===== Apagar o que é seu (F64, LGPD).
+
+/**
+ * Apaga uma receita rodada (precisa ter parado). A entrega e o extrato ficam.
+ * @param {string} runId
+ * @param {string} pageMemberId
+ * @param {typeof fetch} [send]
+ * @returns {Promise<Fetched<{ ok: true }>>}
+ */
+export function deleteRun(runId, pageMemberId, send = fetch) {
+  return request(
+    `/api/runs/${encodeURIComponent(runId)}`,
+    {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [PAGE_MEMBER_FIELD]: pageMemberId }),
+    },
+    send,
+  );
+}
+
+/**
+ * Apaga a conta de quem está logado (só funcionário). `confirm` é o que a pessoa digitou (precisa ser APAGAR).
+ * @param {string} confirm
+ * @param {string} pageMemberId
+ * @param {typeof fetch} [send]
+ * @returns {Promise<Fetched<{ ok: true }>>}
+ */
+export function deleteAccount(confirm, pageMemberId, send = fetch) {
+  return request(
+    "/api/ock/account",
+    {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ confirm, [PAGE_MEMBER_FIELD]: pageMemberId }),
+    },
+    send,
+  );
+}
