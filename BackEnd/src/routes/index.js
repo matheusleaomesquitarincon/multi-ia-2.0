@@ -18,6 +18,7 @@ import { signIn, signOut } from "./actions/entrar.js";
 import { requestPasswordReset } from "./actions/esqueci-senha.js";
 import { entrarComoDemo } from "./actions/raiox.js";
 import { changePasswordAction } from "./actions/trocar-senha.js";
+import * as account from "./api/ock/account/route.js";
 import * as conversation from "./api/ock/conversations/[id]/route.js";
 import * as conversations from "./api/ock/conversations/route.js";
 import * as customRecipes from "./api/ock/custom-recipes/route.js";
@@ -55,6 +56,7 @@ export function apiRoutes() {
   const router = Router();
 
   mount(router, "/api/ock", chat);
+  mount(router, "/api/ock/account", account);
   mount(router, "/api/ock/conversations", conversations);
   mount(router, "/api/ock/conversations/:id", conversation);
   mount(router, "/api/ock/custom-recipes", customRecipes);
