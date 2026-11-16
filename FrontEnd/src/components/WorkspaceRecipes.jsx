@@ -17,6 +17,8 @@ import styles from "./WorkspaceRecipes.module.css";
  * pageMemberId: string;
  * // Os cartões: as receitas prontas e as que estão "Em breve".
  * cards: RecipeSummary[];
+ * // Os times de IA da pessoa e da empresa (receitas próprias, F08), nos mesmos cartões.
+ * customCards: RecipeSummary[];
  * recipes: WorkspaceRecipe[];
  * // A receita aberta; null mostra os cartões.
  * openRecipeId: string | null;
@@ -37,6 +39,7 @@ import styles from "./WorkspaceRecipes.module.css";
 export function WorkspaceRecipes({
   pageMemberId,
   cards,
+  customCards,
   recipes,
   openRecipeId,
   onOpen,
@@ -102,6 +105,20 @@ export function WorkspaceRecipes({
           ))}
         </div>
       </section>
+
+      {customCards.length > 0 && (
+        <section className={styles.shelf} aria-label="Times de IA">
+          <div className={styles.intro}>
+            <h2 className={styles.title}>Times de IA</h2>
+            <p className={styles.lead}>Os times montados por você e pela empresa. Para montar ou mudar um, use a aba Meu time.</p>
+          </div>
+          <div className={styles.grid}>
+            {customCards.map((card) => (
+              <RecipeCard key={card.id} recipe={card} onUse={() => onOpen(card.id)} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

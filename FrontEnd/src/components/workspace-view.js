@@ -4,6 +4,7 @@
 
 export const WORKSPACE_TABS = [
   { id: "chat", label: "Chat", param: "chat" },
+  { id: "team", label: "Meu time", param: "time" },
   { id: "recipes", label: "Receitas", param: "receitas" },
   { id: "deliveries", label: "Entregas", param: "entregas" },
   { id: "spending", label: "Meus gastos", param: "gastos" },

@@ -269,3 +269,20 @@
     animation: none;
   }
 }
+
+/* No celular, as cinco abas ficam numa linha só, que rola para o lado se não couber. */
+@media (max-width: 480px) {
+  .tabs {
+    flex-wrap: nowrap;
+    gap: var(--space-4);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tab {
+    flex: none;
+    margin-bottom: 0;
+    font-size: var(--text-sm);
+    white-space: nowrap;
+  }
+}

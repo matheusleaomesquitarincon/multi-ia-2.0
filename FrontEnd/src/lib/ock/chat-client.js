@@ -274,3 +274,53 @@ async function request(url, init, send) {
   const problem = body?.problem;
   return { ok: false, problem: typeof problem === "string" && problem ? problem : SERVER_PROBLEM };
 }
+
+// ===== Meu time (F08): os times de IA da pessoa (receitas próprias) e o resumo do dia.
+
+/**
+ * Salva um time novo (id null) ou muda um que já existe.
+ * @param {CustomRecipeForm} recipe
+ * @param {string | null} id
+ * @param {string} pageMemberId
+ * @param {typeof fetch} [send]
+ * @returns {Promise<Fetched<{ id?: string; ok?: true }>>}
+ */
+export function saveCustomRecipe(recipe, id, pageMemberId, send = fetch) {
+  return request(
+    "/api/ock/custom-recipes",
+    {
+      method: id ? "PATCH" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...(id ? { id } : {}), recipe, [PAGE_MEMBER_FIELD]: pageMemberId }),
+    },
+    send,
+  );
+}
+
+/**
+ * Apaga um time. As receitas que já rodaram com ele continuam no histórico.
+ * @param {string} id O id do banco (sem o "custom:").
+ * @param {string} pageMemberId
+ * @param {typeof fetch} [send]
+ * @returns {Promise<Fetched<{ ok: true }>>}
+ */
+export function deleteCustomRecipe(id, pageMemberId, send = fetch) {
+  return request(
+    "/api/ock/custom-recipes",
+    {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, [PAGE_MEMBER_FIELD]: pageMemberId }),
+    },
+    send,
+  );
+}
+
+/**
+ * O uso de cada dia, as receitas pendentes e as recentes.
+ * @param {typeof fetch} [send]
+ * @returns {Promise<Fetched<MyDay>>}
+ */
+export function loadMyDay(send = fetch) {
+  return request("/api/ock/my-day", {}, send);
+}

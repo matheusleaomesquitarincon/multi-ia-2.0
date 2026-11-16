@@ -1,0 +1,352 @@
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-display);
+  color: var(--color-text);
+}
+
+.lead {
+  max-width: var(--text-max-width);
+  color: var(--color-text-body);
+}
+
+/* A linha de trabalho: pedido → membros → Word, quebrando a linha quando não cabe. */
+.flow {
+  margin: 0;
+  padding: var(--space-4);
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-control);
+}
+
+.flowStep,
+.flowEnd {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.flowStep {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.flowEnd {
+  color: var(--color-text-muted);
+}
+
+.flowArrow {
+  color: var(--color-text-muted);
+}
+
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+}
+
+.field {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-soft);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+}
+
+.input {
+  min-height: var(--control-height-sm);
+}
+
+.textarea {
+  resize: vertical;
+  line-height: var(--line-height-body);
+}
+
+.input:focus-visible,
+.textarea:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-glow);
+}
+
+.counter {
+  align-self: flex-end;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.visibility {
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.visibility legend {
+  width: 100%;
+  margin-bottom: var(--space-1);
+}
+
+.radio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-sm);
+  color: var(--color-text-body);
+}
+
+.members {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.member {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-bg);
+}
+
+/* No celular, os botões ↑ ↓ × descem para baixo do nome, que fica com a linha inteira. */
+.memberHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.position {
+  flex: none;
+  width: var(--size-badge);
+  height: var(--size-badge);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-text-soft);
+  font-weight: var(--weight-semibold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.memberName {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+/* Dentro do cartão do membro, o campo tem só a altura do conteúdo. */
+.member > .field {
+  flex: none;
+}
+
+.memberTools {
+  flex: none;
+  display: flex;
+  gap: var(--space-1);
+  margin-left: auto;
+}
+
+.tool {
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text-soft);
+  font-size: var(--text-lg);
+  cursor: pointer;
+}
+
+.tool:hover:not(:disabled) {
+  background: var(--color-surface-subtle);
+}
+
+.toolDanger:hover:not(:disabled) {
+  color: var(--color-error-text);
+}
+
+.tool:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.providers {
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-sm);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.chipOn {
+  border-color: var(--color-text);
+  background: var(--color-tab-selected-bg);
+  color: var(--color-tab-selected-text);
+}
+
+.chip:focus-within {
+  box-shadow: var(--shadow-glow);
+}
+
+.add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.addChip {
+  min-height: var(--control-height-sm);
+  padding: 0 var(--space-3);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.addChip:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+}
+
+.addChip:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.problems {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+  font-size: var(--text-sm);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.primary,
+.secondary {
+  min-height: var(--control-height);
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-control);
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.primary {
+  border: none;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.secondary {
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.primary:disabled,
+.secondary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .editor {
+    padding: var(--space-4);
+  }
+
+  .member {
+    padding: var(--space-3);
+  }
+}

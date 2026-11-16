@@ -12,6 +12,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { CUSTOM_RECIPE_PREFIX } from "../lib/recipes/custom-form.js";
 import { forgetActiveRun, recallActiveRun, rememberActiveRun } from "../lib/runs/active-run.js";
 import { cancelRun, readProblems, resumeRun, startRun, SERVER_PROBLEM } from "../lib/runs/client.js";
 
@@ -297,7 +298,9 @@ export function RecipeFlow({
       <section className={styles.intro}>
         <h2 className={styles.title}>{recipeName}</h2>
         <p className={styles.lead}>
-          Este é o time que recomendamos. Cada IA tem um papel; troque qualquer uma se preferir.
+          {recipeId.startsWith(CUSTOM_RECIPE_PREFIX)
+            ? "Este é um time montado na aba Meu time. Dá para trocar a IA de qualquer membro só desta vez; para mudar o time de vez, use Mudar lá."
+            : "Este é o time que recomendamos. Cada IA tem um papel; troque qualquer uma se preferir."}
         </p>
       </section>
 

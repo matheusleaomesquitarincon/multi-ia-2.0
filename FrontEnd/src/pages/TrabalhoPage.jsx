@@ -17,7 +17,7 @@ export function TrabalhoPage() {
 
   const view = readWorkspaceView(
     { aba: search.get("aba") ?? undefined, receita: search.get("receita") ?? undefined },
-    data.recipes.map((recipe) => recipe.id),
+    [...data.recipes, ...data.customRecipes].map((recipe) => recipe.id),
   );
 
   return (
@@ -31,6 +31,7 @@ export function TrabalhoPage() {
         initialMonth={data.month}
         recipeCards={data.recipeCards}
         recipes={data.recipes}
+        initialCustomRecipes={data.customRecipes}
         companyAgents={data.companyAgents}
         initialView={view}
         voice={data.voice}
