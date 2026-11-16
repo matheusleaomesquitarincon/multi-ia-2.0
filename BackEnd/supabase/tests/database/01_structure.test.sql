@@ -73,10 +73,10 @@ select results_eq(
     order by 1
   $$,
   $$
-    values ('current_company_id'), ('current_member_id'), ('current_member_is_owner'),
+    values ('current_company_id'), ('current_member_id'), ('current_member_is_owner'), ('files_orphan_paths'),
       ('wallet_charge'), ('wallet_close_hold'), ('wallet_close_stale_holds'), ('wallet_reserve')
   $$,
-  'O servidor chama as funções de reservar, cobrar e fechar, mas não as de recarga e ajuste (F25)'
+  'O servidor chama as funções de reservar, cobrar e fechar e a de achar arquivos esquecidos, mas não as de recarga e ajuste (F25)'
 );
 
 select ok(

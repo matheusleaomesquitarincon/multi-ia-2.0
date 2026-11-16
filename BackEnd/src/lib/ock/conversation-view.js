@@ -19,7 +19,7 @@ const MAX_IMAGE_BYTES = 2_000_000;
  * Uma mensagem que ficou "respondendo" por mais tempo que isto parou no meio (o servidor caiu): a tela avisa. Nada foi
  * cobrado, porque a resposta é gravada antes da cobrança.
  */
-const STALE_TASK_MS = 6 * 60 * 1000;
+export const STALE_TASK_MS = 6 * 60 * 1000;
 
 export const STALE_TASK_ANSWER = "Esta resposta não chegou: o servidor parou no meio. Nada foi cobrado. Tente de novo.";
 

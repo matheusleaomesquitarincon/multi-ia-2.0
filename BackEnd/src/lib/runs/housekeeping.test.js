@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const wallet = vi.hoisted(() => ({ closeStaleHolds: vi.fn() }));
 vi.mock("./wallet.js", () => wallet);
+const files = vi.hoisted(() => ({ removeOrphanFiles: vi.fn() }));
+vi.mock("../ock/files.js", () => files);
 
 import { runHousekeeping, startHousekeeping } from "./housekeeping.js";
 
@@ -18,11 +20,13 @@ afterEach(() => {
   vi.unstubAllEnvs();
   vi.restoreAllMocks();
   wallet.closeStaleHolds.mockReset();
+  files.removeOrphanFiles.mockReset();
 });
 
 describe("limpeza periódica (F43)", () => {
   it("fecha as reservas esquecidas agora e depois a cada intervalo, até ser desligada", async () => {
     wallet.closeStaleHolds.mockResolvedValue(0);
+    files.removeOrphanFiles.mockResolvedValue(0);
     const stop = startHousekeeping(1000);
     expect(wallet.closeStaleHolds).toHaveBeenCalledTimes(1);
     await vi.advanceTimersByTimeAsync(2000);
@@ -42,5 +46,25 @@ describe("limpeza periódica (F43)", () => {
     wallet.closeStaleHolds.mockRejectedValue(new Error("connection refused"));
     await expect(runHousekeeping()).resolves.toBeUndefined();
     expect(console.error).toHaveBeenCalled();
+  });
+
+  it("apaga os arquivos esquecidos na mesma rodada (F28)", async () => {
+    wallet.closeStaleHolds.mockResolvedValue(0);
+    files.removeOrphanFiles.mockResolvedValue(2);
+    await runHousekeeping();
+    expect(files.removeOrphanFiles).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith(expect.stringContaining("Apaguei 2 arquivo(s)"));
+  });
+
+  it("o erro de uma tarefa não impede a outra", async () => {
+    wallet.closeStaleHolds.mockRejectedValue(new Error("connection refused"));
+    files.removeOrphanFiles.mockResolvedValue(0);
+    await runHousekeeping();
+    expect(files.removeOrphanFiles).toHaveBeenCalledTimes(1);
+
+    wallet.closeStaleHolds.mockResolvedValue(1);
+    files.removeOrphanFiles.mockRejectedValue(new Error("storage down"));
+    await expect(runHousekeeping()).resolves.toBeUndefined();
+    expect(wallet.closeStaleHolds).toHaveBeenCalledTimes(2);
   });
 });
