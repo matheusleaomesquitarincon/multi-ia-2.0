@@ -8,7 +8,7 @@
 import { checkPageMember, PAGE_MEMBER_FIELD } from "../../../../../lib/auth/page-member.js";
 import { createSessionClient } from "../../../../../lib/auth/session.js";
 import { getViewer } from "../../../../../lib/auth/viewer.js";
-import { getRecipe } from "../../../../../lib/recipes/catalog.js";
+import { recipeOfRun } from "../../../../../lib/runs/recipe-of-run.js";
 import { stageSteps } from "../../../../../lib/recipes/types.js";
 import { isPlainObject, isRunId } from "../../../../../lib/runs/parse-request.js";
 import { appendEvents, cancelRun, FINAL_STATUSES, loadOwnRun } from "../../../../../lib/runs/store.js";
@@ -50,7 +50,7 @@ export async function POST(request, context) {
     const cancelled = await cancelRun(id);
     if (cancelled) {
       await appendEvents({ id, company_id: check.me.companyId }, [
-        { type: "run-cancelled", stepId: cancelledStepId(run.recipe_id, run.cursor.stageIndex) },
+        { type: "run-cancelled", stepId: await cancelledStepId(run, run.cursor.stageIndex) },
       ]);
       if (!isBeingRun(cancelled.leaseUntil)) await closeRunHolds(id);
     }
@@ -70,8 +70,8 @@ function isBeingRun(leaseUntil) {
 }
 
 /** A etapa que a tela marca como parada: a primeira da fase em que a execução estava. */
-function cancelledStepId(recipeId, stageIndex) {
-  const recipe = getRecipe(recipeId);
+async function cancelledStepId(run, stageIndex) {
+  const recipe = await recipeOfRun(run);
   const stage = recipe?.stages[stageIndex];
   return stage ? stageSteps(stage)[0].id : "";
 }
