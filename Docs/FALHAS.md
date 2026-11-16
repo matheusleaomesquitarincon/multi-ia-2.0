@@ -25,7 +25,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F05 | LGPD: o que o dono vê e para onde vão os dados dos clientes | Negócio / Segurança | Alta | Aberta |
 | F06 | Vender para empresa é mais lento e trabalhoso | Negócio | Média | Aberta |
 | F07 | O resultado precisa ser claramente melhor que "abrir o ChatGPT e pedir" | Negócio | Média | Aberta |
-| F08 | As receitas não existem dentro do workspace do funcionário | Produto | Alta | Aberta |
+| F08 | As receitas ainda não estão completas no workspace do funcionário (falta a receita própria) | Produto | Alta | Aberta |
 | F09 | Resultado que um leigo não sabe usar (ex.: arquivo .html) | Produto | Média | Aberta |
 | F10 | Login de mentira: o código na URL é o "estar logado" | Segurança | Alta | Resolvida |
 | F11 | Painel do dono sem login e senhas temporárias expostas | Segurança | Alta | Resolvida |
@@ -69,7 +69,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F49 | O nome e o título dos documentos do chat saíam do pedido do funcionário | Segurança / LGPD | Média | Resolvida |
 | F50 | Os conectores das IAs de verdade mandariam pedidos que as APIs de hoje recusam | Código | Alta | Resolvida |
 | F51 | Resposta cortada no meio, ou recusada pela IA, era aceita como resposta completa | Código | Média | Resolvida |
-| F52 | O código fala com as IAs sem as bibliotecas oficiais, ao contrário do que diz o AGENTS.md | Processo | Baixa | Aberta |
+| F52 | O código fala com as IAs sem as bibliotecas oficiais, ao contrário do que diz o AGENTS.md | Processo | Baixa | Resolvida |
 | F53 | O aviso de "não pesquisou" depende do texto no fim da resposta | Produto / Código | Baixa | Resolvida |
 | F54 | Uma fase com IA de verdade pode passar do tempo máximo da função na Vercel | Código | Média | Resolvida |
 | F55 | Com as IAs de verdade por último, o site é montado sem medir custo, tempo e qualidade de verdade | Processo / Produto | Média | Aceita |
@@ -160,7 +160,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   sem a ferramenta, com a explicação e o aviso de sempre (F45). Fora isso, o funcionário continua sem ver qual IA
   respondeu. Nas receitas, a troca de IA de cada papel já existia na tela do time.
 
-### F08 — As receitas não existem dentro do workspace do funcionário
+### F08 — As receitas ainda não estão completas no workspace do funcionário
 - **Gravidade:** Alta · **Status:** Aberta · **Anotada:** 22/10/2026
 - **O problema:** o workspace (`/trabalho`) só tem o chat. A receita "Criar um site" ficou no código
   (`/recipes/create-site`), mas fora da página inicial e sem ligação com a empresa, o funcionário ou os gastos.
@@ -411,6 +411,10 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   cache das empresas tem preço próprio (na OpenAI, gravar no cache custa 1,25 vez a entrada). **Falta o câmbio:**
   continua R$ 5,50 (decisão do Luis de 25/10), mas cada dólar pago com cartão brasileiro sai por uns R$ 5,6 a 5,7
   (dólar comercial de R$ 5,22 em 28/09, mais o IOF de 3,5% e a margem do banco). A decidir com o Luis.
+- **Nota (16/11/2026, Multi-IA 2.0):** o câmbio e a margem agora ficam em `BackEnd/src/lib/ock/pricing.js`
+  (`USD_TO_BRL` e `USAGE_MARGIN`), com uma cópia idêntica em `FrontEnd/src/lib/ock/pricing.js`. Quem mudar o câmbio muda
+  nos dois; o teste `FrontEnd/src/lib/copies.test.js` falha se ficarem diferentes. Os preços dos modelos ficam em
+  `BackEnd/src/lib/providers/models.js`.
 
 ### F18 — Prévia de site: o Chrome "aquece" uma conexão antes de bloquear
 - **Gravidade:** Baixa · **Status:** Aceita · **Anotada:** etapa 4 (T7), trazida para cá em 22/10/2026
@@ -826,7 +830,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   parte 3d, issue #43) e tudo deu o resultado esperado: não houve defeito para corrigir. A regra continua: PR com
   descrição antes de parar, e merge só depois do teste.
 ### F52 — O código fala com as IAs sem as bibliotecas oficiais, ao contrário do que diz o AGENTS.md
-- **Gravidade:** Baixa · **Status:** Aberta · **Anotada:** 26/10/2026 (percebida pelo Claude no PR das IAs de verdade)
+- **Gravidade:** Baixa · **Status:** Resolvida · **Anotada:** 26/10/2026 (percebida pelo Claude no PR das IAs de verdade)
 - **O problema:** a decisão de 09/10 (AGENTS.md, seção 3) diz "SDKs oficiais de cada empresa". O conector do PR #19
   chama as APIs direto pelo endereço delas (`fetch`), sem as bibliotecas oficiais, e o PR das IAs de verdade manteve
   assim. A regra escrita e o código não batem. Na prática, o efeito é pequeno: o preço e o comportamento são os mesmos,
@@ -834,6 +838,9 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   o conector (com as bibliotecas, viria numa atualização delas).
 - **O que fazer (Luis decidir):** (a) manter as chamadas diretas e corrigir o AGENTS.md (recomendação do Claude, por
   ser o que está testado e não trazer dependência nova), ou (b) trocar pelas três bibliotecas oficiais num PR próprio.
+- **Resolvida (16/11/2026):** caminho (a). Na mudança para o Multi-IA 2.0, o `AGENTS.md` (seção 3) passou a dizer
+  "ligação direta com cada empresa (Anthropic, OpenAI, Google), sem intermediário", que é o que o código faz: a regra e
+  o código voltaram a bater. Se o grupo quiser as bibliotecas oficiais, isso vira uma falha nova, num PR próprio.
 
 ### F55 — Com as IAs de verdade por último, o site é montado sem medir custo, tempo e qualidade de verdade
 - **Gravidade:** Média · **Status:** Aceita · **Anotada:** 26/10/2026 (percebida pelo Claude na mudança de ordem)
@@ -873,3 +880,7 @@ podem ficar desatualizados, inclusive no código de dinheiro. A proteção passa
 **Status:** Aberta (05/11/2026). Testado: os testes automáticos, o servidor e as telas ligados de verdade sem banco, e as telas com
 dados de exemplo num navegador. Falta o login de verdade, as regras de acesso, a carteira e uma receita até o fim, seguindo os
 `GUIA-TESTE-*.md`. **Não publicar antes disso.**
+- **Andamento (11/11/2026):** com o Supabase rodando no computador (`npx supabase start`, com as migrações e o seed),
+  foram conferidos de ponta a ponta o login, o "Esqueci minha senha", o chat com a escolha de IA, as receitas (a do
+  relatório até a entrega em Word) e a cobrança de cada etapa. **Falta** repetir os `GUIA-TESTE-*.md` no projeto de
+  testes do Supabase (o que está na internet), que é o mais parecido com o site publicado.
