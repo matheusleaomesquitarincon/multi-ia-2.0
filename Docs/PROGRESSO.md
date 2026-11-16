@@ -12,7 +12,7 @@
 > **Próximo passo:** preencher as chaves do projeto de testes em `BackEnd/.env.local` e refazer os testes dos
 > `GUIA-TESTE-*.md` com o banco de verdade (F62). As decisões e os riscos desta mudança estão em `Docs/FALHAS.md` (F58 a F62).
 
-**Última atualização:** 04/11/2026 (painel do dono: créditos por pessoa + custo total da empresa; antes: 27/10/2026,
+**Última atualização:** 16/11/2026 (manutenção de back e front na branch `matheus`: F28, F63 e documentos; antes: 04/11/2026, painel do dono: créditos por pessoa + custo total da empresa; antes: 27/10/2026,
 madrugada — bloco 1, issue #54: a Proposta comercial na `main`, pelo merge do Luis em 26/10; o segundo PR, a receita
 "Posts para redes sociais", esperando o teste do Luis)
 **Etapa atual:** bloco 1 da nova ordem (etapa 6, o produto do funcionário). A etapa 5 (base para empresas) está no ar e
@@ -1183,8 +1183,24 @@ Pedido do Matheus: atacar as pendências de front-end (seção 3) e de back-end 
 - **Como foi conferido:** lint, 595 testes do servidor, 87 das telas, 150 do banco, build, e cada item de ponta a ponta
   no Supabase local (receitas, chat, e-mail de senha nova na caixa de teste).
 
+## Manutenção de back e front (16/11/2026, branch `matheus`)
+
+Pedido do Matheus: seguir o relatório "Pendências por área", agora pela manutenção de back-end e front-end.
+
+- **Documentos:** F52 resolvida (o `AGENTS.md` já diz "ligação direta", como o código faz), título da F08 atualizado,
+  andamento da F62 (o que foi testado no Supabase local em 11/11) e os caminhos novos do câmbio na F17.
+- **F63 (achada e resolvida):** o funcionário via os créditos 100 vezes maiores que o dono (conta de créditos duplicada no
+  `OckWorkspace`). Agora as duas telas usam `formatCredits` de `lib/ock/pricing.js` (1 crédito = R$ 1,00).
+- **F28 (resolvida, migração):** apagar conversa no chat (o "×" ao lado de cada uma), apagar entrega na aba Entregas e a
+  limpeza periódica que apaga da pasta o conteúdo sem registro. Detalhes no `FALHAS.md`.
+- **F64 (nova):** ainda falta apagar execução de receita e a conta inteira (LGPD).
+- **Como foi conferido:** lint, testes do servidor, das telas (88) e do banco (156), build, e a F28 de ponta a ponta no
+  Supabase local (script contra o servidor ligado, conferindo as tabelas e a pasta).
+
 ## Próximo passo
 
+0. **Matheus:** em `/trabalho` (visão raio-x, como Funcionário), apagar uma conversa pelo "×" da lista e uma entrega na
+   aba Entregas. Depois, abrir o PR da branch `matheus` para a `main`.
 1. **Matheus:** testar no `localhost` o que mudou (o "Esqueci minha senha" em `/entrar`, a escolha de IA no chat e a
    receita do relatório, com o `Docs/GUIA-TESTE-RELATORIO.md`) e decidir o desenho da receita própria (F08).
 2. **Claude Code:** a receita própria (F08), depois da decisão acima. A tabela `custom_recipes` já existe.

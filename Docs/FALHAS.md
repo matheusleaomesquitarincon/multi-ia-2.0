@@ -45,7 +45,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F25 | O próprio dono define o crédito da empresa | Negócio / Segurança | Alta | Resolvida |
 | F26 | O custo das tentativas que falharam não fica registrado | Código | Média | Resolvida |
 | F27 | Qualquer pessoa pode ler as execuções direto no banco | Segurança | Alta | Resolvida |
-| F28 | Apagar um arquivo direto pelo banco deixa o conteúdo guardado | Segurança / LGPD | Baixa | Aberta |
+| F28 | Apagar um arquivo direto pelo banco deixa o conteúdo guardado | Segurança / LGPD | Baixa | Resolvida |
 | F29 | O saldo da empresa pode ficar negativo | Negócio | Baixa | Aceita |
 | F30 | E-mails do login só chegam para a equipe do Supabase | Código | Média | Aberta |
 | F31 | Next.js 16.4.0 com falhas de segurança graves conhecidas | Segurança | Alta | Resolvida |
@@ -81,6 +81,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F61 | Sem TypeScript, nada confere os formatos dos dados automaticamente | Código | Média | Aceita |
 | F62 | A nova arquitetura ainda não foi testada de ponta a ponta com o banco de verdade | Processo | Alta | Aberta |
 | F63 | O funcionário via os créditos 100 vezes maiores que o dono | Produto / Código | Média | Resolvida |
+| F64 | Ainda não dá para apagar uma execução de receita nem a conta inteira | Segurança / LGPD | Média | Aberta |
 
 ## Negócio
 
@@ -506,7 +507,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   avisar o parceiro, caso o banco antigo dele esteja no ar com dados de verdade (sem código; está no próximo passo).
 
 ### F28 — Apagar um arquivo direto pelo banco deixa o conteúdo guardado
-- **Gravidade:** Baixa · **Status:** Aberta · **Anotada:** 24/10/2026
+- **Gravidade:** Baixa · **Status:** Resolvida · **Anotada:** 24/10/2026
 - **O problema:** pelo desenho do banco novo, o funcionário pode apagar os próprios arquivos (LGPD) com a sessão dele.
   Pelas nossas telas, o servidor apaga o registro e o conteúdo na pasta fechada. Mas quem usar a chave pública e a
   própria sessão direto no banco apaga só o registro: o conteúdo fica na pasta. Ninguém consegue mais abri-lo (o link
@@ -514,6 +515,20 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 - **O que fazer:** no PR 3, uma limpeza que apaga da pasta todo conteúdo sem registro (por exemplo, uma vez por dia).
 - **Andamento (25/10/2026, PR 3c):** o chat ainda não tem "apagar" (nem conversa nem arquivo); a limpeza entra junto com o
   apagar, no histórico.
+- **Resolvida (16/11/2026, branch `matheus`):** três peças.
+  (1) **Limpeza:** a função `files_orphan_paths` (migração `20261116120000_orphan_files.sql`, só o servidor chama) acha o
+  conteúdo da pasta sem registro há mais de 1 hora, e a limpeza periódica do servidor (`lib/runs/housekeeping.js`, a cada
+  5 minutos) apaga pela API do Storage. A 1 hora de folga protege o arquivo que acabou de ser gravado e cujo registro
+  ainda vai entrar.
+  (2) **Apagar conversa:** um "×" ao lado de cada conversa do chat (`DELETE /api/ock/conversations/:id`). Somem a conversa,
+  as mensagens e os anexos mandados nela (registro e conteúdo). Ficam as entregas (na aba Entregas) e as linhas do extrato.
+  Com uma resposta a caminho, recusa ("Espere a resposta chegar").
+  (3) **Apagar entrega:** "Apagar" em cada entrega da aba Entregas do funcionário (`DELETE /api/ock/files/:id`). O dono não
+  apaga entregas dos funcionários: o banco só deixa cada um apagar as próprias.
+  Se apagar o conteúdo falhar no meio, o registro já saiu e a limpeza termina o serviço. Conferido: testes do servidor, das
+  telas e do banco (`07_orphan_files.test.sql`) e, de ponta a ponta no Supabase local, conversa com anexo apagada (conversa,
+  mensagem, anexo e conteúdo sumiram; a linha do extrato ficou), outra conta na aba recusada (409), arquivo solto apagado e
+  conteúdo esquecido apagado pela limpeza. O que ainda falta do apagar (execuções de receita e a conta inteira) virou a F64.
 
 ### F29 — O saldo da empresa pode ficar negativo
 - **Gravidade:** Baixa · **Status:** Aceita · **Anotada:** 24/10/2026
@@ -892,3 +907,11 @@ tinha uma conta própria de créditos, com 1 crédito = R$ 0,01, enquanto o pain
 1 crédito = R$ 1,00 (convenção de 04/11/2026). Um teto de R$ 50,00 aparecia como "50,00 créditos" para o dono e "5.000"
 para o funcionário, o que confundiria os dois numa conversa. Agora as duas telas usam a mesma `formatCredits`. A
 convenção de 04/11 continua a confirmar com o Leandro e o Luis: se mudar, muda num lugar só.
+
+### F64 — Ainda não dá para apagar uma execução de receita nem a conta inteira
+**Status:** Aberta (16/11/2026, percebida pelo Claude ao resolver a F28). O `AGENTS.md` (seção 5, Histórico) diz que a pessoa
+pode apagar qualquer item ou a conta inteira (LGPD). Depois da F28 dá para apagar conversas e entregas, mas não há tela nem
+rota para apagar uma execução de receita (o banco já deixa, `runs_delete_own`, para as que pararam) nem para apagar a conta.
+**O que fazer:** antes da primeira empresa de verdade, uma lista das receitas rodadas com "Apagar" e um "Apagar minha conta"
+que desative a pessoa e apague o trabalho dela (o extrato fica, porque o dono acompanha o gasto por ele). O texto da
+política de privacidade (F05) precisa dizer o mesmo.
