@@ -12,6 +12,13 @@
 > **Próximo passo:** preencher as chaves do projeto de testes em `BackEnd/.env.local` e refazer os testes dos
 > `GUIA-TESTE-*.md` com o banco de verdade (F62). As decisões e os riscos desta mudança estão em `Docs/FALHAS.md` (F58 a F62).
 
+> **Nota (05/11/2026, branches e banco local):** cada dev agora tem a sua branch além da `main`: `matheus`, `leandro` e
+> `luis-gustavo`, criadas a partir da `refactor/arquitetura` (commit `ff04ddd`), porque a `main` ainda só tem o primeiro commit.
+> Sem as chaves do projeto de testes, o projeto rodou no computador com o banco local do Supabase (`npx supabase start`, precisa
+> do Docker): login, permissões e uma receita com a IA simulada funcionaram. Isso não fecha a F62, que pede o banco de verdade.
+> Corrigidas a F67 (`PORT` vazio) e a F68 (logo com a visão raio-x); a F66 (nomes antigos no guia) segue aberta.
+> **Em aberto:** levar o trabalho para a `main` e definir como as branches de cada dev se juntam a ela.
+
 **Última atualização:** 16/11/2026 (branch `matheus`: receita própria e aba Meu time, F08; apagar receita e conta, F64; antes, F28, F63 e documentos; antes: 04/11/2026, painel do dono: créditos por pessoa + custo total da empresa; antes: 27/10/2026,
 madrugada — bloco 1, issue #54: a Proposta comercial na `main`, pelo merge do Luis em 26/10; o segundo PR, a receita
 "Posts para redes sociais", esperando o teste do Luis)

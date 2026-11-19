@@ -10,11 +10,11 @@ export function HomePage() {
   const { loading, viewer, demo } = useSession();
   const [search] = useSearchParams();
   if (loading) return null;
-  // No modo raio-x (só no computador), o fundador entra direto na sua porta, sem passar pela tela de login dos usuários.
-  // Com ?publica=1, ele vê a página inicial como um visitante a veria.
-  if (demo && search.get("publica") === "1" && viewer.status !== "member") return <OckEntry demo={demo} />;
-  if (demo) return <Navigate to="/raiox" replace />;
   if (viewer.status === "member") return <Navigate to={homePathFor(viewer.member.role)} replace />;
+  // No modo raio-x (só no computador), com ?publica=1 o fundador vê a página inicial como um visitante a veria.
+  if (demo && search.get("publica") === "1") return <OckEntry demo={demo} />;
+  // No modo raio-x, quem ainda não entrou vai direto para a porta do fundador, sem a tela de login.
+  if (demo) return <Navigate to="/raiox" replace />;
   if (viewer.status === "signed-out") return <OckEntry demo={demo} />;
   return <AccountNotice kind={viewer.status} />;
 }
