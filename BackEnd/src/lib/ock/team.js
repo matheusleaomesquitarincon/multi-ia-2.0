@@ -22,6 +22,8 @@
  * // Teto de gasto por mês, em centavos de real. null = sem teto.
  * monthlyBudgetCents: number | null;
  * status: MemberStatus;
+ * // Confirmou o e-mail com o código (F32).
+ * emailVerified: boolean;
  * invite: PendingInvite | null;
  * }} TeamMember
  */
@@ -50,6 +52,7 @@ export function parseTeamRow(row) {
     role: r.role,
     monthlyBudgetCents: budget,
     status: r.status,
+    emailVerified: typeof r.email_verified_at === "string",
   };
 }
 
@@ -89,7 +92,7 @@ export function sortTeam(team) {
  */
 export async function listTeam(supabase, now = new Date()) {
   const [members, invites] = await Promise.all([
-    supabase.from("members").select("id, name, email, role, monthly_budget_cents, status"),
+    supabase.from("members").select("id, name, email, role, monthly_budget_cents, status, email_verified_at"),
     supabase.from("member_invites").select("member_id, kind, expires_at"),
   ]);
   if (members.error) throw new Error(`Não deu para ler a equipe: ${members.error.message}`);

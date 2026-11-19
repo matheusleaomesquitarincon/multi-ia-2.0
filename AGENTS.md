@@ -93,6 +93,7 @@ BackEnd/src/
   lib/runs/          a execução vista de fora: banco, carteira, cobrança, chamada interna
   lib/auth/          login, convite, cadastro da empresa e visão raio-x
   lib/ock/           o workspace: equipe, chat, arquivos, gastos
+  lib/platform/      o painel interno da equipe da plataforma (/plataforma): empresas, custo das IAs, recarga e câmbio
   supabase/          migrations/ (a versão oficial das tabelas), seed.sql (só local) e tests/ (testes do banco)
 Docs/                documento do projeto, diário, registro de falhas e guias
 .github/workflows/   checagens automáticas que rodam em todo pull request
@@ -127,7 +128,8 @@ comentários automaticamente: quem muda um formato atualiza o comentário e os t
 4. Cancelou no meio: paga só as etapas concluídas; a que estava rodando não é cobrada (decisão do Luis, 25/10/2026).
    **Na tarefa rápida (chat)** não há estimativa antes de cada mensagem (decisão do Luis, 25/10/2026, issue #39):
    antes de qualquer IA o servidor confere saldo e teto, reserva o máximo da resposta depois que o Chefe decide, cobra o
-   consumo real numa linha só ("Tarefa rápida · Documento") e a tela mostra "Custou R$ X" em cada resposta.
+   consumo real numa linha só ("Tarefa rápida · Documento"). **O custo de cada resposta é só do dono**, no painel dele: o
+   funcionário não vê o custo nem qual IA respondeu (decisão do Matheus, 18/11/2026, F69).
 5. Estimativas honestas, calculadas a partir do histórico real de cada receita. A estimativa mostrada precisa ser confiável — gastar muito além dela é um bug.
 6. Internamente, registrar o custo real em **dólar** de cada execução.
 

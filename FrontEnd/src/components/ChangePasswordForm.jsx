@@ -5,14 +5,15 @@ import { useActionState } from "react";
 import { changePasswordAction } from "../lib/actions.js";
 import { PASSWORD_MIN_CHARS } from "../lib/auth/forms.js";
 import { firstName } from "../lib/auth/member.js";
+import { TermsCheckbox } from "./TermsCheckbox.jsx";
 import styles from "./AuthForm.module.css";
 
 const INITIAL = { status: "idle" };
 
 /**
- * @param {{ name: string; email: string; recovery?: boolean }} props
+ * @param {{ name: string; email: string; recovery?: boolean; needsTerms?: boolean }} props
  */
-export function ChangePasswordForm({ name, email, recovery = false }) {
+export function ChangePasswordForm({ name, email, recovery = false, needsTerms = false }) {
   const [state, formAction, pending] = useActionState(changePasswordAction, INITIAL);
   const errors = state.status === "invalid" ? state.errors : {};
 
@@ -90,6 +91,8 @@ export function ChangePasswordForm({ name, email, recovery = false }) {
             </p>
           )}
         </div>
+
+        {needsTerms && <TermsCheckbox error={errors.acceptTerms} />}
 
         {state.status === "error" && (
           <p className={styles.error} role="alert">

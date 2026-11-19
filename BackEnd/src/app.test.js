@@ -107,7 +107,12 @@ describe("cabeçalhos de segurança", () => {
 describe("as telas e as rotas", () => {
   it("sem login, a sessão diz que não há ninguém", async () => {
     const response = await fetch(`${base}/api/session`);
-    expect(await response.json()).toEqual({ viewer: { status: "signed-out" }, demo: false });
+    expect(await response.json()).toEqual({ viewer: { status: "signed-out" }, demo: false, staff: false });
+  });
+
+  it("o painel da plataforma, sem login, manda para Entrar, sem dado nenhum", async () => {
+    const response = await fetch(`${base}/api/views/plataforma`);
+    expect(await response.json()).toEqual({ redirect: "/entrar" });
   });
 
   it("uma tela protegida manda para Entrar, sem dado nenhum", async () => {

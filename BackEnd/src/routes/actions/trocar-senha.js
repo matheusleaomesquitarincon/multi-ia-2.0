@@ -4,9 +4,10 @@
 
 import { redirect } from "../../http/navigation.js";
 import { LOGIN_NOT_CONFIGURED } from "../../lib/auth/config.js";
-import { parseNewPassword } from "../../lib/auth/forms.js";
+import { acceptedTerms, parseNewPassword, TERMS_REQUIRED } from "../../lib/auth/forms.js";
 import { homePathFor } from "../../lib/auth/member.js";
 import { createSessionClient } from "../../lib/auth/session.js";
+import { termsAcceptance } from "../../lib/auth/terms.js";
 import { getViewer } from "../../lib/auth/viewer.js";
 import { supabaseAdmin } from "../../lib/runs/supabase-server.js";
 
@@ -25,7 +26,13 @@ export async function changePasswordAction(_previous, formData) {
   if (!me.mustChangePassword) redirect(homePathFor(me.role));
 
   const parsed = parseNewPassword(formData);
-  if (!parsed.ok) return { status: "invalid", errors: parsed.errors };
+  // Quem ainda não aceitou a versão atual dos termos aceita aqui, junto com a senha nova (F05).
+  const termsMissing = me.needsTerms && !acceptedTerms(formData);
+  if (!parsed.ok || termsMissing) {
+    const errors = parsed.ok ? {} : { ...parsed.errors };
+    if (termsMissing) errors.acceptTerms = TERMS_REQUIRED;
+    return { status: "invalid", errors };
+  }
 
   const supabase = await createSessionClient();
   if (!supabase) return { status: "error", message: LOGIN_NOT_CONFIGURED };
@@ -50,7 +57,7 @@ export async function changePasswordAction(_previous, formData) {
   try {
     const { error: markError } = await supabaseAdmin()
       .from("members")
-      .update({ must_change_password: false })
+      .update({ must_change_password: false, ...(me.needsTerms ? termsAcceptance() : {}) })
       .eq("id", me.id);
     if (markError) throw new Error(markError.message);
   } catch (markError) {

@@ -7,12 +7,39 @@ import { IMAGE_MODEL, modelPrice, TRANSCRIBE_MODEL } from "../providers/models.j
 const PREMIUM = { provider: "claude", tier: "potente" };
 
 /**
- * Câmbio usado para cobrar em reais. Fixo por enquanto (F17, decisão do Luis de 25/10/2026); depois vira cotação ao vivo.
+ * Câmbio de partida, até o servidor ler o do banco (F17). Quem muda o câmbio de verdade é a equipe da plataforma, no
+ * painel interno (/plataforma), e o servidor busca o valor novo de tempos em tempos (lib/platform/exchange.js).
  * Cada chamada de IA guarda o câmbio usado (tabela interna ai_calls), para a conta fechar depois.
- * Atenção (26/10/2026, a decidir com o Luis): o dólar comercial estava em R$ 5,22 (28/09), mas a plataforma paga as IAs
- * com cartão brasileiro, que soma o IOF de 3,5% e a margem do banco: cada dólar sai por uns R$ 5,6 a 5,7.
+ * Lembrete (26/10/2026): o dólar comercial estava em R$ 5,22 (28/09), mas a plataforma paga as IAs com cartão
+ * brasileiro, que soma o IOF de 3,5% e a margem do banco: cada dólar sai por uns R$ 5,6 a 5,7.
  */
 export const USD_TO_BRL = 5.5;
+
+/** Menor e maior câmbio aceitos (os mesmos limites do banco, em platform_settings). */
+export const USD_TO_BRL_MIN = 1;
+export const USD_TO_BRL_MAX = 20;
+
+let usdToBrlNow = USD_TO_BRL;
+
+/**
+ * O câmbio que vale agora para cobrar em reais.
+ * @returns {number}
+ */
+export function currentUsdToBrl() {
+  return usdToBrlNow;
+}
+
+/**
+ * Troca o câmbio que vale agora. Valor fora dos limites é ignorado (fica o anterior), para um defeito nunca zerar a
+ * cobrança. Devolve se trocou.
+ * @param {number} rate
+ * @returns {boolean}
+ */
+export function setUsdToBrl(rate) {
+  if (!Number.isFinite(rate) || rate < USD_TO_BRL_MIN || rate > USD_TO_BRL_MAX) return false;
+  usdToBrlNow = rate;
+  return true;
+}
 
 /**
  * Margem da OCK sobre o custo das IAs, em cada uso (0,2 = 20%). Zero por enquanto: o formato do preço segue em aberto
@@ -85,7 +112,7 @@ export function costInCents(provider, tier, usage, at) {
  * @returns {number}
  */
 export function usdToCents(usd) {
-  const cents = usd * USD_TO_BRL * (1 + USAGE_MARGIN) * 100;
+  const cents = usd * usdToBrlNow * (1 + USAGE_MARGIN) * 100;
   // Arredonda antes de subir: 12,000000001 (resto da conta com vírgula do computador) é 12, e não 13.
   return Math.ceil(Number(cents.toFixed(6)));
 }

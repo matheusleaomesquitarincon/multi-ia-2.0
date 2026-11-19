@@ -19,7 +19,7 @@
 > Corrigidas a F67 (`PORT` vazio) e a F68 (logo com a visão raio-x); a F66 (nomes antigos no guia) segue aberta.
 > **Em aberto:** levar o trabalho para a `main` e definir como as branches de cada dev se juntam a ela.
 
-**Última atualização:** 16/11/2026 (branch `matheus`: receita própria e aba Meu time, F08; apagar receita e conta, F64; antes, F28, F63 e documentos; antes: 04/11/2026, painel do dono: créditos por pessoa + custo total da empresa; antes: 27/10/2026,
+**Última atualização:** 18/11/2026 (branch `matheus`: termos e privacidade com aceite, F05; painel interno da plataforma com câmbio editável, bloco 3, F17 e F25; confirmação do e-mail por código, F32; antes, 16/11: receita própria e aba Meu time, F08; apagar receita e conta, F64; antes, F28, F63 e documentos; antes: 04/11/2026, painel do dono: créditos por pessoa + custo total da empresa; antes: 27/10/2026,
 madrugada — bloco 1, issue #54: a Proposta comercial na `main`, pelo merge do Luis em 26/10; o segundo PR, a receita
 "Posts para redes sociais", esperando o teste do Luis)
 **Etapa atual:** bloco 1 da nova ordem (etapa 6, o produto do funcionário). A etapa 5 (base para empresas) está no ar e
@@ -1222,19 +1222,48 @@ e depois a F64.
   baixado em Word pela API; as telas olhadas no Chrome (computador e celular, o que corrigiu o layout do montador, das
   abas e do gráfico no celular); apagar receita e apagar conta de ponta a ponta no navegador.
 
+## Pendências do relatório de 18/11 (branch `matheus`, Claude Code)
+
+Pedido do Matheus: rodar o projeto, listar o que falta e fazer os itens 1 a 12 da lista. Antes, o `git pull` da branch
+`matheus` tinha parado em conflito (um commit local nunca enviado contra 22 commits novos); resolvido juntando os dois
+lados, e as falhas locais F63 a F65 viraram F66 a F68 (os números já estavam usados).
+
+**Decisões do Matheus (18/11):** ao apagar a conta, as entregas ficam com a empresa; o funcionário vê só créditos; a
+equipe da plataforma fica numa tabela do banco (`platform_staff`), preenchida só por SQL; o câmbio vai para o banco e é
+editável no painel, e os preços dos modelos continuam no código.
+
+- **Item 1 (testado):** pela tela, no Chrome, com a IA simulada e o Supabase local: o "Esqueci minha senha" do e-mail até
+  a senha nova; a escolha de IA no chat ("Você escolheu Gemini, nível potente. O Chefe recomendava GPT, nível padrão.");
+  apagar uma conversa; a receita do Relatório até o Word em Entregas; a aba Meu time. 11 conferências, todas certas.
+- **Item 4 (F65):** o funcionário vê o gasto do mês em créditos no alto da página.
+- **Item 6 (F05):** `/termos` e `/privacidade` em rascunho (o que falta decidir fica entre [colchetes]); a caixinha de
+  aceite no cadastro, no convite e no primeiro acesso, e `/aceitar-termos` para quem já tinha conta. Migração
+  `20261118120000_terms_acceptance.sql`.
+- **Itens 5 e 7 (bloco 3, F17, F25):** `/plataforma`, só para a equipe: empresas com saldo e disponível, custo real das
+  IAs contra o cobrado no mês, recarga pela tela (até R$ 100.000,00, com confirmação), câmbio e o registro do que a equipe
+  fez. As funções `platform_*` conferem a equipe dentro do banco, pelo login de quem pede. Migração
+  `20261118130000_platform_panel.sql`. No banco local, a conta `equipe@example.com` (senha do seed) é da equipe.
+- **Item 8 (F32, parte 1):** confirmação do e-mail com código de 6 dígitos e a marca no painel do dono. Migração
+  `20261118140000_email_verified.sql` e o modelo `supabase/templates/email-code.html` (no site publicado, colar no
+  "Magic Link": `GUIA-PUBLICACAO.md`, passo 6).
+- **Item 9 (F66):** os nomes das variáveis no `GUIA-PROJETO-DE-TESTES.md`.
+- **Item 12 (F19):** as telas novas conferidas no Chrome e no Edge (computador e celular, sem rolar para o lado). O
+  resultado no Firefox está na F19.
+- **Itens 10 e 11 (não dá para fazer daqui):** o teste no projeto de testes do Supabase precisa das chaves dele no
+  `.env.local` (F62), e o e-mail próprio precisa de uma conta num serviço de envio (F30).
+- **F69 (nova e resolvida):** os documentos diziam que o chat mostra "Custou R$ X" ao funcionário, mas a tela esconde.
+  Decisão do Matheus: o custo é só do dono; os documentos foram alinhados à tela.
+- **Como foi conferido:** lint, testes do servidor e das telas, 191 testes do banco, build, e as telas novas pelo
+  navegador (Chrome e Edge) com fotos no computador e no celular.
+
 ## Próximo passo
 
-0. **Matheus:** em `/trabalho` (visão raio-x, como Funcionário), apagar uma conversa pelo "×" da lista e uma entrega na
-   aba Entregas. Depois, abrir o PR da branch `matheus` para a `main`.
-1. **Matheus:** testar no `localhost` o que mudou (o "Esqueci minha senha" em `/entrar`, a escolha de IA no chat e a
-   receita do relatório, com o `Docs/GUIA-TESTE-RELATORIO.md`) e decidir o desenho da receita própria (F08).
-2. **Claude Code:** a receita própria (F08), depois da decisão acima. A tabela `custom_recipes` já existe.
-3. **Luis, quando quiser (no chat do Claude, sem código):** as decisões provisórias da madrugada, o câmbio e a F52
-   (lista no resumo da madrugada, acima). A sessão 2 do guia das IAs de verdade ficou para o bloco 6.
-4. **Com o parceiro (sem código):** avisar da F27, caso o banco dele esteja no ar com dados de verdade; confirmar a
-   visão e as etapas 5 a 8; combinar o jeito de trabalhar: cada um com a própria conta no GitHub (F21), uma tarefa = um
-   PR pequeno, o PROGRESSO atualizado em todo PR (F20) e tabelas só por migração; e decidir o PR #36 dele (o botão
-   "Ouvir"), ainda aberto.
+1. **Matheus:** abrir o PR da branch `matheus` para a `main` (link na conversa de 18/11) e pedir a revisão.
+2. **Matheus ou Leandro (sem código):** preencher as chaves do projeto de testes no `BackEnd/.env.local` e repetir os
+   `GUIA-TESTE-*.md` lá (F62); criar a conta do serviço de e-mail e seguir os passos 4 a 6 do `GUIA-PUBLICACAO.md` (F30).
+3. **Grupo (Cowork):** os [colchetes] dos termos e da privacidade (razão social, CNPJ, encarregado de dados, foro, preço e
+   devolução dos créditos) e a revisão de um advogado (F05).
+4. **Claude Code:** a parte 2 da F32 (liberar e-mail ocupado) e o que vier dos testes acima.
 
 ## Decisões em aberto
 

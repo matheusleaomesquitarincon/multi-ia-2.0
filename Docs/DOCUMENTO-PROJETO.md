@@ -79,6 +79,19 @@ muda pouco: receitas e textos mais específicos. Risco anotado em F02 do `FALHAS
 - **Funcionário:** recebe do dono um convite (um link que só funciona uma vez e vale 24 horas, mandado por WhatsApp ou
   como o dono preferir), cria a própria senha e trabalha no **workspace**. Só ele conhece a senha (decisão do Luis, 24/10).
   Se perder a senha, o dono gera um link de senha nova, do mesmo jeito (até existir o envio de e-mail, F30).
+  - **Vê só créditos (decisão do Matheus, 18/11):** no espaço de trabalho, o funcionário vê o gasto e o que resta em
+    créditos (1 crédito = R$ 1,00); valores em reais ficam com o dono (F65).
+  - **Confirma o e-mail (18/11, F32):** um aviso no alto do espaço de trabalho manda um código de 6 dígitos para o
+    e-mail do login; o dono vê no painel quem já confirmou. Não bloqueia o uso.
+  - **Ao apagar a conta, as entregas ficam com a empresa (decisão do Matheus, 18/11):** somem as conversas, os anexos, as
+    receitas rodadas e o login; ficam as entregas, os times da empresa e o extrato (F64).
+- **Termos de uso e política de privacidade (18/11, F05):** em `/termos` e `/privacidade`, ainda em **rascunho** para
+  revisão de um advogado. O dono aceita no cadastro, o funcionário ao criar a senha, e quem já tinha conta aceita antes
+  de entrar. Cada pessoa guarda a versão aceita e a data; mudando a versão, todos aceitam de novo.
+- **Equipe da plataforma (bloco 3, 18/11):** um terceiro lado, só nosso. Em `/plataforma`, a equipe vê todas as
+  empresas com o saldo, o custo real das IAs contra o que foi cobrado no mês, recarrega crédito pela tela (depois do
+  pagamento) e define o câmbio usado para cobrar (F17, F25). Quem é da equipe é marcado só pelo editor de SQL do
+  Supabase, e o banco confere a equipe a cada pedido.
 
 ### Três jeitos de trabalhar no workspace (decisão do Luis, 22/10)
 
@@ -124,7 +137,7 @@ são produtos separados e ficam para integrações futuras.
   "até R$ X" antes de começar, reserva esse máximo, cobra cada etapa pelo consumo real e pausa se for passar.
 - O espaço de trabalho (`/trabalho`, etapa 5, PR 3c) com o chat da **tarefa rápida**: conversas, anexos (PDF, texto e
   imagens) e arquivos gerados (PDF, Word, Excel, CSV, gráficos e projeto em .zip), mais as abas Entregas e Meus gastos
-  (gasto do mês e teto, em reais). Cada resposta mostra quem o Chefe escolheu e "Custou R$ X".
+  (gasto do mês e teto, em reais). O custo de cada resposta e a IA que respondeu ficam só no painel do dono (decisão do Matheus, 18/11, F69).
 - A aba **Receitas** no espaço de trabalho (issue #42): as receitas em cartões (as prontas e as do MVP que ainda faltam,
   como "Em breve"); a escolhida abre ali mesmo, sem sair da página, e o chat vazio sugere as receitas prontas.
 - A receita **"Proposta comercial"** (bloco 1, issue #54), a primeira que termina num texto: a tela "Sua proposta está
@@ -317,7 +330,8 @@ resumo e as entregas (decisão de 24/10, acima).
    **Na tarefa rápida (chat)** não há estimativa antes de cada mensagem (decisão do Luis, 25/10): ela só existiria
    depois de o Chefe decidir, e pedir um OK a cada mensagem tiraria a graça da tarefa rápida. O servidor confere saldo e
    teto antes de qualquer IA, reserva o máximo da resposta depois que o Chefe decide, cobra o consumo real numa linha só
-   e a tela mostra "Custou R$ X" em cada resposta. Resposta que falhou não é cobrada.
+   e o custo de cada resposta aparece só para o dono, no painel (o funcionário não vê; F69). Resposta que falhou
+   não é cobrada.
 5. Prioridade: estimativas boas e honestas, calculadas a partir do histórico real de cada receita. Sem porcentagem de confiança na tela por enquanto.
    O histórico só existe depois das IAs de verdade; até lá vale o máximo (item 1), que nunca fica abaixo do gasto real.
 6. Internamente, registrar o custo real em dólar de cada execução, para definir preço e margem.

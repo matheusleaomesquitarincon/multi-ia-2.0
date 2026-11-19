@@ -2,7 +2,7 @@
 // servidor. Regras (AGENTS.md, seção 5): cada etapa concluída é cobrada pelo consumo real; etapa que falhou e etapa
 // interrompida pelo cancelamento não são cobradas, mas o custo delas fica no registro interno (F26).
 
-import { costInCents, costInUsd, USD_TO_BRL } from "../ock/pricing.js";
+import { costInCents, costInUsd, currentUsdToBrl } from "../ock/pricing.js";
 import { DEFAULT_TIER } from "../providers/types.js";
 import { CUSTOM_RECIPE_LABEL } from "../recipes/custom.js";
 import { stageSteps } from "../recipes/types.js";
@@ -89,7 +89,7 @@ export function aiCallRows(run, calls, chargedStepIds) {
     output_tokens: call.usage.outputTokens,
     // A coluna guarda 6 casas depois da vírgula.
     cost_usd: Number(costInUsd(call.provider, call.tier, call.usage).toFixed(6)),
-    usd_brl: USD_TO_BRL,
+    usd_brl: currentUsdToBrl(),
     charged: call.ok && chargedStepIds.has(call.stepId),
     status: call.ok ? "ok" : "error",
     error_message: call.errorMessage?.slice(0, 2000) ?? null,

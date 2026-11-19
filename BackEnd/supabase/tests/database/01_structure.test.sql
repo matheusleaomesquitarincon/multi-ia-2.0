@@ -46,9 +46,10 @@ select results_eq(
   $$
     values ('company_credit'), ('company_month_by_provider'), ('current_company_id'), ('current_member_id'),
       ('current_member_is_owner'), ('member_month_summary'), ('month_start'), ('month_statement'),
-      ('my_daily_spending')
+      ('my_daily_spending'), ('platform_companies'), ('platform_costs'), ('platform_credit_entries'),
+      ('platform_is_staff'), ('platform_overview'), ('platform_set_usd_to_brl'), ('platform_topup')
   $$,
-  'Quem está logado só chama as funções que dizem quem ele é e as contas do mês (que só somam o que ele pode ver)'
+  'Quem está logado só chama as funções que dizem quem ele é, as contas do mês e as da equipe da plataforma (que conferem a equipe)'
 );
 
 select ok(

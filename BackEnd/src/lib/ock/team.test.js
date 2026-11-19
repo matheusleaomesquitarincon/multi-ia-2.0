@@ -33,6 +33,7 @@ describe("equipe da empresa", () => {
       role: "employee",
       monthlyBudgetCents: 5000,
       status: "active",
+      emailVerified: false,
     });
     expect(parseTeamRow({ ...ROW, monthly_budget_cents: null }).monthlyBudgetCents).toBeNull();
   });

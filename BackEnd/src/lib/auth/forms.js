@@ -11,6 +11,24 @@ export const PASSWORD_MAX_BYTES = 72;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
+ * Versão dos termos de uso e da política de privacidade (as telas /termos e /privacidade). Mudou o texto de um jeito que
+ * a pessoa precisa saber? Troque a data: quem aceitou a versão antiga é chamado a aceitar de novo.
+ */
+export const TERMS_VERSION = "2026-11-18";
+
+/** O aviso de quem tentou seguir sem marcar a caixinha dos termos. */
+export const TERMS_REQUIRED = "Para continuar, leia e aceite os termos de uso e a política de privacidade.";
+
+/**
+ * Se a caixinha "Li e aceito os termos" veio marcada. Caixinha marcada chega como "on"; desmarcada, nem chega.
+ * @param {FormData} formData
+ * @returns {boolean}
+ */
+export function acceptedTerms(formData) {
+  return text(formData, "acceptTerms") === "on";
+}
+
+/**
  * @typedef {{
  * companyName: string;
  * ownerName: string;
@@ -19,7 +37,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * }} SignUpValues
  */
 
-/** @typedef {keyof SignUpValues} SignUpField */
+/** @typedef {keyof SignUpValues | "acceptTerms"} SignUpField */
 
 /**
  * @template Values
@@ -106,6 +124,7 @@ export function parseSignUp(formData) {
   if (emailError) errors.email = emailError;
   const passwordError = passwordProblem(values.password);
   if (passwordError) errors.password = passwordError;
+  if (!acceptedTerms(formData)) errors.acceptTerms = TERMS_REQUIRED;
 
   if (Object.keys(errors).length > 0) {
     return {
@@ -193,6 +212,6 @@ export function parseNewPassword(formData) {
 /** O que a ação de aceitar o convite devolve (quando dá certo, ela leva direto para o trabalho). */
 /**
  * @typedef {| { status: "idle" }
- * | { status: "invalid"; errors: Partial<Record<keyof NewPasswordValues, string>> }
+ * | { status: "invalid"; errors: Partial<Record<keyof NewPasswordValues | "acceptTerms", string>> }
  * | { status: "error"; message: string }} AcceptInviteState
  */

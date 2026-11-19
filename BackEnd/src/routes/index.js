@@ -3,7 +3,9 @@
 import { Router } from "express";
 import { route } from "../http/adapter.js";
 import { formAction } from "./action.js";
+import { acceptTermsAction } from "./actions/aceitar-termos.js";
 import { signUpCompany } from "./actions/cadastro.js";
+import { sendEmailCodeAction, verifyEmailCodeAction } from "./actions/conta.js";
 import { acceptInviteAction } from "./actions/convite.js";
 import {
   createAgentAction,
@@ -16,6 +18,7 @@ import {
 } from "./actions/dono.js";
 import { signIn, signOut } from "./actions/entrar.js";
 import { requestPasswordReset } from "./actions/esqueci-senha.js";
+import { platformExchangeAction, platformTopupAction } from "./actions/plataforma.js";
 import { entrarComoDemo } from "./actions/raiox.js";
 import { changePasswordAction } from "./actions/trocar-senha.js";
 import * as account from "./api/ock/account/route.js";
@@ -41,7 +44,7 @@ import * as runResume from "./api/runs/[id]/resume/route.js";
 import * as run from "./api/runs/[id]/route.js";
 import * as runs from "./api/runs/route.js";
 import * as confirm from "./confirmar/route.js";
-import { demoView, inviteView, ownerView, recipeExistsView, sessionView, workspaceView } from "./views.js";
+import { demoView, inviteView, ownerView, platformView, recipeExistsView, sessionView, workspaceView } from "./views.js";
 
 const METHODS = { GET: "get", POST: "post", PUT: "put", PATCH: "patch", DELETE: "delete" };
 
@@ -85,6 +88,7 @@ export function apiRoutes() {
   router.get("/api/views/convite/:token", route(inviteView));
   router.get("/api/views/receitas/:recipeId", route(recipeExistsView));
   router.get("/api/views/raiox", route(demoView));
+  router.get("/api/views/plataforma", route(platformView));
 
   const actions = {
     "entrar/sign-in": signIn,
@@ -92,6 +96,9 @@ export function apiRoutes() {
     "cadastro/sign-up": signUpCompany,
     "convite/accept": acceptInviteAction,
     "trocar-senha/change": changePasswordAction,
+    "termos/accept": acceptTermsAction,
+    "conta/email-code": sendEmailCodeAction,
+    "conta/email-verify": verifyEmailCodeAction,
     "dono/invite": inviteEmployeeAction,
     "dono/new-link": newLinkAction,
     "dono/budget": updateBudgetAction,
@@ -99,6 +106,8 @@ export function apiRoutes() {
     "dono/agent-create": createAgentAction,
     "dono/agent-delete": deleteAgentAction,
     "dono/demo-topup": demoTopupAction,
+    "plataforma/topup": platformTopupAction,
+    "plataforma/exchange": platformExchangeAction,
   };
   for (const [name, action] of Object.entries(actions)) {
     router.post(`/api/actions/${name}`, route(formAction(action)));

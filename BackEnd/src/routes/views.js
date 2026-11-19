@@ -10,6 +10,7 @@ import { listCompanyAgents } from "../lib/ock/company-agents.js";
 import { deadlineText } from "../lib/ock/deadline.js";
 import { loadCompanyCredit, loadMemberMonths, loadMonth, loadMonthStatement } from "../lib/ock/spending.js";
 import { listOwnConversations } from "../lib/ock/task-store.js";
+import { isPlatformStaff, loadPlatformPanel, requireStaffSession } from "../lib/platform/panel.js";
 import { listTeam } from "../lib/ock/team.js";
 import { aiTools } from "../lib/providers/mode.js";
 import { getRecipe, listRecipeSummaries, RECIPES } from "../lib/recipes/catalog.js";
@@ -32,7 +33,15 @@ export async function sessionView() {
     console.error("[sessão] Não deu para ler quem está logado:", error instanceof Error ? error.message : error);
     viewer = { status: "signed-out" };
   }
-  return json({ viewer, demo: isDemoMode() });
+  // Só quem está logado pode ser da equipe da plataforma: sem login, nem pergunta ao banco.
+  const staff = viewer.status === "signed-out" ? false : await isPlatformStaff();
+  return json({ viewer, demo: isDemoMode(), staff });
+}
+
+/** O painel interno da plataforma (bloco 3): só para a equipe; para os outros, "não encontrado". */
+export async function platformView() {
+  const session = await requireStaffSession();
+  return json(await loadPlatformPanel(session));
 }
 
 export async function workspaceView() {

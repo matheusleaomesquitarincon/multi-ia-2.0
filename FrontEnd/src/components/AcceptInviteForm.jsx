@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import { acceptInviteAction } from "../lib/actions.js";
 import { PASSWORD_MIN_CHARS } from "../lib/auth/forms.js";
 import { firstName } from "../lib/auth/member.js";
+import { TermsCheckbox } from "./TermsCheckbox.jsx";
 import styles from "./AuthForm.module.css";
 
 const INITIAL = { status: "idle" };
@@ -111,6 +112,8 @@ export function AcceptInviteForm({ token, kind, name, email, companyName, deadli
             </p>
           )}
         </div>
+
+        <TermsCheckbox error={errors.acceptTerms} />
 
         {state.status === "error" && (
           <p className={styles.error} role="alert">

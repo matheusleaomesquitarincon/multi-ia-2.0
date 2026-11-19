@@ -3,9 +3,10 @@
 
 import { redirect } from "../../http/navigation.js";
 import { LOGIN_NOT_CONFIGURED } from "../../lib/auth/config.js";
-import { parseNewPassword, text } from "../../lib/auth/forms.js";
+import { acceptedTerms, parseNewPassword, TERMS_REQUIRED, text } from "../../lib/auth/forms.js";
 import { acceptInvite } from "../../lib/auth/invites.js";
 import { createSessionClient } from "../../lib/auth/session.js";
+import { recordTermsAcceptance } from "../../lib/auth/terms.js";
 
 const REFUSED = {
   "not-found": "Este link venceu ou já foi usado. Peça um link novo ao dono da sua empresa.",
@@ -20,7 +21,13 @@ const REFUSED = {
  */
 export async function acceptInviteAction(_previous, formData) {
   const parsed = parseNewPassword(formData);
-  if (!parsed.ok) return { status: "invalid", errors: parsed.errors };
+  // Quem aceita o convite também aceita os termos de uso e a política de privacidade (F05).
+  const termsMissing = !acceptedTerms(formData);
+  if (!parsed.ok || termsMissing) {
+    const errors = parsed.ok ? {} : { ...parsed.errors };
+    if (termsMissing) errors.acceptTerms = TERMS_REQUIRED;
+    return { status: "invalid", errors };
+  }
 
   const supabase = await createSessionClient();
   if (!supabase) return { status: "error", message: LOGIN_NOT_CONFIGURED };
@@ -40,7 +47,7 @@ export async function acceptInviteAction(_previous, formData) {
   }
 
   // Entra com a senha nova. Se alguém estava logado neste navegador (ex.: o dono testando o link), sai dessa conta.
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data: signedIn, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
     console.error("[convite] A senha foi gravada, mas a entrada falhou:", error.code, error.status);
     return {
@@ -48,6 +55,13 @@ export async function acceptInviteAction(_previous, formData) {
       message: "A sua senha foi criada, mas não deu para entrar agora. Vá em Entrar e use o seu e-mail e a senha nova.",
     };
   }
+  try {
+    if (signedIn.user) await recordTermsAcceptance({ userId: signedIn.user.id });
+  } catch (termsError) {
+    // A conta já está pronta; sem o aceite gravado, a pessoa é chamada a aceitar de novo no próximo acesso.
+    console.error("[convite]", termsError instanceof Error ? termsError.message : termsError);
+  }
+
   // Senha nova derruba os outros aparelhos que estavam com a conta (ex.: quem soubesse a senha antiga).
   const { error: othersError } = await supabase.auth.signOut({ scope: "others" });
   if (othersError) console.error("[convite] Não deu para sair dos outros aparelhos:", othersError.code);

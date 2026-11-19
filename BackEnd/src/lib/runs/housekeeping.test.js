@@ -4,6 +4,8 @@ const wallet = vi.hoisted(() => ({ closeStaleHolds: vi.fn() }));
 vi.mock("./wallet.js", () => wallet);
 const files = vi.hoisted(() => ({ removeOrphanFiles: vi.fn() }));
 vi.mock("../ock/files.js", () => files);
+const exchange = vi.hoisted(() => ({ refreshExchangeRate: vi.fn() }));
+vi.mock("../platform/exchange.js", () => exchange);
 
 import { runHousekeeping, startHousekeeping } from "./housekeeping.js";
 
@@ -21,6 +23,7 @@ afterEach(() => {
   vi.restoreAllMocks();
   wallet.closeStaleHolds.mockReset();
   files.removeOrphanFiles.mockReset();
+  exchange.refreshExchangeRate.mockReset();
 });
 
 describe("limpeza periódica (F43)", () => {
@@ -66,5 +69,17 @@ describe("limpeza periódica (F43)", () => {
     files.removeOrphanFiles.mockRejectedValue(new Error("storage down"));
     await expect(runHousekeeping()).resolves.toBeUndefined();
     expect(wallet.closeStaleHolds).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("câmbio da plataforma (F17)", () => {
+  it("lê o câmbio de novo a cada rodada, e um erro nele não atrapalha o resto", async () => {
+    wallet.closeStaleHolds.mockResolvedValue(0);
+    files.removeOrphanFiles.mockResolvedValue(0);
+    exchange.refreshExchangeRate.mockRejectedValue(new Error("banco fora do ar"));
+    await runHousekeeping();
+    expect(exchange.refreshExchangeRate).toHaveBeenCalledTimes(1);
+    expect(wallet.closeStaleHolds).toHaveBeenCalledTimes(1);
+    expect(files.removeOrphanFiles).toHaveBeenCalledTimes(1);
   });
 });

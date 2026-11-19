@@ -32,10 +32,20 @@ só. Serve qualquer hospedagem de servidor Node sempre ligado (ex.: Railway ou R
 5. No Supabase (Authentication → Emails → Reset Password), cole o assunto e o texto de
    `BackEnd/supabase/templates/recovery.html` (no lugar de `{{ .SiteURL }}`, o Supabase põe a Site URL do passo 1).
    Assim o link do "Esqueci minha senha" funciona em qualquer navegador, não só no que pediu.
+6. No Supabase (Authentication → Emails → Magic Link), cole o assunto e o texto de
+   `BackEnd/supabase/templates/email-code.html`. É o e-mail com o código de 6 dígitos que o funcionário usa para
+   confirmar o e-mail (F32); sem esse modelo, ele receberia um link de entrada no lugar do código.
+7. **Equipe da plataforma.** Depois de quem é da equipe criar a própria conta (ou de criar um login só para isso em
+   Authentication → Users), rode no editor de SQL, com o id do login (Authentication → Users → a pessoa → User UID):
+   `insert into public.platform_staff (user_id, name) values ('<id do login>', 'Nome');`
+   Só quem está nessa tabela abre `/plataforma`. Para tirar alguém: `delete from public.platform_staff where user_id = '<id>';`
+8. Em `/plataforma`, confira o **câmbio** (reais por dólar, com IOF e taxa do cartão) antes da primeira cobrança.
 
 ## Depois de publicar, confira
 
 - `/` abre a página inicial e `/raiox` mostra "Página não encontrada".
+- `/termos` e `/privacidade` abrem sem login, e o cadastro só passa com a caixinha dos termos marcada.
+- `/plataforma` abre para quem está na equipe e mostra "Página não encontrada" para um dono ou funcionário.
 - Cadastro, login, convite e uma receita funcionam até o fim.
 - "Esqueci minha senha" com um e-mail de fora da equipe do Supabase: o e-mail chega, o link leva a "Crie uma senha
   nova" e a senha nova entra.

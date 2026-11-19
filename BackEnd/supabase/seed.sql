@@ -5,6 +5,7 @@
 --   marina@example.com  dona
 --   ana@example.com     funcionária, teto de R$ 50,00 por mês
 --   bruno@example.com   funcionário, teto de R$ 30,00 por mês
+--   equipe@example.com  equipe da plataforma (painel interno em /plataforma), sem empresa
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
@@ -19,7 +20,8 @@ select
 from (values
   ('a0000000-0000-4000-8000-000000000001'::uuid, 'marina@example.com'),
   ('a0000000-0000-4000-8000-000000000002'::uuid, 'ana@example.com'),
-  ('a0000000-0000-4000-8000-000000000003'::uuid, 'bruno@example.com')
+  ('a0000000-0000-4000-8000-000000000003'::uuid, 'bruno@example.com'),
+  ('a0000000-0000-4000-8000-000000000009'::uuid, 'equipe@example.com')
 ) as u (id, email);
 
 insert into auth.identities (user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at)
@@ -28,8 +30,11 @@ select u.id, u.id::text, 'email', jsonb_build_object('sub', u.id::text, 'email',
 from auth.users u
 where u.id in (
   'a0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000002',
-  'a0000000-0000-4000-8000-000000000003'
+  'a0000000-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000009'
 );
+
+-- Equipe da plataforma (bloco 3): na produção, só pelo editor de SQL, com o id do login de quem é da equipe.
+insert into public.platform_staff (user_id, name) values ('a0000000-0000-4000-8000-000000000009', 'Equipe (teste)');
 
 insert into public.companies (id, name)
 values ('c0000000-0000-4000-8000-000000000001', 'Agência Exemplo');

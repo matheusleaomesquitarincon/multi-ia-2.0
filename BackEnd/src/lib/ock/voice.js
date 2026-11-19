@@ -4,7 +4,7 @@
 // transcrição que falhou (ou que não entendeu nada) não é cobrada, mas fica no registro interno (F26). O áudio não é
 // guardado.
 
-import { transcriptionCostInUsd, usdToCents, USD_TO_BRL } from "./pricing.js";
+import { transcriptionCostInUsd, usdToCents, currentUsdToBrl } from "./pricing.js";
 import { getTranscriber } from "../providers/registry.js";
 
 import { ProviderError } from "../providers/types.js";
@@ -131,7 +131,7 @@ async function settle(me, holdId, call) {
     output_tokens: 0,
     // A coluna guarda 6 casas depois da vírgula. A transcrição que falhou não é cobrada pela OpenAI.
     cost_usd: transcript ? Number(transcriptCostUsd(transcript).toFixed(6)) : 0,
-    usd_brl: USD_TO_BRL,
+    usd_brl: currentUsdToBrl(),
     charged: call.charged,
     status: transcript?.text ? "ok" : "error",
     error_message: transcript

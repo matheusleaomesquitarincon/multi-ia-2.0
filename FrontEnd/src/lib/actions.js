@@ -10,6 +10,9 @@ export const forgotPasswordAction = action("esqueci-senha/request");
 export const signUpCompany = action("cadastro/sign-up");
 export const acceptInviteAction = action("convite/accept");
 export const changePasswordAction = action("trocar-senha/change");
+export const acceptTermsAction = action("termos/accept");
+export const sendEmailCodeAction = action("conta/email-code");
+export const verifyEmailCodeAction = action("conta/email-verify");
 export const inviteEmployeeAction = action("dono/invite");
 export const newLinkAction = action("dono/new-link");
 export const updateBudgetAction = action("dono/budget");
@@ -17,6 +20,8 @@ export const setStatusAction = action("dono/status");
 export const createAgentAction = action("dono/agent-create");
 export const deleteAgentAction = action("dono/agent-delete");
 export const demoTopupAction = action("dono/demo-topup");
+export const platformTopupAction = action("plataforma/topup");
+export const platformExchangeAction = action("plataforma/exchange");
 
 export function signOut() {
   return postForm("/api/actions/entrar/sign-out");
