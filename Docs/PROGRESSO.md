@@ -1251,7 +1251,8 @@ editável no painel, e os preços dos modelos continuam no código.
   resultado no Firefox está na F19.
 - **Itens 10 e 11 (não dá para fazer daqui):** o teste no projeto de testes do Supabase precisa das chaves dele no
   `.env.local` (F62), e o e-mail próprio precisa de uma conta num serviço de envio (F30).
-- **F69 (nova):** os documentos dizem que o chat mostra "Custou R$ X" ao funcionário, mas a tela esconde.
+- **F69 (nova e resolvida):** os documentos diziam que o chat mostra "Custou R$ X" ao funcionário, mas a tela esconde.
+  Decisão do Matheus: o custo é só do dono; os documentos foram alinhados à tela.
 - **Como foi conferido:** lint, testes do servidor e das telas, 191 testes do banco, build, e as telas novas pelo
   navegador (Chrome e Edge) com fotos no computador e no celular.
 
@@ -1261,7 +1262,7 @@ editável no painel, e os preços dos modelos continuam no código.
 2. **Matheus ou Leandro (sem código):** preencher as chaves do projeto de testes no `BackEnd/.env.local` e repetir os
    `GUIA-TESTE-*.md` lá (F62); criar a conta do serviço de e-mail e seguir os passos 4 a 6 do `GUIA-PUBLICACAO.md` (F30).
 3. **Grupo (Cowork):** os [colchetes] dos termos e da privacidade (razão social, CNPJ, encarregado de dados, foro, preço e
-   devolução dos créditos) e a revisão de um advogado (F05); a F69 (o funcionário vê o custo de cada resposta?).
+   devolução dos créditos) e a revisão de um advogado (F05).
 4. **Claude Code:** a parte 2 da F32 (liberar e-mail ocupado) e o que vier dos testes acima.
 
 ## Decisões em aberto

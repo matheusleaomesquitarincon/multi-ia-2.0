@@ -10,6 +10,11 @@
 > senhas, chaves, o e-mail dele ou o link de um convite.** Todo SQL deste guia roda no projeto **de testes** do Supabase
 > (`multi-ia-teste`), nunca no de verdade (`multi-ia`).
 
+> **Atualização (18/11/2026, F69):** o funcionário **não vê** mais qual IA respondeu nem o "Custou R$ X" em cada
+> resposta: isso fica só no painel do dono. Onde este guia fala em "O Chefe escolheu…", "Feito por…" ou "Custou", confira
+> no painel do dono em vez da tela do chat. A nota "Você escolheu… O Chefe recomendava…" só aparece quando a pessoa
+> escolhe uma IA ou um nível diferente do recomendado.
+
 ## Para que serve
 
 Conferir, no computador do Luis e com o projeto de testes do Supabase, o que a parte 3c trouxe: o `/trabalho` deixou de

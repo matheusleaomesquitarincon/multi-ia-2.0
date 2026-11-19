@@ -137,7 +137,7 @@ são produtos separados e ficam para integrações futuras.
   "até R$ X" antes de começar, reserva esse máximo, cobra cada etapa pelo consumo real e pausa se for passar.
 - O espaço de trabalho (`/trabalho`, etapa 5, PR 3c) com o chat da **tarefa rápida**: conversas, anexos (PDF, texto e
   imagens) e arquivos gerados (PDF, Word, Excel, CSV, gráficos e projeto em .zip), mais as abas Entregas e Meus gastos
-  (gasto do mês e teto, em reais). Cada resposta mostra quem o Chefe escolheu e "Custou R$ X".
+  (gasto do mês e teto, em reais). O custo de cada resposta e a IA que respondeu ficam só no painel do dono (decisão do Matheus, 18/11, F69).
 - A aba **Receitas** no espaço de trabalho (issue #42): as receitas em cartões (as prontas e as do MVP que ainda faltam,
   como "Em breve"); a escolhida abre ali mesmo, sem sair da página, e o chat vazio sugere as receitas prontas.
 - A receita **"Proposta comercial"** (bloco 1, issue #54), a primeira que termina num texto: a tela "Sua proposta está
@@ -330,7 +330,8 @@ resumo e as entregas (decisão de 24/10, acima).
    **Na tarefa rápida (chat)** não há estimativa antes de cada mensagem (decisão do Luis, 25/10): ela só existiria
    depois de o Chefe decidir, e pedir um OK a cada mensagem tiraria a graça da tarefa rápida. O servidor confere saldo e
    teto antes de qualquer IA, reserva o máximo da resposta depois que o Chefe decide, cobra o consumo real numa linha só
-   e a tela mostra "Custou R$ X" em cada resposta. Resposta que falhou não é cobrada.
+   e o custo de cada resposta aparece só para o dono, no painel (o funcionário não vê; F69). Resposta que falhou
+   não é cobrada.
 5. Prioridade: estimativas boas e honestas, calculadas a partir do histórico real de cada receita. Sem porcentagem de confiança na tela por enquanto.
    O histórico só existe depois das IAs de verdade; até lá vale o máximo (item 1), que nunca fica abaixo do gasto real.
 6. Internamente, registrar o custo real em dólar de cada execução, para definir preço e margem.

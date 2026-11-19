@@ -86,7 +86,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F66 | O guia do projeto de testes ainda mostra os nomes antigos das variáveis do Supabase nos passos | Processo | Baixa | Resolvida |
 | F67 | Com `PORT=` vazio, como no modelo do `.env.local`, o servidor ligava numa porta aleatória | Código | Média | Resolvida |
 | F68 | Com a visão raio-x ligada, o logo e o login mandavam para `/raiox` mesmo quem já tinha entrado | Código | Baixa | Resolvida |
-| F69 | Os documentos dizem que o chat mostra "Custou R$ X" ao funcionário, mas a tela esconde o custo dele | Processo / Produto | Baixa | Aberta |
+| F69 | Os documentos dizem que o chat mostra "Custou R$ X" ao funcionário, mas a tela esconde o custo dele | Processo / Produto | Baixa | Resolvida |
 
 ## Negócio
 
@@ -1001,7 +1001,9 @@ computador: no site publicado o raio-x não liga. Agora quem entrou vai para a p
 `/trabalho`, na primeira aba); só quem não entrou vai para `/raiox`.
 
 ### F69 — Os documentos dizem que o chat mostra "Custou R$ X" ao funcionário, mas a tela esconde o custo dele
-**Status:** Aberta (18/11/2026, percebida pelo Claude ao testar a escolha de IA no chat). O `AGENTS.md` (seção 5,
+**Status:** Resolvida (18/11/2026, decisão do Matheus: o funcionário não precisa saber o custo, só o dono. A tela já
+fazia assim; o `AGENTS.md`, o `DOCUMENTO-PROJETO.md` e o `GUIA-TESTE-CHAT.md` foram alinhados). Era: percebida pelo
+Claude ao testar a escolha de IA no chat. O `AGENTS.md` (seção 5,
 "Créditos e estimativa", item 4), o `DOCUMENTO-PROJETO.md` (linhas 127 e 320) e o `GUIA-TESTE-CHAT.md` dizem que cada
 resposta do chat mostra "Custou R$ X". O código (`FrontEnd/src/components/QuickChat.jsx`, `Answer`) diz o contrário: "o
 funcionário não vê qual IA respondeu nem o custo (isso é do painel do dono)", e a tela de fato não mostra. Pela decisão
