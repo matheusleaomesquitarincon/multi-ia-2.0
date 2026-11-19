@@ -82,8 +82,8 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F62 | A nova arquitetura ainda não foi testada de ponta a ponta com o banco de verdade | Processo | Alta | Aberta |
 | F63 | O funcionário via os créditos 100 vezes maiores que o dono | Produto / Código | Média | Resolvida |
 | F64 | Ainda não dá para apagar uma execução de receita nem a conta inteira | Segurança / LGPD | Média | Resolvida |
-| F65 | O funcionário vê o "Gasto do mês" em reais no alto da página, mas créditos no resto | Produto | Baixa | Aberta |
-| F66 | O guia do projeto de testes ainda mostra os nomes antigos das variáveis do Supabase nos passos | Processo | Baixa | Aberta |
+| F65 | O funcionário vê o "Gasto do mês" em reais no alto da página, mas créditos no resto | Produto | Baixa | Resolvida |
+| F66 | O guia do projeto de testes ainda mostra os nomes antigos das variáveis do Supabase nos passos | Processo | Baixa | Resolvida |
 | F67 | Com `PORT=` vazio, como no modelo do `.env.local`, o servidor ligava numa porta aleatória | Código | Média | Resolvida |
 | F68 | Com a visão raio-x ligada, o logo e o login mandavam para `/raiox` mesmo quem já tinha entrado | Código | Baixa | Resolvida |
 
@@ -943,8 +943,11 @@ mostra "Gasto do mês R$ 0,02" para o funcionário, enquanto a aba Meus gastos d
 em dinheiro"). Com 1 crédito = R$ 1,00 os números batem, mas a tela mistura as duas unidades. **A decidir:** o
 funcionário vê reais ou só créditos? Mudar é uma linha.
 
+- **Resolvida (18/11/2026, decisão do Matheus):** o funcionário vê só créditos. O "Gasto do mês" do alto do espaço
+  de trabalho usa `formatCredits` para ele e continua em reais para o dono (`OckWorkspace.jsx`).
+
 ### F66 — O guia do projeto de testes ainda mostra os nomes antigos das variáveis do Supabase nos passos
-**Status:** Aberta (05/11/2026). O aviso no começo de `Docs/GUIA-PROJETO-DE-TESTES.md` já traz os nomes certos (`SUPABASE_URL` e
+**Status:** Resolvida (18/11/2026: os passos da parte D agora usam `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` e `BackEnd/.env.local`). Era: o aviso no começo de `Docs/GUIA-PROJETO-DE-TESTES.md` já traz os nomes certos (`SUPABASE_URL` e
 `SUPABASE_PUBLISHABLE_KEY`), mas os passos das linhas 97 a 106 ainda mostram `NEXT_PUBLIC_...`. Quem copiar direto dos passos fica
 com o login desligado. **Correção:** atualizar os nomes nos passos.
 

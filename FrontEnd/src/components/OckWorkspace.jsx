@@ -154,7 +154,8 @@ export function OckWorkspace({
         titleEm="O que vamos fazer hoje?"
         lead="Peça o que precisar em português. O Chefe monta o time e cuida do resto."
         stats={[
-          { label: "Gasto do mês", value: formatBRL(month.spentCents) },
+          // O funcionário vê só créditos (F65); reais ficam com o dono.
+          { label: "Gasto do mês", value: isOwner ? formatBRL(month.spentCents) : formatCredits(month.spentCents) },
           isOwner
             ? { label: "Teto", value: month.budgetCents === null ? "sem teto" : formatBRL(month.budgetCents) }
             : {

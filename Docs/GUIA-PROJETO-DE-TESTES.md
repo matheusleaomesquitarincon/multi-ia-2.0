@@ -93,20 +93,20 @@ No menu da esquerda, **Authentication**:
 
 ## Parte D — Chaves no computador (5 min)
 
-1. No projeto de testes, clique em **Connect → App Frameworks** e escolha **Next.js**. Aparecem duas linhas prontas:
-   `NEXT_PUBLIC_SUPABASE_URL=...` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...` (a segunda começa com `sb_publishable_`).
-   Se a tela mostrar um nome diferente para a segunda (ex.: `..._ANON_KEY`), use o valor dela com o nome
-   `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+1. No projeto de testes, clique em **Connect → App Frameworks**. A tela mostra duas linhas prontas, com nomes de outro
+   jeito de montar sites (ex.: `NEXT_PUBLIC_SUPABASE_URL=...` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...`). Copie **só os
+   valores**: aqui eles vão com os nomes `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY` (a segunda começa com
+   `sb_publishable_`; se a tela mostrar `..._ANON_KEY`, use o valor dela).
 2. A chave secreta fica em **Project Settings → API Keys → Secret keys**: clique no olho para ver e copie (começa com
    `sb_secret_`). Ela é a chave-mestra do banco de testes: só vai para o `.env.local`.
-3. No VS Code, abra o arquivo `.env.local` na raiz da pasta do projeto. Ele já existe e é ignorado pelo Git. Acrescente
-   no fim, cada uma na sua linha e sem espaços em volta do `=`:
+3. No VS Code, abra o arquivo `BackEnd/.env.local` (se não existir, copie o `BackEnd/.env.example` com esse nome). Ele é
+   ignorado pelo Git. Preencha as três linhas do Supabase, sem espaços em volta do `=`:
    ```
-   NEXT_PUBLIC_SUPABASE_URL=https://....supabase.co
-   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+   SUPABASE_URL=https://....supabase.co
+   SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
    SUPABASE_SECRET_KEY=sb_secret_...
    ```
-4. Se o arquivo tiver linhas `NEXT_PUBLIC_SUPABASE_ANON_KEY` ou `SUPABASE_SERVICE_ROLE_KEY` (do banco antigo do
+4. Se o arquivo tiver linhas `NEXT_PUBLIC_...`, `SUPABASE_ANON_KEY` ou `SUPABASE_SERVICE_ROLE_KEY` (do banco antigo do
    parceiro), apague essas linhas.
 5. Salve: **clique dentro do arquivo** e aperte **Ctrl + S**. Sem o clique, o Ctrl + S pode ir para o terminal, e o
    arquivo não é salvo. Confira que a bolinha branca ao lado do nome, na aba do arquivo, sumiu.
