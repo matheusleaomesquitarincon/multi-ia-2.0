@@ -15,15 +15,19 @@ import {
   updateBudgetAction,
 } from "./actions/dono.js";
 import { signIn, signOut } from "./actions/entrar.js";
+import { requestPasswordReset } from "./actions/esqueci-senha.js";
 import { entrarComoDemo } from "./actions/raiox.js";
 import { changePasswordAction } from "./actions/trocar-senha.js";
+import * as account from "./api/ock/account/route.js";
 import * as conversation from "./api/ock/conversations/[id]/route.js";
 import * as conversations from "./api/ock/conversations/route.js";
+import * as customRecipes from "./api/ock/custom-recipes/route.js";
 import * as deliveries from "./api/ock/deliveries/route.js";
 import * as demoKeys from "./api/ock/demo-keys/route.js";
 import * as file from "./api/ock/files/[id]/route.js";
 import * as files from "./api/ock/files/route.js";
 import * as folders from "./api/ock/folders/route.js";
+import * as myDay from "./api/ock/my-day/route.js";
 import * as chat from "./api/ock/route.js";
 import * as speak from "./api/ock/speak/route.js";
 import * as spending from "./api/ock/spending/route.js";
@@ -52,13 +56,16 @@ export function apiRoutes() {
   const router = Router();
 
   mount(router, "/api/ock", chat);
+  mount(router, "/api/ock/account", account);
   mount(router, "/api/ock/conversations", conversations);
   mount(router, "/api/ock/conversations/:id", conversation);
+  mount(router, "/api/ock/custom-recipes", customRecipes);
   mount(router, "/api/ock/deliveries", deliveries);
   mount(router, "/api/ock/demo-keys", demoKeys);
   mount(router, "/api/ock/files", files);
   mount(router, "/api/ock/files/:id", file);
   mount(router, "/api/ock/folders", folders);
+  mount(router, "/api/ock/my-day", myDay);
   mount(router, "/api/ock/speak", speak);
   mount(router, "/api/ock/spending", spending);
   mount(router, "/api/ock/team/:id", teamMember);
@@ -81,6 +88,7 @@ export function apiRoutes() {
 
   const actions = {
     "entrar/sign-in": signIn,
+    "esqueci-senha/request": requestPasswordReset,
     "cadastro/sign-up": signUpCompany,
     "convite/accept": acceptInviteAction,
     "trocar-senha/change": changePasswordAction,

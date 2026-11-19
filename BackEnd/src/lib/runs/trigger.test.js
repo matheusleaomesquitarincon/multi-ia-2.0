@@ -25,6 +25,9 @@ afterEach(() => {
 describe("endereço da chamada interna (F39)", () => {
   it("vem só da configuração: endereço configurado ou o próprio servidor", () => {
     expect(resolveSelfOrigin()).toBe("http://127.0.0.1:3001");
+    // "PORT=" vazio, como vem no .env.example, também vale 3001 (antes ia para a porta 80).
+    process.env.PORT = "";
+    expect(resolveSelfOrigin()).toBe("http://127.0.0.1:3001");
     process.env.PORT = "4000";
     expect(resolveSelfOrigin()).toBe("http://127.0.0.1:4000");
     process.env.INTERNAL_BASE_URL = "http://interno.example.com/";

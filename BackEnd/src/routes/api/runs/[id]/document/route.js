@@ -4,7 +4,7 @@
 // sai como anexo, que o navegador só salva.
 
 import { signedInSession } from "../../../../../lib/auth/session.js";
-import { getRecipe } from "../../../../../lib/recipes/catalog.js";
+import { recipeOfRun } from "../../../../../lib/runs/recipe-of-run.js";
 import { finalDocument } from "../../../../../lib/runs/delivery.js";
 import { isRunId } from "../../../../../lib/runs/parse-request.js";
 import { loadOwnRun } from "../../../../../lib/runs/store.js";
@@ -24,7 +24,7 @@ export async function GET(_request, context) {
 
   try {
     const run = await loadOwnRun(session, id);
-    const recipe = run ? getRecipe(run.recipe_id) : undefined;
+    const recipe = run ? await recipeOfRun(run) : undefined;
     if (!run || !recipe || run.status !== "finished") return problem(404, NOT_FOUND);
     const doc = await finalDocument(recipe, run.result);
     if (!doc) return problem(404, NOT_FOUND);

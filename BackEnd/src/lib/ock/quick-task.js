@@ -12,7 +12,8 @@ import { MAX_WEB_SEARCHES, maxInputTokens, outputTokenCap, toolInputTokens } fro
 
 import { UNKNOWN_MODEL } from "../runs/billing.js";
 
-import { MAX_ATTACHMENT_TEXT_CHARS } from "./chat.js";
+import { PROVIDERS } from "../providers/catalog.js";
+import { MAX_ATTACHMENT_TEXT_CHARS, TIER_LABEL } from "./chat.js";
 import { ROUTER } from "./chief.js";
 import { pickFormat } from "./document.js";
 import { CHART_SAMPLE, DOCUMENT_SAMPLE, PROJECT_SAMPLE, SHEET_SAMPLE } from "./quick-task.samples.js";
@@ -216,6 +217,56 @@ export function planWork(route, message, tools = new Set(), persona) {
   }
 }
 
+/** O nome de cada ferramenta, para explicar por que ela saiu quando a pessoa escolheu outra IA. */
+const TOOL_ACTIVITY = { pesquisa: "a pesquisa na internet", codigo: "rodar um programa" };
+
+/**
+ * A escolha livre (F03): o Chefe recomenda e a pessoa pode trocar a IA e o nível desta mensagem. Devolve o plano
+ * recomendado (fica guardado em tasks.recommended_*) e o que vai rodar de fato (tasks.chosen_*).
+ * - A imagem só existe no GPT: a escolha não vale para ela.
+ * - Pesquisa e código existem numa IA só. Se a pessoa escolhe outra, a resposta sai sem a ferramenta, com as instruções
+ *   de quando ela está desligada (e o aviso de sempre na resposta, F45).
+ * @param {Route} route
+ * @param {string} message
+ * @param {ReadonlySet<ToolSwitch>} tools
+ * @param {string | undefined} persona
+ * @param {ModelChoice} choice
+ * @returns {{ recommended: WorkPlan; chosen: WorkPlan }}
+ */
+export function planWithChoice(route, message, tools, persona, choice) {
+  const recommended = planWork(route, message, tools, persona);
+  const fixed = recommended.kind === "image" || recommended.kind === "unavailable";
+  if (fixed || (!choice.provider && !choice.tier)) return { recommended, chosen: recommended };
+
+  const provider = choice.provider ?? recommended.provider;
+  // Outra IA numa ação de ferramenta: o plano de quando a ferramenta está desligada.
+  const losesTool = Boolean(recommended.tools?.length) && provider !== recommended.provider;
+  const base = losesTool
+    ? planWork(route, message, new Set([...tools].filter((tool) => tool !== route.action)), persona)
+    : recommended;
+  const chosen = { ...base, provider, tier: choice.tier ?? recommended.tier };
+  if (losesTool) chosen.reason = `Só o ${providerName(recommended.provider)} faz ${TOOL_ACTIVITY[route.action]} aqui.`;
+  return { recommended, chosen };
+}
+
+/**
+ * A linha que explica a escolha da pessoa, quando ela mudou o que o Chefe recomendava (F03). Senão, null.
+ * @param {{ provider: ProviderId; tier: ModelTier }} recommended
+ * @param {{ provider: ProviderId; tier: ModelTier }} chosen
+ * @param {string} [extra] Por que a resposta mudou além da IA (ex.: ficou sem a pesquisa).
+ * @returns {string | null}
+ */
+export function choiceNote(recommended, chosen, extra) {
+  if (recommended.provider === chosen.provider && recommended.tier === chosen.tier) return null;
+  const describe = (plan) => `${providerName(plan.provider)}, nível ${TIER_LABEL[plan.tier]}`;
+  const note = `Você escolheu ${describe(chosen)}. O Chefe recomendava ${describe(recommended)}.`;
+  return extra ? `${note} ${extra}` : note;
+}
+
+function providerName(id) {
+  return PROVIDERS.find((provider) => provider.id === id)?.name ?? id;
+}
+
 /**
  * O pedido para a IA que vai responder.
  * @param {WorkPlan} plan
@@ -255,19 +306,40 @@ export function chargeDescription(action) {
   return `Tarefa rápida · ${ACTION_LABEL[action]}`;
 }
 
+/** O que a IA de fato usou numa resposta. null: mensagem de antes da F53, sem esse registro. */
 /**
- * O aviso fixo de cada tipo de resposta, mostrado junto dela (F45). Quando a IA pesquisou ou rodou um programa, a própria
- * resposta diz isso no fim (SOURCES_HEADING, CODE_RAN_NOTE) e não há aviso; senão, o aviso diz que ela não pesquisou ou
- * não rodou o programa, esteja a ferramenta desligada ou a IA tenha preferido não usar.
+ * @typedef {{
+ * researched: boolean | null;
+ * ranCode: boolean | null;
+ * }} ToolUse
+ */
+
+/**
+ * O que a IA usou, tirado do que a API dela contou (as páginas citadas e os programas rodados), nunca do texto.
+ * @param {{ sources: readonly WebSource[]; codeRuns: number }} answer
+ * @returns {ToolUse}
+ */
+export function toolUse(answer) {
+  return { researched: answer.sources.length > 0, ranCode: answer.codeRuns > 0 };
+}
+
+/**
+ * O aviso fixo de cada tipo de resposta, mostrado junto dela (F45). Quando a IA pesquisou ou rodou um programa, não há
+ * aviso; senão, o aviso diz que ela não pesquisou ou não rodou o programa, esteja a ferramenta desligada ou a IA tenha
+ * preferido não usar. Quem diz o que aconteceu é o registro gravado pelo servidor (F53); nas mensagens antigas, sem ele,
+ * é o fim do texto (SOURCES_HEADING, CODE_RAN_NOTE).
  * @param {ChatAction} action
  * @param {string | null} [answer]
+ * @param {ToolUse} [used]
  * @returns {string | null}
  */
-export function actionNotice(action, answer = null) {
-  if (action === "pesquisa" && !answer?.includes(`\n\n${SOURCES_HEADING}\n`)) {
+export function actionNotice(action, answer = null, used = { researched: null, ranCode: null }) {
+  const researched = used.researched ?? Boolean(answer?.includes(`\n\n${SOURCES_HEADING}\n`));
+  const ranCode = used.ranCode ?? Boolean(answer?.endsWith(CODE_RAN_NOTE));
+  if (action === "pesquisa" && !researched) {
     return "Esta resposta não veio de uma pesquisa na internet: a IA usou o que já sabia, e a informação pode estar desatualizada.";
   }
-  if (action === "codigo" && !answer?.endsWith(CODE_RAN_NOTE)) {
+  if (action === "codigo" && !ranCode) {
     return "A IA fez esta conta sem rodar um programa. Confira os números antes de usar.";
   }
   return null;

@@ -26,8 +26,16 @@ só. Serve qualquer hospedagem de servidor Node sempre ligado (ex.: Railway ou R
 2. No Supabase (Integrations → GitHub), aponte a ligação para este repositório, com a pasta de trabalho `BackEnd`. Tire a
    ligação com o repositório antigo: os dois não podem aplicar migrações no mesmo banco.
 3. No GitHub deste repositório, crie o segredo `SUPABASE_TEST_DB_URL` para o workflow "Banco de testes".
+4. **E-mails do login (F30).** No Supabase (Authentication → Emails → SMTP Settings), ligue um serviço de e-mail
+   próprio: sem ele, a confirmação do cadastro e o "Esqueci minha senha" só chegam para quem é da equipe do projeto.
+   Sem domínio, dá para usar um Gmail do projeto com uma "senha de app"; com domínio, um serviço com o endereço da marca.
+5. No Supabase (Authentication → Emails → Reset Password), cole o assunto e o texto de
+   `BackEnd/supabase/templates/recovery.html` (no lugar de `{{ .SiteURL }}`, o Supabase põe a Site URL do passo 1).
+   Assim o link do "Esqueci minha senha" funciona em qualquer navegador, não só no que pediu.
 
 ## Depois de publicar, confira
 
 - `/` abre a página inicial e `/raiox` mostra "Página não encontrada".
 - Cadastro, login, convite e uma receita funcionam até o fim.
+- "Esqueci minha senha" com um e-mail de fora da equipe do Supabase: o e-mail chega, o link leva a "Crie uma senha
+  nova" e a senha nova entra.

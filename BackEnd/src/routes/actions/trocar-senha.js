@@ -1,5 +1,6 @@
-// O funcionário entrou com a senha temporária que o dono criou: aqui ele cria a própria senha e tira a marca
-// "precisa trocar a senha". Só funciona para quem está logado e ainda está marcado; senão, volta para o lugar dele.
+// A pessoa está marcada como "precisa trocar a senha" (o funcionário que entrou pelo convite, ou quem voltou pelo link do
+// "Esqueci minha senha"): aqui ela cria a própria senha e tira a marca. Só funciona para quem está logado e ainda está
+// marcado; senão, volta para o lugar dele.
 
 import { redirect } from "../../http/navigation.js";
 import { LOGIN_NOT_CONFIGURED } from "../../lib/auth/config.js";
@@ -33,7 +34,7 @@ export async function changePasswordAction(_previous, formData) {
   const { error } = await supabase.auth.updateUser({ password: parsed.values.password });
   if (error) {
     if (error.code === "same_password") {
-      return { status: "invalid", errors: { password: "Escolha uma senha diferente da temporária." } };
+      return { status: "invalid", errors: { password: "Escolha uma senha diferente da anterior." } };
     }
     if (error.code === "weak_password") {
       return {

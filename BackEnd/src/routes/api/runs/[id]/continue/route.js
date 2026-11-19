@@ -9,10 +9,12 @@
 // As IAs são as de verdade ou as simuladas, conforme o interruptor OCK_AI_MODE (lib/providers/mode.js); a simulada
 // custa o mesmo que a de verdade equivalente.
 
+import { RETRY_DELAYS_MS } from "../../../../../lib/engine/run.js";
 import { runSegment } from "../../../../../lib/engine/segment.js";
 
+import { AI_CALL_TIMEOUT_MS } from "../../../../../lib/providers/deadline.js";
 import { getProvider } from "../../../../../lib/providers/registry.js";
-import { getRecipe } from "../../../../../lib/recipes/catalog.js";
+import { recipeOfRun } from "../../../../../lib/runs/recipe-of-run.js";
 
 import { aiCallRows, chargeCompletedSteps } from "../../../../../lib/runs/billing.js";
 import { estimateCents, stepCosts } from "../../../../../lib/runs/estimate.js";
@@ -32,8 +34,17 @@ import {
 import { triggerContinue } from "../../../../../lib/runs/trigger.js";
 import { closeRunHolds, findOpenRunHold, holdRemainingCents } from "../../../../../lib/runs/wallet.js";
 
-// Um segmento pode levar minutos (uma fase com IAs reais): pede o teto de tempo de função.
-export const maxDuration = 300;
+/**
+ * O pior caminho de uma etapa (F54): todas as tentativas com a IA do papel e depois com a que assume, cada uma até o
+ * teto de uma chamada, mais as esperas entre elas. Um segmento roda uma fase, e as etapas de uma fase em paralelo rodam
+ * ao mesmo tempo, então o segmento cabe nesse tempo. Antes o teto era igual ao de UMA chamada (5 minutos): se a IA
+ * demorava, as novas tentativas e a troca de IA já nasciam sem tempo e a fase falhava. Cabe na reserva de 1 hora.
+ */
+export const WORST_STEP_MS =
+  2 * ((RETRY_DELAYS_MS.length + 1) * AI_CALL_TIMEOUT_MS + RETRY_DELAYS_MS.reduce((sum, ms) => sum + ms, 0));
+
+// Folga de um minuto para gravar a narração, cobrar e encadear a próxima fase.
+export const maxDuration = Math.ceil(WORST_STEP_MS / 1000) + 60;
 
 /** De quanto em quanto tempo quem roda renova a reserva e confere se a pessoa cancelou. */
 const HEARTBEAT_MS = 2000;
@@ -68,7 +79,7 @@ export async function POST(request, context) {
  * a próxima (ou encerra). `claimedAt` é quando este servidor reivindicou a execução, no relógio dele.
  */
 async function runOneSegment(row, claimedAt) {
-  const recipe = getRecipe(row.recipe_id);
+  const recipe = await recipeOfRun(row);
   if (!recipe) throw new Error(`Receita desconhecida: "${row.recipe_id}".`);
 
   // Todas as fases já rodaram: o servidor caiu entre gravar a última e encerrar. Cobra o que faltou e só encerra.

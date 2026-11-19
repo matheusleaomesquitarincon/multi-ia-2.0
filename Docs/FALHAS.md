@@ -20,12 +20,12 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 |---|-------|-----------|-----------|--------|
 | F01 | Sem as receitas, o produto vira mais um chat com várias IAs | Negócio | Alta | Decidida |
 | F02 | Público "empresas pequenas e médias" é amplo demais | Negócio | Média | Aceita |
-| F03 | O Chefe escolher a IA mais barata pode entregar um resultado ruim | Produto | Alta | Decidida |
+| F03 | O Chefe escolher a IA mais barata pode entregar um resultado ruim | Produto | Alta | Resolvida |
 | F04 | Preço e margem não definidos | Negócio | Alta | Aberta |
 | F05 | LGPD: o que o dono vê e para onde vão os dados dos clientes | Negócio / Segurança | Alta | Aberta |
 | F06 | Vender para empresa é mais lento e trabalhoso | Negócio | Média | Aberta |
 | F07 | O resultado precisa ser claramente melhor que "abrir o ChatGPT e pedir" | Negócio | Média | Aberta |
-| F08 | As receitas não existem dentro do workspace do funcionário | Produto | Alta | Aberta |
+| F08 | As receitas ainda não estão completas no workspace do funcionário (falta a receita própria) | Produto | Alta | Resolvida |
 | F09 | Resultado que um leigo não sabe usar (ex.: arquivo .html) | Produto | Média | Aberta |
 | F10 | Login de mentira: o código na URL é o "estar logado" | Segurança | Alta | Resolvida |
 | F11 | Painel do dono sem login e senhas temporárias expostas | Segurança | Alta | Resolvida |
@@ -45,7 +45,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F25 | O próprio dono define o crédito da empresa | Negócio / Segurança | Alta | Resolvida |
 | F26 | O custo das tentativas que falharam não fica registrado | Código | Média | Resolvida |
 | F27 | Qualquer pessoa pode ler as execuções direto no banco | Segurança | Alta | Resolvida |
-| F28 | Apagar um arquivo direto pelo banco deixa o conteúdo guardado | Segurança / LGPD | Baixa | Aberta |
+| F28 | Apagar um arquivo direto pelo banco deixa o conteúdo guardado | Segurança / LGPD | Baixa | Resolvida |
 | F29 | O saldo da empresa pode ficar negativo | Negócio | Baixa | Aceita |
 | F30 | E-mails do login só chegam para a equipe do Supabase | Código | Média | Aberta |
 | F31 | Next.js 16.4.0 com falhas de segurança graves conhecidas | Segurança | Alta | Resolvida |
@@ -60,7 +60,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F40 | Os conectores das IAs de verdade medem o consumo pelo tamanho do texto | Código | Alta | Resolvida |
 | F41 | "+ Adicionar agente" mostra o agente, mas ele nunca trabalha | Produto / Código | Baixa | Resolvida |
 | F42 | Sem a chave de uma IA, o site usa a IA simulada sem avisar | Código | Média | Resolvida |
-| F43 | Quedas raras do servidor na hora de cobrar | Código | Baixa | Aceita |
+| F43 | Quedas raras do servidor na hora de cobrar | Código | Baixa | Resolvida |
 | F44 | Anexos do chat: o texto vai inteiro para a IA, e o que ela não lê é aceito sem aviso | Código / Produto | Média | Resolvida |
 | F45 | Sem a pesquisa ou o código de verdade, a IA é instruída a esconder isso | Produto | Média | Resolvida |
 | F46 | O PR #40 entrou na `main` sem descrição e antes do teste pelo guia | Processo | Baixa | Resolvida |
@@ -69,9 +69,9 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F49 | O nome e o título dos documentos do chat saíam do pedido do funcionário | Segurança / LGPD | Média | Resolvida |
 | F50 | Os conectores das IAs de verdade mandariam pedidos que as APIs de hoje recusam | Código | Alta | Resolvida |
 | F51 | Resposta cortada no meio, ou recusada pela IA, era aceita como resposta completa | Código | Média | Resolvida |
-| F52 | O código fala com as IAs sem as bibliotecas oficiais, ao contrário do que diz o AGENTS.md | Processo | Baixa | Aberta |
-| F53 | O aviso de "não pesquisou" depende do texto no fim da resposta | Produto / Código | Baixa | Aceita |
-| F54 | Uma fase com IA de verdade pode passar do tempo máximo da função na Vercel | Código | Média | Aberta |
+| F52 | O código fala com as IAs sem as bibliotecas oficiais, ao contrário do que diz o AGENTS.md | Processo | Baixa | Resolvida |
+| F53 | O aviso de "não pesquisou" depende do texto no fim da resposta | Produto / Código | Baixa | Resolvida |
+| F54 | Uma fase com IA de verdade pode passar do tempo máximo da função na Vercel | Código | Média | Resolvida |
 | F55 | Com as IAs de verdade por último, o site é montado sem medir custo, tempo e qualidade de verdade | Processo / Produto | Média | Aceita |
 | F56 | A tela ao vivo das receitas de texto mostrava "Plano do chefe" | Produto / Código | Baixa | Resolvida |
 | F57 | O Editor dos posts é da mesma IA que um dos redatores | Produto | Baixa | Aceita |
@@ -80,9 +80,12 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F60 | Regras simples existem em duas cópias (BackEnd e FrontEnd) | Código | Baixa | Aceita |
 | F61 | Sem TypeScript, nada confere os formatos dos dados automaticamente | Código | Média | Aceita |
 | F62 | A nova arquitetura ainda não foi testada de ponta a ponta com o banco de verdade | Processo | Alta | Aberta |
-| F63 | O guia do projeto de testes ainda mostra os nomes antigos das variáveis do Supabase nos passos | Processo | Baixa | Aberta |
-| F64 | Com `PORT=` vazio, como no modelo do `.env.local`, o servidor ligava numa porta aleatória | Código | Média | Resolvida |
-| F65 | Com a visão raio-x ligada, o logo e o login mandavam para `/raiox` mesmo quem já tinha entrado | Código | Baixa | Resolvida |
+| F63 | O funcionário via os créditos 100 vezes maiores que o dono | Produto / Código | Média | Resolvida |
+| F64 | Ainda não dá para apagar uma execução de receita nem a conta inteira | Segurança / LGPD | Média | Resolvida |
+| F65 | O funcionário vê o "Gasto do mês" em reais no alto da página, mas créditos no resto | Produto | Baixa | Aberta |
+| F66 | O guia do projeto de testes ainda mostra os nomes antigos das variáveis do Supabase nos passos | Processo | Baixa | Aberta |
+| F67 | Com `PORT=` vazio, como no modelo do `.env.local`, o servidor ligava numa porta aleatória | Código | Média | Resolvida |
+| F68 | Com a visão raio-x ligada, o logo e o login mandavam para `/raiox` mesmo quem já tinha entrado | Código | Baixa | Resolvida |
 
 ## Negócio
 
@@ -148,16 +151,23 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 ## Produto
 
 ### F03 — O Chefe escolher a IA mais barata pode entregar um resultado ruim
-- **Gravidade:** Alta · **Status:** Decidida · **Anotada:** 22/10/2026
+- **Gravidade:** Alta · **Status:** Resolvida · **Anotada:** 22/10/2026
 - **O problema:** no PR #19 o Chefe decide sozinho a IA, o nível do modelo e o esforço, buscando o mais barato que
   resolve. Se ele errar numa tarefa importante, o funcionário recebe algo fraco e culpa a plataforma.
 - **Decisão (Luis, 22/10):** a plataforma recomenda (IA, nível e esforço), mas o funcionário escolhe livremente
   ("quero o melhor", "quero o Claude nesta tarefa"). Falta construir.
 - **Andamento (25/10/2026, PR 3c):** no chat, cada mensagem guarda o que o Chefe recomendou e o que foi usado
   (`tasks.recommended_*` e `chosen_*`); por enquanto, os dois são iguais. A escolha livre é da etapa 6.
+- **Resolvida (11/11/2026):** a barra da mensagem do chat ganhou "IA" (Automática, Claude, GPT, Gemini) e "Nível"
+  (Automático, Econômico, Padrão, Potente). Automático é o padrão: o Chefe decide. Com uma escolha, o servidor roda e
+  cobra o escolhido, guarda o recomendado e o escolhido em `tasks`, e a resposta (e o histórico) mostra "Você escolheu
+  X. O Chefe recomendava Y." (`planWithChoice` e `choiceNote` em `lib/ock/quick-task.js`). A imagem continua no GPT
+  (é o único que cria). Pesquisa na internet e conta com programa existem numa IA só: escolhendo outra, a resposta sai
+  sem a ferramenta, com a explicação e o aviso de sempre (F45). Fora isso, o funcionário continua sem ver qual IA
+  respondeu. Nas receitas, a troca de IA de cada papel já existia na tela do time.
 
-### F08 — As receitas não existem dentro do workspace do funcionário
-- **Gravidade:** Alta · **Status:** Aberta · **Anotada:** 22/10/2026
+### F08 — As receitas ainda não estão completas no workspace do funcionário
+- **Gravidade:** Alta · **Status:** Resolvida · **Anotada:** 22/10/2026
 - **O problema:** o workspace (`/trabalho`) só tem o chat. A receita "Criar um site" ficou no código
   (`/recipes/create-site`), mas fora da página inicial e sem ligação com a empresa, o funcionário ou os gastos.
 - **O que fazer:** trazer os três modos (receita pronta, receita própria, tarefa rápida) para o workspace, com o gasto
@@ -173,6 +183,19 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   próximos PRs do bloco 1.
 - **Andamento (27/10/2026, bloco 1, PR 2):** a terceira receita pronta, "Posts para redes sociais", com dois redatores
   de IAs diferentes trabalhando ao mesmo tempo. Faltam a receita do relatório e a receita própria.
+- **Andamento (11/11/2026):** a quarta receita pronta, "Relatório mensal para cliente" (`lib/recipes/client-report.js`):
+  Analista (Claude) organiza os números e faz as contas, Redator (GPT) escreve, Conferente (Claude, de outra família que
+  o Redator, inclusive na reserva, F57) confere cada número contra os dados do pedido, e o Redator entrega a versão
+  final em Word. Não há mais "Em breve". Conferida de ponta a ponta no banco local (4 etapas cobradas, o Word nas
+  entregas, a reserva fechada); guia em `Docs/GUIA-TESTE-RELATORIO.md`. **Falta só a receita própria.**
+- **Resolvida (16/11/2026, branch `matheus`):** a receita própria, na aba nova **Meu time**. O funcionário monta um time
+  de 2 a 5 membros (nome, IA e o que cada um faz, com modelos prontos), salva só para ele ou para a empresa toda, e usa
+  pelo mesmo caminho das receitas prontas (estimativa, reserva, cobrança por etapa, troca de IA, Word no fim). A
+  execução guarda o time como estava ao começar (`runs.custom_recipe`), então mudar ou apagar o time não mexe no que já
+  rodou. O dono lê no extrato e no nome do Word só textos fixos ("Receita própria · Etapa N"), nunca o que o funcionário
+  escreveu (F49). A mesma aba mostra o dia da pessoa: usado hoje, tarefas, pendências (com Abrir), tarefas recentes e o
+  uso dos últimos 14 dias em barras. Conferido: testes do servidor, das telas e do banco (`08_custom_recipe_runs`), um
+  time rodado de ponta a ponta no Supabase local e as telas olhadas no Chrome, no computador e no celular.
 
 ### F09 — Resultado que um leigo não sabe usar
 - **Gravidade:** Média · **Status:** Aberta · **Anotada:** 09/10/2026 (no PROGRESSO), trazida para cá em 22/10/2026
@@ -245,7 +268,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   como anexo: o navegador só salva, e nem aberto direto o site roda. Os sites feitos antes desta parte não viraram entrega.
 
 ### F53 — O aviso de "não pesquisou" depende do texto no fim da resposta
-- **Gravidade:** Baixa · **Status:** Aceita · **Anotada:** 26/10/2026 (percebida pelo Claude no PR da pesquisa e do
+- **Gravidade:** Baixa · **Status:** Resolvida · **Anotada:** 26/10/2026 (percebida pelo Claude no PR da pesquisa e do
   código)
 - **O problema:** para o histórico saber se uma resposta foi pesquisada na internet (ou se a IA rodou um programa), sem
   coluna nova no banco, o servidor escreve no fim da resposta as fontes ("Fontes consultadas:") ou a frase do programa,
@@ -256,6 +279,11 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   26/10), e o efeito é só o aviso faltar numa resposta rara.
 - **O que fazer depois:** guardar numa coluna de `tasks` se a IA pesquisou ou rodou um programa (migração), junto com
   outra mudança de banco do chat (o apagar da F28 ou a escolha livre da etapa 6).
+- **Resolvida (11/11/2026, migração `20261111130000_task_tool_use.sql`):** `tasks` ganhou `researched` e `ran_code`,
+  gravadas pelo servidor com o que a API da IA contou (páginas citadas e programas rodados, `toolUse` em
+  `lib/ock/quick-task.js`), nunca com o texto. O aviso, na hora e no histórico, lê essas colunas; uma lista de fontes
+  inventada no fim da resposta não esconde mais o aviso. As mensagens de antes da migração (colunas vazias) continuam
+  lendo o fim do texto. As fontes e a frase do programa continuam escritas no fim da resposta, para a pessoa ler.
 
 ### F56 — A tela ao vivo das receitas de texto mostrava "Plano do chefe"
 - **Gravidade:** Baixa · **Status:** Resolvida · **Anotada:** 27/10/2026 (achada pelo Claude no teste de ponta a ponta
@@ -397,6 +425,10 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   cache das empresas tem preço próprio (na OpenAI, gravar no cache custa 1,25 vez a entrada). **Falta o câmbio:**
   continua R$ 5,50 (decisão do Luis de 25/10), mas cada dólar pago com cartão brasileiro sai por uns R$ 5,6 a 5,7
   (dólar comercial de R$ 5,22 em 28/09, mais o IOF de 3,5% e a margem do banco). A decidir com o Luis.
+- **Nota (16/11/2026, Multi-IA 2.0):** o câmbio e a margem agora ficam em `BackEnd/src/lib/ock/pricing.js`
+  (`USD_TO_BRL` e `USAGE_MARGIN`), com uma cópia idêntica em `FrontEnd/src/lib/ock/pricing.js`. Quem mudar o câmbio muda
+  nos dois; o teste `FrontEnd/src/lib/copies.test.js` falha se ficarem diferentes. Os preços dos modelos ficam em
+  `BackEnd/src/lib/providers/models.js`.
 
 ### F18 — Prévia de site: o Chrome "aquece" uma conexão antes de bloquear
 - **Gravidade:** Baixa · **Status:** Aceita · **Anotada:** etapa 4 (T7), trazida para cá em 22/10/2026
@@ -487,7 +519,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   avisar o parceiro, caso o banco antigo dele esteja no ar com dados de verdade (sem código; está no próximo passo).
 
 ### F28 — Apagar um arquivo direto pelo banco deixa o conteúdo guardado
-- **Gravidade:** Baixa · **Status:** Aberta · **Anotada:** 24/10/2026
+- **Gravidade:** Baixa · **Status:** Resolvida · **Anotada:** 24/10/2026
 - **O problema:** pelo desenho do banco novo, o funcionário pode apagar os próprios arquivos (LGPD) com a sessão dele.
   Pelas nossas telas, o servidor apaga o registro e o conteúdo na pasta fechada. Mas quem usar a chave pública e a
   própria sessão direto no banco apaga só o registro: o conteúdo fica na pasta. Ninguém consegue mais abri-lo (o link
@@ -495,6 +527,20 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 - **O que fazer:** no PR 3, uma limpeza que apaga da pasta todo conteúdo sem registro (por exemplo, uma vez por dia).
 - **Andamento (25/10/2026, PR 3c):** o chat ainda não tem "apagar" (nem conversa nem arquivo); a limpeza entra junto com o
   apagar, no histórico.
+- **Resolvida (16/11/2026, branch `matheus`):** três peças.
+  (1) **Limpeza:** a função `files_orphan_paths` (migração `20261116120000_orphan_files.sql`, só o servidor chama) acha o
+  conteúdo da pasta sem registro há mais de 1 hora, e a limpeza periódica do servidor (`lib/runs/housekeeping.js`, a cada
+  5 minutos) apaga pela API do Storage. A 1 hora de folga protege o arquivo que acabou de ser gravado e cujo registro
+  ainda vai entrar.
+  (2) **Apagar conversa:** um "×" ao lado de cada conversa do chat (`DELETE /api/ock/conversations/:id`). Somem a conversa,
+  as mensagens e os anexos mandados nela (registro e conteúdo). Ficam as entregas (na aba Entregas) e as linhas do extrato.
+  Com uma resposta a caminho, recusa ("Espere a resposta chegar").
+  (3) **Apagar entrega:** "Apagar" em cada entrega da aba Entregas do funcionário (`DELETE /api/ock/files/:id`). O dono não
+  apaga entregas dos funcionários: o banco só deixa cada um apagar as próprias.
+  Se apagar o conteúdo falhar no meio, o registro já saiu e a limpeza termina o serviço. Conferido: testes do servidor, das
+  telas e do banco (`07_orphan_files.test.sql`) e, de ponta a ponta no Supabase local, conversa com anexo apagada (conversa,
+  mensagem, anexo e conteúdo sumiram; a linha do extrato ficou), outra conta na aba recusada (409), arquivo solto apagado e
+  conteúdo esquecido apagado pela limpeza. O que ainda falta do apagar (execuções de receita e a conta inteira) virou a F64.
 
 ### F29 — O saldo da empresa pode ficar negativo
 - **Gravidade:** Baixa · **Status:** Aceita · **Anotada:** 24/10/2026
@@ -518,6 +564,15 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 - **O que fazer:** antes da primeira empresa real, ligar um serviço de e-mail próprio no Supabase (*Authentication →
   Emails → SMTP Settings*). Sem domínio, dá para usar o Gmail do projeto com uma "senha de app", de graça; com marca e
   domínio, um serviço de e-mail com o endereço da marca. Junto, entra o "Esqueci minha senha" do dono.
+- **Andamento (11/11/2026): a parte do código está pronta; falta só a configuração.** O "Esqueci minha senha" existe
+  para o dono e para o funcionário: link em "Entrar" → `/esqueci-senha` → e-mail → `/confirmar?tipo=recuperar` (ou
+  `token_hash`, com o nosso modelo de e-mail) → a pessoa fica marcada como "precisa trocar a senha" e cai em
+  `/trocar-senha`, que derruba os outros aparelhos. A tela responde do mesmo jeito exista ou não a conta (ninguém
+  descobre quem tem conta por ela). O modelo de e-mail em português fica em `BackEnd/supabase/templates/recovery.html`
+  e faz o link funcionar em qualquer navegador. Conferido de ponta a ponta no Supabase local (e-mail na caixa de teste,
+  link aberto noutro "navegador", senha nova valendo, antiga recusada, link reusado cai em "link vencido").
+  **Falta (painel do Supabase, antes da primeira empresa real):** o SMTP próprio e colar o modelo em *Authentication →
+  Emails → Reset Password* (passos 4 e 5 do `GUIA-PUBLICACAO.md`). Com isso, a F33 e a F32 podem ser resolvidas.
 
 ### F31 — Next.js 16.4.0 com falhas de segurança graves conhecidas
 - **Gravidade:** Alta · **Status:** Resolvida · **Anotada:** 24/10/2026
@@ -619,7 +674,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   acesso da Vercel deixa o site chamar a si mesmo por esse endereço.
 
 ### F54 — Uma fase com IA de verdade pode passar do tempo máximo da função na Vercel
-- **Gravidade:** Média · **Status:** Aberta · **Anotada:** 26/10/2026 (percebida pelo Claude no PR das IAs de verdade)
+- **Gravidade:** Média · **Status:** Resolvida · **Anotada:** 26/10/2026 (percebida pelo Claude no PR das IAs de verdade)
 - **O problema:** cada fase de uma receita roda numa chamada que o servidor faz a si mesmo (`/api/runs/[id]/continue`),
   com `maxDuration = 300` (5 minutos). Com as IAs de verdade, a fase do Front-end (até 6 mil tokens de site e, no esforço
   alto, até 16 mil de "pensamento") pode levar alguns minutos; se passar do limite no site publicado, a Vercel corta a
@@ -628,6 +683,15 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 - **O que fazer:** medir o tempo de cada fase nos primeiros testes com as IAs de verdade (Parte F do
   `docs/GUIA-TESTE-IAS-REAIS.md`) e, antes de publicar: conferir o limite do plano da Vercel (o tempo máximo depende do
   plano), dividir as etapas longas (cada etapa numa chamada, não a fase inteira) ou baixar o esforço do Front-end.
+- **Resolvida (11/11/2026, Multi-IA 2.0):** sem a Vercel, ninguém de fora corta a chamada; quem corta é o nosso teto
+  (`maxDuration` da rota, F58). Mas ele era de 5 minutos, igual ao de UMA chamada às IAs (`AI_CALL_TIMEOUT_MS`): se a IA
+  demorasse, as novas tentativas e a troca de IA já nasciam sem tempo e a fase falhava. Agora o teto da rota interna é
+  calculado do pior caminho de uma etapa (3 tentativas com a IA do papel e 3 com a que assume, cada uma até 5 minutos,
+  uns 31 minutos) e cabe na reserva de 1 hora (`WORST_STEP_MS` em `continue/route.js`). Hoje cada segmento já é uma
+  etapa só (ou várias em paralelo); um teste do catálogo falha se uma receita juntar etapas em sequência num segmento,
+  para quem fizer isso dividir antes. O chat continua com 5 minutos de propósito: a pessoa espera a resposta na tela e a
+  reserva da mensagem (15 minutos) conta com isso. O tempo real de cada fase ainda precisa ser medido com as IAs de
+  verdade (F55).
 
 ### F40 — Os conectores das IAs de verdade medem o consumo pelo tamanho do texto
 - **Gravidade:** Alta · **Status:** Resolvida · **Anotada:** 25/10/2026 (achada pelo Claude ao planejar o PR 3b)
@@ -665,7 +729,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   `ai_calls` guardou o erro sem cobrança e sem nenhuma resposta da simulada.
 
 ### F43 — Quedas raras do servidor na hora de cobrar
-- **Gravidade:** Baixa · **Status:** Aceita · **Anotada:** 25/10/2026 (achada pelo Claude no PR 3b)
+- **Gravidade:** Baixa · **Status:** Resolvida · **Anotada:** 25/10/2026 (achada pelo Claude no PR 3b)
 - **O problema:** o caso comum está coberto: se o servidor cai entre gravar uma fase e cobrar, a chamada seguinte cobra
   o que faltou, sem cobrar duas vezes. Ficam três casos raros: (1) se a pessoa cancela no mesmo instante em que o
   servidor cobra as etapas da fase que acabou de terminar, as que ainda não tinham sido cobradas saem de graça; (2) se o
@@ -675,6 +739,14 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 - **Por que aceitar:** os três dependem de uma queda ou de uma coincidência de segundos, e os valores são de centavos.
 - **O que fazer depois:** uma chave única na cobrança (migração: cada etapa só vira uma linha de gasto) e uma limpeza que
   fecha as reservas esquecidas.
+- **Resolvida (11/11/2026, migração `20261111120000_charge_once_per_step.sql`):** (3) cada cobrança de etapa leva a
+  posição da etapa (`wallet_entries.step_seq`), e o banco cobra cada posição uma vez só (índice único e a função
+  `wallet_charge` recusa com `step_already_charged`; o servidor pula a etapa). (1) Com isso, etapa concluída passa a ser
+  cobrada mesmo se a reserva acabou de fechar, como manda a regra "paga as etapas concluídas"; a cobrança do chat, sem
+  posição, continua recusada em reserva fechada. (2) A função `wallet_close_stale_holds` fecha as reservas de execuções
+  e mensagens que terminaram e que ninguém roda; o servidor a chama ao ligar e a cada 5 minutos
+  (`lib/runs/housekeeping.js`). Testes do banco em `06_charge_once.test.sql`. Conferido no banco local com a receita
+  "Proposta comercial": 4 etapas, 4 linhas numeradas de 0 a 3 e a reserva fechada no fim.
 
 ### F44 — Anexos do chat: o texto vai inteiro para a IA, e o que ela não lê é aceito sem aviso
 - **Gravidade:** Média · **Status:** Resolvida · **Anotada:** 25/10/2026 (achada pelo Claude ao planejar a parte 3c)
@@ -786,7 +858,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   parte 3d, issue #43) e tudo deu o resultado esperado: não houve defeito para corrigir. A regra continua: PR com
   descrição antes de parar, e merge só depois do teste.
 ### F52 — O código fala com as IAs sem as bibliotecas oficiais, ao contrário do que diz o AGENTS.md
-- **Gravidade:** Baixa · **Status:** Aberta · **Anotada:** 26/10/2026 (percebida pelo Claude no PR das IAs de verdade)
+- **Gravidade:** Baixa · **Status:** Resolvida · **Anotada:** 26/10/2026 (percebida pelo Claude no PR das IAs de verdade)
 - **O problema:** a decisão de 09/10 (AGENTS.md, seção 3) diz "SDKs oficiais de cada empresa". O conector do PR #19
   chama as APIs direto pelo endereço delas (`fetch`), sem as bibliotecas oficiais, e o PR das IAs de verdade manteve
   assim. A regra escrita e o código não batem. Na prática, o efeito é pequeno: o preço e o comportamento são os mesmos,
@@ -794,6 +866,9 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   o conector (com as bibliotecas, viria numa atualização delas).
 - **O que fazer (Luis decidir):** (a) manter as chamadas diretas e corrigir o AGENTS.md (recomendação do Claude, por
   ser o que está testado e não trazer dependência nova), ou (b) trocar pelas três bibliotecas oficiais num PR próprio.
+- **Resolvida (16/11/2026):** caminho (a). Na mudança para o Multi-IA 2.0, o `AGENTS.md` (seção 3) passou a dizer
+  "ligação direta com cada empresa (Anthropic, OpenAI, Google), sem intermediário", que é o que o código faz: a regra e
+  o código voltaram a bater. Se o grupo quiser as bibliotecas oficiais, isso vira uma falha nova, num PR próprio.
 
 ### F55 — Com as IAs de verdade por último, o site é montado sem medir custo, tempo e qualidade de verdade
 - **Gravidade:** Média · **Status:** Aceita · **Anotada:** 26/10/2026 (percebida pelo Claude na mudança de ordem)
@@ -833,18 +908,52 @@ podem ficar desatualizados, inclusive no código de dinheiro. A proteção passa
 **Status:** Aberta (05/11/2026). Testado: os testes automáticos, o servidor e as telas ligados de verdade sem banco, e as telas com
 dados de exemplo num navegador. Falta o login de verdade, as regras de acesso, a carteira e uma receita até o fim, seguindo os
 `GUIA-TESTE-*.md`. **Não publicar antes disso.**
+- **Andamento (11/11/2026):** com o Supabase rodando no computador (`npx supabase start`, com as migrações e o seed),
+  foram conferidos de ponta a ponta o login, o "Esqueci minha senha", o chat com a escolha de IA, as receitas (a do
+  relatório até a entrega em Word) e a cobrança de cada etapa. **Falta** repetir os `GUIA-TESTE-*.md` no projeto de
+  testes do Supabase (o que está na internet), que é o mais parecido com o site publicado.
 
-### F63 — O guia do projeto de testes ainda mostra os nomes antigos das variáveis do Supabase nos passos
+### F63 — O funcionário via os créditos 100 vezes maiores que o dono
+**Status:** Resolvida (16/11/2026, percebida pelo Claude). O espaço de trabalho (`FrontEnd/src/components/OckWorkspace.jsx`)
+tinha uma conta própria de créditos, com 1 crédito = R$ 0,01, enquanto o painel do dono usa a de `lib/ock/pricing.js`, com
+1 crédito = R$ 1,00 (convenção de 04/11/2026). Um teto de R$ 50,00 aparecia como "50,00 créditos" para o dono e "5.000"
+para o funcionário, o que confundiria os dois numa conversa. Agora as duas telas usam a mesma `formatCredits`. A
+convenção de 04/11 continua a confirmar com o Leandro e o Luis: se mudar, muda num lugar só.
+
+### F64 — Ainda não dá para apagar uma execução de receita nem a conta inteira
+**Status:** Resolvida (16/11/2026; percebida pelo Claude ao resolver a F28). O `AGENTS.md` (seção 5, Histórico) diz que a pessoa
+pode apagar qualquer item ou a conta inteira (LGPD). Depois da F28 dá para apagar conversas e entregas, mas não há tela nem
+rota para apagar uma execução de receita (o banco já deixa, `runs_delete_own`, para as que pararam) nem para apagar a conta.
+**O que fazer:** antes da primeira empresa de verdade, uma lista das receitas rodadas com "Apagar" e um "Apagar minha conta"
+que desative a pessoa e apague o trabalho dela (o extrato fica, porque o dono acompanha o gasto por ele). O texto da
+política de privacidade (F05) precisa dizer o mesmo.
+- **Resolvida (16/11/2026, branch `matheus`):** (1) **Apagar receita rodada:** "Apagar" em cada tarefa recente da aba Meu
+  time (`DELETE /api/runs/:id`). Só a que parou; a pausada devolve antes a reserva. Somem o pedido, as etapas e o
+  resultado; ficam a entrega e o extrato. (2) **Apagar minha conta** (só funcionário, digitando APAGAR;
+  `DELETE /api/ock/account`): somem conversas, anexos, receitas rodadas, pastas, times "só eu" e o login; o e-mail é
+  trocado e fica livre (resolve a parte 2 da F32 para quem apaga a conta). Ficam com a empresa as entregas, os times da
+  empresa e o extrato com o nome da pessoa. O dono é recusado (a empresa depende da conta dele).
+  **A confirmar com o grupo:** se as entregas também devem sumir ao apagar a conta (hoje ficam, por serem documentos de
+  trabalho que o dono já vê) e o texto da política de privacidade (F05). Conferido de ponta a ponta no Chrome, com o
+  Supabase local.
+
+### F65 — O funcionário vê o "Gasto do mês" em reais no alto da página, mas créditos no resto
+**Status:** Aberta (16/11/2026, percebida pelo Claude ao testar a F08). O alto do espaço de trabalho (`OckWorkspace`)
+mostra "Gasto do mês R$ 0,02" para o funcionário, enquanto a aba Meus gastos diz que ele vê só créditos ("nunca valores
+em dinheiro"). Com 1 crédito = R$ 1,00 os números batem, mas a tela mistura as duas unidades. **A decidir:** o
+funcionário vê reais ou só créditos? Mudar é uma linha.
+
+### F66 — O guia do projeto de testes ainda mostra os nomes antigos das variáveis do Supabase nos passos
 **Status:** Aberta (05/11/2026). O aviso no começo de `Docs/GUIA-PROJETO-DE-TESTES.md` já traz os nomes certos (`SUPABASE_URL` e
 `SUPABASE_PUBLISHABLE_KEY`), mas os passos das linhas 97 a 106 ainda mostram `NEXT_PUBLIC_...`. Quem copiar direto dos passos fica
 com o login desligado. **Correção:** atualizar os nomes nos passos.
 
-### F64 — Com `PORT=` vazio, como no modelo do `.env.local`, o servidor ligava numa porta aleatória
+### F67 — Com `PORT=` vazio, como no modelo do `.env.local`, o servidor ligava numa porta aleatória
 **Status:** Resolvida (05/11/2026). `BackEnd/.env.example` traz `PORT=` e diz que vazio é 3001, mas o código usava `??`, que não troca texto
 vazio: a porta virava 0, o sistema escolhia outra, e o FrontEnd não achava o servidor (erro 500 em tudo). O `trigger.js` tinha o mesmo
 erro. Agora `server.js` e `lib/runs/trigger.js` usam `||`, com teste do caso vazio.
 
-### F65 — Com a visão raio-x ligada, o logo e o login mandavam para `/raiox` mesmo quem já tinha entrado
+### F68 — Com a visão raio-x ligada, o logo e o login mandavam para `/raiox` mesmo quem já tinha entrado
 **Status:** Resolvida (05/11/2026). `HomePage.jsx` testava o raio-x antes do login, então o `/` nunca levava à página da pessoa. Só no
 computador: no site publicado o raio-x não liga. Agora quem entrou vai para a própria página (dono em `/dono`, funcionário em
 `/trabalho`, na primeira aba); só quem não entrou vai para `/raiox`.

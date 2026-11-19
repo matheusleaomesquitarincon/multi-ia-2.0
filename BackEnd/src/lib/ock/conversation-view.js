@@ -2,7 +2,7 @@
 // gráficos desenhados. SÓ do servidor. Tudo é lido com a sessão de quem está logado, então só a própria pessoa vê.
 
 import { readStoredFile, loadTaskFiles } from "./files.js";
-import { actionNotice } from "./quick-task.js";
+import { actionNotice, choiceNote } from "./quick-task.js";
 import { loadOwnConversation, loadOwnTasks, sumOwnTaskCharges } from "./task-store.js";
 
 /** O tipo dos gráficos que a OCK desenha. */
@@ -19,7 +19,7 @@ const MAX_IMAGE_BYTES = 2_000_000;
  * Uma mensagem que ficou "respondendo" por mais tempo que isto parou no meio (o servidor caiu): a tela avisa. Nada foi
  * cobrado, porque a resposta é gravada antes da cobrança.
  */
-const STALE_TASK_MS = 6 * 60 * 1000;
+export const STALE_TASK_MS = 6 * 60 * 1000;
 
 export const STALE_TASK_ANSWER = "Esta resposta não chegou: o servidor parou no meio. Nada foi cobrado. Tente de novo.";
 
@@ -93,7 +93,16 @@ export function taskView(row, extras) {
     tier: row.chosen_tier,
     effort: row.chosen_effort,
     reason: null,
-    notice: status === "finished" ? actionNotice(row.action, row.answer) : null,
+    notice:
+      status === "finished"
+        ? actionNotice(row.action, row.answer, { researched: row.researched ?? null, ranCode: row.ran_code ?? null })
+        : null,
+    choiceNote: row.recommended_provider
+      ? choiceNote(
+          { provider: row.recommended_provider, tier: row.recommended_tier ?? row.chosen_tier },
+          { provider: row.chosen_provider, tier: row.chosen_tier },
+        )
+      : null,
     costCents: extras.costCents,
     attachmentsCut: false,
     createdAt: row.created_at,

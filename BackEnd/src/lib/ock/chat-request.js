@@ -2,10 +2,10 @@
 // chegou pela internet. SÓ do servidor. Quem pede vem sempre do login, nunca do endereço nem do corpo do pedido (F13,
 // F16); o id de quem abriu a página, que a tela manda, só serve para recusar quando o login mudou em outra aba (F34).
 
-import { checkPageMember } from "../auth/page-member.js";
+import { checkPageMember, PAGE_MEMBER_FIELD } from "../auth/page-member.js";
 import { signedInSession } from "../auth/session.js";
 import { getViewer } from "../auth/viewer.js";
-import { MAX_ATTACHMENTS, MAX_MESSAGE_CHARS } from "./chat.js";
+import { MAX_ATTACHMENTS, MAX_MESSAGE_CHARS, parseModelChoice } from "./chat.js";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -55,6 +55,23 @@ export async function pageCaller(pageMemberId) {
   return withSession(check.me);
 }
 
+/**
+ * Para um pedido que muda algo e manda um corpo JSON só com o id de quem abriu a página (ex.: apagar): lê o corpo e
+ * confere quem pede, como `pageCaller`.
+ * @param {Request} request
+ * @returns {Promise<ChatCaller>}
+ */
+export async function pageCallerFromJson(request) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return refuse(400, "Não entendemos o pedido enviado.");
+  }
+  const data = typeof body === "object" && body !== null ? body : {};
+  return pageCaller(data[PAGE_MEMBER_FIELD]);
+}
+
 async function withSession(me) {
   const session = await signedInSession();
   if (!session) return refuse(401, "Entre de novo para continuar.");
@@ -73,6 +90,8 @@ function refuse(status, problem) {
  * fileIds: string[];
  * // O agente pronto escolhido ao começar a conversa (só o id; o servidor confere no catálogo).
  * agentId: string | null;
+ * // A IA e o nível que a pessoa escolheu para esta mensagem (F03). Vazio: o que o Chefe recomendar.
+ * choice: ModelChoice;
  * }} SendInput
  */
 
@@ -121,5 +140,5 @@ export function parseSendBody(body) {
   // O agente só vale ao começar uma conversa; o servidor ainda confere se o id existe no catálogo.
   const agentId = typeof data.agentId === "string" && AGENT_ID_PATTERN.test(data.agentId) ? data.agentId : null;
 
-  return { ok: true, input: { message, conversationId, fileIds, agentId } };
+  return { ok: true, input: { message, conversationId, fileIds, agentId, choice: parseModelChoice(data.choice) } };
 }

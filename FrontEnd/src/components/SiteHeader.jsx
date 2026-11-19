@@ -17,6 +17,25 @@ export function SiteHeader() {
           <Link to="/" className={styles.logo}>
             OCK
           </Link>
+          {viewer.status === "signed-out" && (
+            <nav className={styles.publicNav} aria-label="Página inicial">
+              <a href="/#como-funciona" className={styles.navLink}>
+                Como funciona
+              </a>
+              <a href="/#receitas" className={styles.navLink}>
+                Receitas
+              </a>
+              <a href="/#duvidas" className={styles.navLink}>
+                Dúvidas
+              </a>
+              <Link to="/entrar" className={styles.navLink}>
+                Entrar
+              </Link>
+              <Link to="/cadastro" className={styles.navCta}>
+                Criar conta
+              </Link>
+            </nav>
+          )}
           {viewer.status === "member" && viewer.member.role === "owner" && (
             <div className={styles.nav}>
               <OwnerNav />

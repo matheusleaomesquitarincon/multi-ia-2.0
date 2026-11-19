@@ -141,6 +141,18 @@ export function parseSignIn(formData) {
 }
 
 /**
+ * "Esqueci minha senha": só o e-mail, que precisa parecer um e-mail. Se existe conta com ele, quem sabe é o Supabase.
+ * @param {FormData} formData
+ * @returns {FormResult<{ email: string }, "email">}
+ */
+export function parseForgotPassword(formData) {
+  const email = normalizeEmail(text(formData, "email"));
+  const problem = emailProblem(email);
+  if (problem) return { ok: false, errors: { email: problem }, values: { email } };
+  return { ok: true, values: { email } };
+}
+
+/**
  * @typedef {{
  * password: string;
  * confirm: string;
@@ -148,8 +160,7 @@ export function parseSignIn(formData) {
  */
 
 /**
- * Senha criada pelo funcionário ao aceitar o convite, digitada duas vezes. Se ele errar a digitação, não há como
- * recuperar sozinho (o "Esqueci a senha" depende de e-mail, F30): só com um link novo do dono.
+ * Senha nova, digitada duas vezes: a do funcionário ao aceitar o convite e a de quem voltou pelo "Esqueci minha senha".
  * @param {FormData} formData
  * @returns {FormResult<NewPasswordValues, keyof NewPasswordValues>}
  */

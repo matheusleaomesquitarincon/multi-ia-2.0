@@ -36,6 +36,7 @@ vi.mock("./supabase-server.js", () => ({ supabaseAdmin: () => fakeClient("admin"
 
 import {
   chargeStep,
+  closeStaleHolds,
   closeRunHolds,
   countRunCharges,
   findOpenRunHold,
@@ -71,9 +72,9 @@ describe("carteira vista por uma execução (com cliente dublê)", () => {
     await expect(reserveForRun("pessoa-1", "run-1", 531)).rejects.toEqual({ message: "connection refused" });
   });
 
-  it("chargeStep lança o gasto com a descrição e a IA, e devolve o que sobra; reserva fechada não cobra (null)", async () => {
+  it("chargeStep lança o gasto com a descrição, a IA e a posição, e devolve o que sobra; etapa já cobrada dá null", async () => {
     results.queue = [{ data: 400 }];
-    const charge = { amountCents: 12, description: "Criar um site · Chefe", provider: "claude" };
+    const charge = { amountCents: 12, description: "Criar um site · Chefe", provider: "claude", stepSeq: 3 };
     expect(await chargeStep("hold-1", "run-1", charge)).toBe(400);
     expect(recorded[0]).toMatchObject({
       rpc: "wallet_charge",
@@ -83,11 +84,20 @@ describe("carteira vista por uma execução (com cliente dublê)", () => {
         p_description: "Criar um site · Chefe",
         p_provider: "claude",
         p_run_id: "run-1",
+        p_step_seq: 3,
       },
     });
 
-    results.queue = [{ error: { message: "hold_closed" } }];
+    results.queue = [{ error: { message: "step_already_charged" } }];
     expect(await chargeStep("hold-1", "run-1", charge)).toBeNull();
+    results.queue = [{ error: { message: "hold_not_found" } }];
+    await expect(chargeStep("hold-1", "run-1", charge)).rejects.toEqual({ message: "hold_not_found" });
+  });
+
+  it("closeStaleHolds chama a limpeza do banco e devolve quantas reservas fechou", async () => {
+    results.queue = [{ data: 2 }];
+    expect(await closeStaleHolds()).toBe(2);
+    expect(recorded[0]).toMatchObject({ rpc: "wallet_close_stale_holds" });
   });
 
   it("findOpenRunHold acha a reserva aberta mais recente da execução", async () => {

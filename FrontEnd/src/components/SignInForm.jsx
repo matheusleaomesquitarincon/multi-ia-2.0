@@ -77,6 +77,12 @@ export function SignInForm({ notice }) {
         </button>
 
         <p className={styles.footer}>
+          <Link to="/esqueci-senha" className={styles.link}>
+            Esqueci minha senha
+          </Link>
+        </p>
+
+        <p className={styles.footer}>
           Funcionário: o acesso vem por um convite do dono da sua empresa.
           <br />
           Dono e ainda sem conta?{" "}

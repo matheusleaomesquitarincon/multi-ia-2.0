@@ -154,12 +154,15 @@ async function reserve(params) {
  * // Escrita pelo servidor, nunca com o pedido do funcionário: "Criar um site · Front-end".
  * description: string;
  * provider: ProviderId;
+ * // A posição da etapa entre as concluídas da execução: o banco cobra cada número uma vez só (F43).
+ * stepSeq: number;
  * }} StepCharge
  */
 
 /**
- * Cobra uma etapa na reserva. Devolve quanto ainda sobra dela (negativo: o gasto passou da estimativa), ou null se a
- * reserva já foi fechada (a pessoa cancelou enquanto a fase terminava): aí nada é cobrado.
+ * Cobra uma etapa na reserva, mesmo que ela tenha acabado de fechar (a pessoa cancelou enquanto a fase terminava:
+ * etapa concluída é paga). Devolve quanto ainda sobra da reserva (negativo: o gasto passou da estimativa), ou null se
+ * esta etapa já tinha sido cobrada (outro servidor chegou antes): aí nada é cobrado de novo.
  * @param {string} holdId
  * @param {string} runId
  * @param {StepCharge} charge
@@ -172,11 +175,22 @@ export async function chargeStep(holdId, runId, charge) {
     p_description: charge.description,
     p_provider: charge.provider,
     p_run_id: runId,
+    p_step_seq: charge.stepSeq,
   });
   if (error) {
-    if (error.message === "hold_closed") return null;
+    if (error.message === "step_already_charged") return null;
     throw error;
   }
+  return Number(data);
+}
+
+/**
+ * Fecha as reservas de execuções e mensagens que já terminaram e que ninguém está rodando (F43). Devolve quantas fechou.
+ * @returns {Promise<number>}
+ */
+export async function closeStaleHolds() {
+  const { data, error } = await supabaseAdmin().rpc("wallet_close_stale_holds");
+  if (error) throw error;
   return Number(data);
 }
 

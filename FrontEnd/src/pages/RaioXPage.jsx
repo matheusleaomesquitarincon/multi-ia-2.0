@@ -21,6 +21,9 @@ export function RaioXPage() {
           Sem login, e-mail nem crédito. Escolha de qual lado ver — você pode trocar a qualquer hora pelo topo da
           página. Esta porta não existe no site publicado.
         </p>
+        <p className={styles.lead}>
+          <a href="/?publica=1">Ver a página inicial como um visitante</a>
+        </p>
       </section>
 
       <div className={styles.columns}>

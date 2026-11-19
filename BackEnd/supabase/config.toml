@@ -244,6 +244,13 @@ otp_expiry = 86400
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# "Esqueci minha senha" em português (F30). O link leva o token_hash, que funciona em qualquer navegador (o padrão do
+# Supabase só funciona no navegador em que a pessoa pediu). No projeto de verdade, o mesmo texto vai no painel:
+# Authentication → Emails → Reset Password (Docs/GUIA-PUBLICACAO.md).
+[auth.email.template.recovery]
+subject = "Crie uma senha nova"
+content_path = "./supabase/templates/recovery.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

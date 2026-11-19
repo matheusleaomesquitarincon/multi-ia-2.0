@@ -8,7 +8,7 @@
 import { checkPageMember, PAGE_MEMBER_FIELD } from "../../../../../lib/auth/page-member.js";
 import { createSessionClient } from "../../../../../lib/auth/session.js";
 import { getViewer } from "../../../../../lib/auth/viewer.js";
-import { getRecipe } from "../../../../../lib/recipes/catalog.js";
+import { recipeOfRun } from "../../../../../lib/runs/recipe-of-run.js";
 import { estimateCents, stepCosts } from "../../../../../lib/runs/estimate.js";
 import { isPlainObject, isRunId } from "../../../../../lib/runs/parse-request.js";
 import {
@@ -59,7 +59,7 @@ export async function POST(request, context) {
     // Não está pausada (já continuou, acabou ou foi cancelada): nada a fazer; devolve o status atual.
     if (own.status !== "paused") return Response.json({ status: own.status });
 
-    const recipe = getRecipe(own.recipe_id);
+    const recipe = await recipeOfRun(own);
     if (!recipe) return problem(404, "Execução não encontrada.");
 
     // Outro clique em "Continuar" já está reservando: este não faz nada.

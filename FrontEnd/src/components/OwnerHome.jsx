@@ -7,7 +7,9 @@ import { emptyMonth, STATEMENT_PAGE_SIZE } from "../lib/ock/statement.js";
 import { deadlineText } from "../lib/ock/deadline.js";
 
 import { budgetInputValue } from "../lib/ock/team-forms.js";
+import { formatBRL } from "../lib/ock/pricing.js";
 import { CompanyAgents } from "./CompanyAgents.jsx";
+import { PageHeader } from "./PageHeader.jsx";
 import { CompanyCredit } from "./CompanyCredit.jsx";
 import { DemoRecharge } from "./DemoRecharge.jsx";
 import { InviteEmployee } from "./InviteEmployeeForm.jsx";
@@ -72,14 +74,17 @@ export function OwnerHome({ me, team, credit, months, statement, agents, demo })
       : null;
   return (
     <main className={styles.main}>
-      <section className={styles.intro}>
-        <p className={styles.kicker}>Painel do dono</p>
-        <h1 className={styles.title}>{me.companyName}</h1>
-        <p className={styles.lead}>
-          Olá, {firstName(me.name)}. Aqui você acompanha o custo total da empresa e os créditos de cada pessoa da
-          equipe.
-        </p>
-      </section>
+      <PageHeader
+        eyebrow="Painel do dono"
+        title={`${me.companyName},`}
+        titleEm="o mês da sua equipe."
+        lead={`Olá, ${firstName(me.name)}. O que cada pessoa entregou, quanto gastou e quanto ainda há de crédito.`}
+        stats={[
+          { label: "Disponível", value: formatBRL(Math.max(0, credit.availableCents)) },
+          { label: "Gasto no mês", value: formatBRL(credit.monthSpentCents) },
+          { label: "Entregas", value: String(deliveries) },
+        ]}
+      />
 
       <MonthStory
         credit={credit}

@@ -26,7 +26,7 @@ import { readAttachment } from "./attachments.js";
 import { isUuid } from "./chat-request.js";
 import { loadCompanyAgentPersona } from "./company-agents.js";
 import { parseChartSpec, renderChart } from "./chart.js";
-import { ATTACHMENTS_ONLY_PROMPT } from "./chat.js";
+import { ATTACHMENTS_ONLY_PROMPT, AUTOMATIC_CHOICE } from "./chat.js";
 import { heuristicRoute, parseRoute, ROUTER, routerRequest } from "./chief.js";
 import { CHART_MIME, previewDataUrl } from "./conversation-view.js";
 import { generateDocument } from "./document.js";
@@ -42,17 +42,19 @@ import {
   CHART_FAILED,
   chargeDescription,
   chiefMaxCents,
+  choiceNote,
   conversationTitle,
   documentTitle,
   historyText,
   IMAGE_FAILED,
   IMAGE_READY,
   IMAGE_UNAVAILABLE,
-  planWork,
+  planWithChoice,
   PROJECT_FAILED,
   taskAiCallRows,
   taskChargeCents,
   toolNotes,
+  toolUse,
   workRequest,
 } from "./quick-task.js";
 import { loadMonth } from "./spending.js";
@@ -84,6 +86,8 @@ const FILE_FAILED = "Não consegui gerar o arquivo. Nada foi cobrado. Tente de n
  * fileIds: string[];
  * // Ao começar uma conversa nova, o agente pronto escolhido (lib/ock/agents.js); null é um chat comum.
  * agentId?: string | null;
+ * // A IA e o nível que a pessoa escolheu para esta mensagem (F03). Sem valor: o que o Chefe recomendar.
+ * choice?: ModelChoice;
  * }} QuickTaskRequest
  */
 
@@ -162,7 +166,14 @@ async function answerMessage(me, session, request, options, taskId, ledger) {
   const route = await decide(getProvider, chiefRequest, prompt, onCall);
   await closeHold(chiefHold.id);
 
-  const plan = planWork(route, prompt, options.tools ?? aiTools(), persona);
+  // O Chefe recomenda; a pessoa pode ter escolhido outra IA ou outro nível (F03). Roda, e é cobrado, o escolhido.
+  const { recommended, chosen: plan } = planWithChoice(
+    route,
+    prompt,
+    options.tools ?? aiTools(),
+    persona,
+    request.choice ?? AUTOMATIC_CHOICE,
+  );
   const newTask = (conversation) => ({
     id: taskId,
     company_id: me.companyId,
@@ -170,10 +181,9 @@ async function answerMessage(me, session, request, options, taskId, ledger) {
     conversation_id: conversation.id,
     prompt,
     action: plan.action,
-    // Até a escolha livre (etapa 6, F03), a pessoa fica com o que o Chefe recomendou.
-    recommended_provider: plan.provider,
-    recommended_tier: plan.tier,
-    recommended_effort: plan.effort,
+    recommended_provider: recommended.provider,
+    recommended_tier: recommended.tier,
+    recommended_effort: recommended.effort,
     chosen_provider: plan.provider,
     chosen_tier: plan.tier,
     chosen_effort: plan.effort,
@@ -188,7 +198,8 @@ async function answerMessage(me, session, request, options, taskId, ledger) {
     tier: plan.tier,
     effort: plan.effort,
     reason: plan.reason ?? (route.reason || null),
-    notice: outcome.status === "finished" ? actionNotice(plan.action, outcome.answer) : null,
+    notice: outcome.status === "finished" ? actionNotice(plan.action, outcome.answer, outcome.used) : null,
+    choiceNote: choiceNote(recommended, plan, plan === recommended ? undefined : plan.reason),
     costCents,
     attachmentsCut: attachments.cut,
     createdAt: new Date().toISOString(),
@@ -203,7 +214,7 @@ async function answerMessage(me, session, request, options, taskId, ledger) {
       existing ?? (await createOwnConversation(session, conversationTitle(message, names(uploads)), newAgentId));
     await createTask({ ...newTask(conversation), status: "finished", answer: IMAGE_UNAVAILABLE, finished_at: now() });
     await linkUploadsToTask(request.fileIds, taskId);
-    const outcome = { status: "finished", answer: IMAGE_UNAVAILABLE, deliveries: [], chart: null };
+    const outcome = finished(IMAGE_UNAVAILABLE);
     return done(session, me, conversation, view(conversation, outcome, 0));
   }
 
@@ -234,7 +245,7 @@ async function answerMessage(me, session, request, options, taskId, ledger) {
     onCall,
     wait: options.wait,
   });
-  await finishTask(taskId, outcome.status, outcome.answer);
+  await finishTask(taskId, outcome.status, outcome.answer, outcome.used);
 
   let costCents = 0;
   if (outcome.status === "finished") {
@@ -257,6 +268,8 @@ async function answerMessage(me, session, request, options, taskId, ledger) {
  * answer: string;
  * deliveries: ChatFile[];
  * chart: string | null;
+ * // Se a IA pesquisou ou rodou um programa (F53): o aviso da resposta e a linha guardada em tasks leem daqui.
+ * used: ToolUse;
  * }} Outcome
  */
 
@@ -276,6 +289,7 @@ async function produce(plan, work, prompt, context) {
   if (plan.kind === "image") return makeImage(work.input, context);
   let text;
   let notes;
+  let used;
   try {
     const answer = await callAi(context.getProvider(plan.provider), work, {
       stepId: ANSWER_STEP,
@@ -284,6 +298,7 @@ async function produce(plan, work, prompt, context) {
     });
     text = answer.text;
     notes = toolNotes(answer);
+    used = toolUse(answer);
   } catch (error) {
     if (!(error instanceof ProviderError)) throw error;
     console.error(
@@ -294,7 +309,7 @@ async function produce(plan, work, prompt, context) {
   }
 
   // As fontes da pesquisa e o aviso do programa rodado vão escritos no fim da resposta (e ficam no histórico).
-  if (plan.kind === "answer") return finished(text.trimEnd() + notes);
+  if (plan.kind === "answer") return finished(text.trimEnd() + notes, [], null, used);
   try {
     return await makeDelivery(plan, text, context);
   } catch (error) {
@@ -371,12 +386,15 @@ async function makeDelivery(plan, text, context) {
   return finished(`Projeto pronto com ${files.length} arquivo(s): ${list}. Baixe o .zip aqui embaixo.`, [file]);
 }
 
-function finished(answer, deliveries = [], chart = null) {
-  return { status: "finished", answer, deliveries, chart };
+/** Sem pesquisa nem programa (um arquivo, uma imagem, uma recusa): é o que de fato aconteceu, não "não se sabe". */
+const NO_TOOLS = { researched: false, ranCode: false };
+
+function finished(answer, deliveries = [], chart = null, used = NO_TOOLS) {
+  return { status: "finished", answer, deliveries, chart, used };
 }
 
 function failed(answer) {
-  return { status: "failed", answer, deliveries: [], chart: null };
+  return { status: "failed", answer, deliveries: [], chart: null, used: NO_TOOLS };
 }
 
 /** Junta a persona do agente da empresa com o que ele sempre deve saber (o conhecimento, quando houver). */

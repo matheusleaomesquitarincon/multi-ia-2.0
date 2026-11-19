@@ -143,7 +143,7 @@ comentários automaticamente: quem muda um formato atualiza o comentário e os t
 
 ### Visual
 - Tudo centralizado em tokens (`FrontEnd/src/styles/tokens.css`). **Nunca** escreva cor, fonte ou espaçamento solto num componente.
-- Referência atual: fundo cinza claro, botões azuis `#2A3BD1`; cor por IA (Claude laranja, GPT verde, Gemini azul); fontes Bricolage Grotesque (títulos) + IBM Plex Sans (texto).
+- Referência atual (11/11/2026, inspirada em offmarket.so e salesagent.chat): visual editorial, com fundo creme `#FBF9F4`, tinta `#1C1A17`, destaque índigo `#4B47D6`, linhas finas no lugar de caixas com sombra e faixas escuras para abrir e fechar seções; títulos em Newsreader (serifa leve, com o final em itálico) e texto em Inter; etiquetas de status verde, âmbar e vermelho; cor por IA (Claude terracota, GPT verde, Gemini azul). O topo das telas de quem está logado é o `PageHeader`.
 - A interface conta o trabalho como uma história: página inicial em capítulos, execução das receitas como linha do tempo e painel do dono com a história do mês. Todo movimento respeita `prefers-reduced-motion`.
 
 ## 6. Segurança (inegociável)

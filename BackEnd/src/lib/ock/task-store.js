@@ -9,7 +9,9 @@ const CONVERSATIONS = "conversations";
 const TASKS = "tasks";
 const ENTRIES = "wallet_entries";
 const CONVERSATION_COLUMNS = "id, title, updated_at, agent_id";
-const TASK_COLUMNS = "id, prompt, answer, status, action, chosen_provider, chosen_tier, chosen_effort, created_at";
+const TASK_COLUMNS =
+  "id, prompt, answer, status, action, recommended_provider, recommended_tier, chosen_provider, chosen_tier, " +
+  "chosen_effort, researched, ran_code, created_at";
 
 /** Quantas mensagens de uma conversa a tela mostra (as mais recentes). */
 export const CONVERSATION_PAGE_SIZE = 100;
@@ -93,9 +95,15 @@ export async function touchConversation(id) {
  * answer: string | null;
  * status: "running" | "finished" | "failed";
  * action: ChatAction;
+ * // O que o Chefe recomendou e o que rodou de fato (diferentes quando a pessoa escolheu, F03).
+ * recommended_provider: ProviderId | null;
+ * recommended_tier: ModelTier | null;
  * chosen_provider: ProviderId;
  * chosen_tier: ModelTier;
  * chosen_effort: Effort;
+ * // Se a IA pesquisou ou rodou um programa (F53). null nas mensagens de antes desse registro.
+ * researched: boolean | null;
+ * ran_code: boolean | null;
  * created_at: string;
  * }} TaskRow
  */
@@ -108,7 +116,7 @@ export async function touchConversation(id) {
  * conversation_id: string;
  * prompt: string;
  * action: ChatAction;
- * // O que o Chefe recomendou e o que a pessoa escolheu. Iguais até a escolha livre (etapa 6, F03).
+ * // O que o Chefe recomendou e o que a pessoa escolheu (F03). Iguais quando ela deixa no "Automático".
  * recommended_provider: ProviderId;
  * recommended_tier: ModelTier;
  * recommended_effort: Effort;
@@ -131,16 +139,23 @@ export async function createTask(task) {
 }
 
 /**
- * Fecha a mensagem com a resposta (ou, numa falha, com o aviso do que houve).
+ * Fecha a mensagem com a resposta (ou, numa falha, com o aviso do que houve) e com o que a IA de fato usou (F53).
  * @param {string} id
  * @param {"finished" | "failed"} status
  * @param {string} answer
+ * @param {ToolUse} used
  * @returns {Promise<void>}
  */
-export async function finishTask(id, status, answer) {
+export async function finishTask(id, status, answer, used) {
   const { error } = await supabaseAdmin()
     .from(TASKS)
-    .update({ status, answer, finished_at: new Date().toISOString() })
+    .update({
+      status,
+      answer,
+      researched: used.researched,
+      ran_code: used.ranCode,
+      finished_at: new Date().toISOString(),
+    })
     .eq("id", id);
   if (error) throw error;
 }

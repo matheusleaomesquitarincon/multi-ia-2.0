@@ -51,6 +51,34 @@ export const ATTACHMENTS_CUT_NOTICE =
 export const TIER_LABEL = { economico: "econômico", padrao: "padrão", potente: "potente" };
 export const EFFORT_LABEL = { low: "baixo", medium: "médio", high: "alto" };
 
+/**
+ * A escolha livre do funcionário (F03): a IA e o nível que ele quer nesta mensagem. Campo vazio: fica o que o Chefe
+ * recomendar ("Automático").
+ */
+/**
+ * @typedef {{
+ * provider: ProviderId | null;
+ * tier: ModelTier | null;
+ * }} ModelChoice
+ */
+
+/** Sem escolha: o Chefe decide tudo. */
+export const AUTOMATIC_CHOICE = { provider: null, tier: null };
+
+/**
+ * A escolha que chegou pela internet, conferida: valor desconhecido vira "Automático".
+ * @param {unknown} value
+ * @returns {ModelChoice}
+ */
+export function parseModelChoice(value) {
+  if (typeof value !== "object" || value === null) return AUTOMATIC_CHOICE;
+  const { provider, tier } = /** @type {Record<string, unknown>} */ (value);
+  return {
+    provider: provider === "claude" || provider === "gpt" || provider === "gemini" ? provider : null,
+    tier: typeof tier === "string" && Object.hasOwn(TIER_LABEL, tier) ? /** @type {ModelTier} */ (tier) : null,
+  };
+}
+
 /** O aviso quando o tipo do arquivo não dá para ler. */
 export const UNREADABLE_ATTACHMENT =
   "A IA ainda não lê este tipo de arquivo. Anexe um PDF, um texto (.txt, .csv, .md, .json) ou uma imagem.";
@@ -92,6 +120,8 @@ export const UNREADABLE_ATTACHMENT =
  * reason: string | null;
  * // Aviso fixo do tipo de resposta (ex.: a resposta não veio de uma pesquisa na internet).
  * notice: string | null;
+ * // Quando a pessoa escolheu a IA ou o nível (F03): o que ela escolheu e o que o Chefe recomendava. Senão, null.
+ * choiceNote: string | null;
  * // Quanto a resposta custou, em centavos (0 quando nada foi cobrado).
  * costCents: number;
  * // Se o texto dos anexos passou do limite e foi cortado. Só na resposta que acabou de chegar.

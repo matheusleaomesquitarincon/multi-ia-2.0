@@ -16,10 +16,10 @@
 > `luis-gustavo`, criadas a partir da `refactor/arquitetura` (commit `ff04ddd`), porque a `main` ainda só tem o primeiro commit.
 > Sem as chaves do projeto de testes, o projeto rodou no computador com o banco local do Supabase (`npx supabase start`, precisa
 > do Docker): login, permissões e uma receita com a IA simulada funcionaram. Isso não fecha a F62, que pede o banco de verdade.
-> Corrigidas a F64 (`PORT` vazio) e a F65 (logo com a visão raio-x); a F63 (nomes antigos no guia) segue aberta.
+> Corrigidas a F67 (`PORT` vazio) e a F68 (logo com a visão raio-x); a F66 (nomes antigos no guia) segue aberta.
 > **Em aberto:** levar o trabalho para a `main` e definir como as branches de cada dev se juntam a ela.
 
-**Última atualização:** 04/11/2026 (painel do dono: créditos por pessoa + custo total da empresa; antes: 27/10/2026,
+**Última atualização:** 16/11/2026 (branch `matheus`: receita própria e aba Meu time, F08; apagar receita e conta, F64; antes, F28, F63 e documentos; antes: 04/11/2026, painel do dono: créditos por pessoa + custo total da empresa; antes: 27/10/2026,
 madrugada — bloco 1, issue #54: a Proposta comercial na `main`, pelo merge do Luis em 26/10; o segundo PR, a receita
 "Posts para redes sociais", esperando o teste do Luis)
 **Etapa atual:** bloco 1 da nova ordem (etapa 6, o produto do funcionário). A etapa 5 (base para empresas) está no ar e
@@ -1168,14 +1168,67 @@ empilhado sobre o PR #55). No ar: o Luis fez o merge do #55 e do #56 na noite de
   (`MOCK_AI_FAILURES`, só naquele terminal).
 - **Ideia de ajuste (para a lista de depois do MVP):** um "Copiar" para cada opção de post (hoje o botão copia as 3).
 
+## Manutenção das seções 3 e 4 do relatório de pendências (11/11/2026, branch `matheus`)
+
+Pedido do Matheus: atacar as pendências de front-end (seção 3) e de back-end e infraestrutura (seção 4) do PDF
+"Pendências por área". Cada item virou um commit separado na branch `matheus`.
+
+- **Rodar no computador sem o projeto de testes:** o Supabase pode rodar local (`npx supabase start` em `BackEnd/`, com
+  Docker), com as migrações e o seed; o `.env.local` aponta para ele e liga a visão raio-x.
+- **Dois defeitos achados ao rodar:** com `PORT=` vazio (como vem no `.env.example`), o servidor ligava numa porta
+  aleatória e a chamada interna das receitas ia para a porta 80, deixando toda receita parada na fila. Corrigidos.
+- **F54 (resolvida):** o teto da rota interna das receitas agora cobre todas as tentativas e a troca de IA de uma etapa.
+- **F43 (resolvida, migração):** cada etapa é cobrada uma vez só (chave única), etapa concluída é cobrada mesmo com a
+  reserva recém-fechada, e uma limpeza a cada 5 minutos fecha as reservas de execuções terminadas.
+- **F53 (resolvida, migração):** `tasks.researched` e `tasks.ran_code` guardam se a IA pesquisou ou rodou um programa.
+- **F30 (código pronto):** "Esqueci minha senha" para dono e funcionário, com modelo de e-mail em português. Falta só
+  ligar o SMTP e colar o modelo no painel do Supabase (`GUIA-PUBLICACAO.md`, passos 4 e 5).
+- **F03 (resolvida):** no chat, a pessoa escolhe a IA e o nível (ou deixa no Automático); o recomendado e o escolhido
+  ficam guardados.
+- **F08 (falta a receita própria):** a receita "Relatório mensal para cliente" ficou pronta; não há mais "Em breve".
+- **Ficaram de fora:** F09 (decisão do Matheus: depois), F19 (teste manual no Firefox e no Safari) e F29 (aceita).
+- **Como foi conferido:** lint, 595 testes do servidor, 87 das telas, 150 do banco, build, e cada item de ponta a ponta
+  no Supabase local (receitas, chat, e-mail de senha nova na caixa de teste).
+
+## Manutenção de back e front (16/11/2026, branch `matheus`)
+
+Pedido do Matheus: seguir o relatório "Pendências por área", agora pela manutenção de back-end e front-end.
+
+- **Documentos:** F52 resolvida (o `AGENTS.md` já diz "ligação direta", como o código faz), título da F08 atualizado,
+  andamento da F62 (o que foi testado no Supabase local em 11/11) e os caminhos novos do câmbio na F17.
+- **F63 (achada e resolvida):** o funcionário via os créditos 100 vezes maiores que o dono (conta de créditos duplicada no
+  `OckWorkspace`). Agora as duas telas usam `formatCredits` de `lib/ock/pricing.js` (1 crédito = R$ 1,00).
+- **F28 (resolvida, migração):** apagar conversa no chat (o "×" ao lado de cada uma), apagar entrega na aba Entregas e a
+  limpeza periódica que apaga da pasta o conteúdo sem registro. Detalhes no `FALHAS.md`.
+- **F64 (nova):** ainda falta apagar execução de receita e a conta inteira (LGPD).
+- **Como foi conferido:** lint, testes do servidor, das telas (88) e do banco (156), build, e a F28 de ponta a ponta no
+  Supabase local (script contra o servidor ligado, conferindo as tabelas e a pasta).
+
+## Receita própria e aba Meu time (16/11/2026, branch `matheus`)
+
+Pedido do Matheus: fazer a F08 "bem dinâmica e visual" (tarefas, pendências, uso diário e o time de IA do funcionário)
+e depois a F64.
+
+- **F08 (resolvida, migração):** aba nova **Meu time**: o dia da pessoa (usado hoje, tarefas, pendências, uso dos últimos
+  14 dias em barras), pendências e tarefas recentes com Abrir, e **Meus times de IA**: cada time desenhado como linha de
+  trabalho, com Usar, Mudar e Apagar, e o montador (2 a 5 membros, IA e o que cada um faz, modelos prontos, só eu ou a
+  empresa toda). O time roda pelo mesmo motor das receitas prontas. Arquivos: `lib/recipes/custom-form.js` (cópia nos
+  dois lados), `lib/recipes/custom.js`, `lib/runs/recipe-of-run.js`, `lib/ock/custom-recipes.js`, `lib/ock/my-day.js`,
+  `components/MyTeam.jsx`, `TeamEditor.jsx`, `UsageChart.jsx` e a migração `20261116130000_custom_recipe_runs.sql`.
+- **F64 (resolvida):** "Apagar" nas tarefas recentes e "Apagar minha conta" no fim da aba Meu time (só funcionário).
+  A confirmar: se as entregas também somem ao apagar a conta (hoje ficam com a empresa).
+- **F65 (nova):** o alto da página mostra o gasto do funcionário em reais, e o resto, em créditos.
+- **Como foi conferido:** lint, 630 testes do servidor, 89 das telas, 166 do banco, build; um time salvo, rodado e
+  baixado em Word pela API; as telas olhadas no Chrome (computador e celular, o que corrigiu o layout do montador, das
+  abas e do gráfico no celular); apagar receita e apagar conta de ponta a ponta no navegador.
+
 ## Próximo passo
 
-1. **Luis:** contar ao Claude Code como foi o teste da Proposta comercial (`docs/GUIA-TESTE-PROPOSTA.md`), se ele foi
-   feito antes do merge do #56. Depois, testar o PR dos Posts com o `docs/GUIA-TESTE-POSTS.md` (uns 25 minutos, com o
-   chat do Claude) e contar como foi. O merge vem depois do teste.
-2. **Claude Code, numa conversa nova:** o PR 3 do bloco 1, a receita "Relatório mensal para cliente" (analista dos
-   números, redator e conferente que checa cada número contra os dados colados no pedido), e com ela sai o último
-   "Em breve". Parte da `main` se o PR dos posts já tiver entrado; senão, empilhado sobre ele.
+0. **Matheus:** em `/trabalho` (visão raio-x, como Funcionário), apagar uma conversa pelo "×" da lista e uma entrega na
+   aba Entregas. Depois, abrir o PR da branch `matheus` para a `main`.
+1. **Matheus:** testar no `localhost` o que mudou (o "Esqueci minha senha" em `/entrar`, a escolha de IA no chat e a
+   receita do relatório, com o `Docs/GUIA-TESTE-RELATORIO.md`) e decidir o desenho da receita própria (F08).
+2. **Claude Code:** a receita própria (F08), depois da decisão acima. A tabela `custom_recipes` já existe.
 3. **Luis, quando quiser (no chat do Claude, sem código):** as decisões provisórias da madrugada, o câmbio e a F52
    (lista no resumo da madrugada, acima). A sessão 2 do guia das IAs de verdade ficou para o bloco 6.
 4. **Com o parceiro (sem código):** avisar da F27, caso o banco dele esteja no ar com dados de verdade; confirmar a

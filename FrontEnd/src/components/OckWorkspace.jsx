@@ -1,7 +1,9 @@
 // O espaço de trabalho de quem é da empresa (funcionário ou dono), em quatro abas:
 // - "Chat": a tarefa rápida (components/QuickChat.jsx). A pessoa pede, o Chefe escolhe a IA e cada resposta mostra
 //   quanto custou. Com o chat vazio, sugere as receitas prontas.
-// - "Receitas": as receitas prontas em cartões; a escolhida abre ali mesmo (components/WorkspaceRecipes.jsx).
+// - "Meu time": o dia da pessoa (uso, pendências, tarefas recentes) e os times de IA dela, as receitas próprias
+//   (components/MyTeam.jsx, F08).
+// - "Receitas": as receitas prontas e os times em cartões; a escolhida abre ali mesmo (components/WorkspaceRecipes.jsx).
 // - "Entregas": os arquivos que as IAs fizeram para a pessoa (PDF, planilha, gráfico, projeto...), para baixar.
 // - "Meus gastos": o gasto do mês, em reais, o teto e o extrato do mês da própria pessoa, com cada receita numa linha só
 //   (decisão 4 da issue #39 e decisão 2 da issue #43).
@@ -9,18 +11,23 @@
 // A aba e a receita aberta ficam no endereço (components/workspace-view.js): recarregar volta para o mesmo lugar.
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { fetchView } from "../lib/api.js";
+import { rememberActiveRun } from "../lib/runs/active-run.js";
+import { MyTeam } from "./MyTeam.jsx";
+import { PageHeader } from "./PageHeader.jsx";
 import { QuickChat } from "./QuickChat.jsx";
 import { MAX_FOLDER_NAME } from "../lib/ock/chat.js";
 
 import {
   createFolder,
+  deleteFile,
   deleteFolder,
   fileUrl,
   loadDeliveries,
   loadSpending,
   moveDelivery,
 } from "../lib/ock/chat-client.js";
-import { formatBRL } from "../lib/ock/pricing.js";
+import { formatBRL, formatCredits } from "../lib/ock/pricing.js";
 import { formatDateTime, STATEMENT_PAGE_SIZE } from "../lib/ock/statement.js";
 
 import { BudgetBar } from "./BudgetBar.jsx";
@@ -44,6 +51,8 @@ const OWNER_SEES = "O dono da empresa vê suas entregas e quanto cada tarefa cus
  * recipeCards: RecipeSummary[];
  * // As receitas prontas, com o que a tela de cada uma precisa.
  * recipes: WorkspaceRecipe[];
+ * // Os times de IA que a pessoa pode usar (receitas próprias, F08): os dela e os da empresa.
+ * initialCustomRecipes: CustomTeam[];
  * // Os agentes prontos que a empresa criou (Fase 2); aparecem na prateleira junto com os de fábrica.
  * companyAgents: CompanyAgentCard[];
  * // A aba e a receita com que a página abre, lidas do endereço.
@@ -64,6 +73,7 @@ export function OckWorkspace({
   initialMonth,
   recipeCards,
   recipes,
+  initialCustomRecipes,
   companyAgents,
   initialView,
   voice,
@@ -76,6 +86,31 @@ export function OckWorkspace({
   const tabRefs = useRef([]);
   const tab = view.tab;
   const suggestions = recipeCards.filter((card) => card.available);
+  const [customRecipes, setCustomRecipes] = useState(initialCustomRecipes);
+  const allRecipes = [...recipes, ...customRecipes];
+  const customCards = customRecipes.map((team) => ({
+    id: team.id,
+    name: team.name,
+    description: team.form.visibility === "company" ? "Time da empresa" : "Seu time",
+    available: true,
+    team: team.roles.map((role) => ({ roleName: role.name, provider: role.suggestedProvider })),
+  }));
+
+  // Um time foi salvo, mudado ou apagado: busca de novo a lista (o servidor monta a tela e o custo de cada um).
+  const refreshCustomRecipes = useCallback(async () => {
+    const data = await fetchView("/api/views/trabalho");
+    if (Array.isArray(data.customRecipes)) setCustomRecipes(data.customRecipes);
+  }, []);
+
+  // "Abrir" uma receita pendente ou recente: abre a receita na aba Receitas acompanhando aquela execução.
+  function openRun(recipeId, runId) {
+    rememberActiveRun(recipeId, runId);
+    const next = { tab: "recipes", recipeId };
+    setView(next);
+    const params = new URLSearchParams(workspaceSearch(window.location.search, next));
+    params.set("run", runId);
+    window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
+  }
 
   // Troca o que está aberto e escreve no endereço, sem recarregar a página nem criar um passo no "Voltar".
   function changeView(next) {
@@ -113,30 +148,24 @@ export function OckWorkspace({
 
   return (
     <main className={styles.main}>
-      <header className={styles.bar}>
-        <div className={styles.greeting}>
-          <h1 className={styles.title}>Olá, {firstName}!</h1>
-          <p className={styles.lead}>Peça o que precisar em português. O Chefe cuida do resto.</p>
-        </div>
-        <div className={styles.side}>
-          <p className={styles.month}>
-            {isOwner ? (
-              <>
-                Gasto do mês: <strong>{formatBRL(month.spentCents)}</strong>
-                {month.budgetCents === null ? " (sem teto)" : ` de ${formatBRL(month.budgetCents)}`}
-              </>
-            ) : month.budgetCents === null ? (
-              <>
-                Créditos: <strong>ilimitados</strong>
-              </>
-            ) : (
-              <>
-                Créditos restantes: <strong>{formatCredits(Math.max(0, month.budgetCents - month.spentCents))}</strong>
-              </>
-            )}
-          </p>
-        </div>
-      </header>
+      <PageHeader
+        eyebrow="Espaço de trabalho"
+        title={`Olá, ${firstName}.`}
+        titleEm="O que vamos fazer hoje?"
+        lead="Peça o que precisar em português. O Chefe monta o time e cuida do resto."
+        stats={[
+          { label: "Gasto do mês", value: formatBRL(month.spentCents) },
+          isOwner
+            ? { label: "Teto", value: month.budgetCents === null ? "sem teto" : formatBRL(month.budgetCents) }
+            : {
+                label: "Créditos restantes",
+                value:
+                  month.budgetCents === null
+                    ? "ilimitados"
+                    : formatCredits(Math.max(0, month.budgetCents - month.spentCents)),
+              },
+        ]}
+      />
 
       <div role="tablist" aria-label="Partes do espaço de trabalho" className={styles.tabs} onKeyDown={handleTabKey}>
         {TABS.map((item, index) => (
@@ -172,6 +201,20 @@ export function OckWorkspace({
           voice={voice}
         />
       </div>
+      <div role="tabpanel" id={`${ids}-panel-team`} aria-labelledby={`${ids}-tab-team`} hidden={tab !== "team"}>
+        {/* Montada só quando aberta: cada vez que a aba abre, o dia vem atualizado. */}
+        {tab === "team" && (
+          <MyTeam
+            pageMemberId={pageMemberId}
+            isOwner={isOwner}
+            teams={customRecipes}
+            openableRecipeIds={allRecipes.map((recipe) => recipe.id)}
+            onUseRecipe={(recipeId) => changeView({ tab: "recipes", recipeId })}
+            onOpenRun={openRun}
+            onTeamsChange={refreshCustomRecipes}
+          />
+        )}
+      </div>
       {/* A receita aberta também fica montada nas outras abas: o acompanhamento do time continua. */}
       <div
         role="tabpanel"
@@ -182,7 +225,8 @@ export function OckWorkspace({
         <WorkspaceRecipes
           pageMemberId={pageMemberId}
           cards={recipeCards}
-          recipes={recipes}
+          customCards={customCards}
+          recipes={allRecipes}
           openRecipeId={view.recipeId}
           onOpen={(recipeId) => changeView({ tab: "recipes", recipeId })}
           onClose={() => changeView({ tab: "recipes", recipeId: null })}
@@ -264,6 +308,23 @@ function DeliveriesPanel({ isOwner, pageMemberId }) {
     setBusy(true);
     setProblem(null);
     const result = await deleteFolder(id, pageMemberId);
+    setBusy(false);
+    if (!result.ok) {
+      setProblem(result.problem);
+      return;
+    }
+    reload();
+  }
+
+  // Apaga uma entrega de vez: o arquivo e o conteúdo (F28). O gasto continua no extrato.
+  async function removeDelivery(delivery) {
+    const confirmed = window.confirm(
+      `Apagar “${delivery.name}”? O arquivo some para sempre, inclusive para o dono da empresa. O gasto continua no extrato.`,
+    );
+    if (!confirmed) return;
+    setBusy(true);
+    setProblem(null);
+    const result = await deleteFile(delivery.id, pageMemberId);
     setBusy(false);
     if (!result.ok) {
       setProblem(result.problem);
@@ -365,18 +426,26 @@ function DeliveriesPanel({ isOwner, pageMemberId }) {
           folders={folders}
           busy={busy}
           onMove={move}
+          onRemove={removeDelivery}
           onDelete={() => void removeFolder(folder.id)}
         />
       ))}
 
       {(loose.length > 0 || folders.length > 0) && (
-        <FolderBlock title="Sem tarefa" items={loose} folders={folders} busy={busy} onMove={move} />
+        <FolderBlock
+          title="Sem tarefa"
+          items={loose}
+          folders={folders}
+          busy={busy}
+          onMove={move}
+          onRemove={removeDelivery}
+        />
       )}
     </section>
   );
 }
 
-function FolderBlock({ title, items, folders, busy, onMove, onDelete }) {
+function FolderBlock({ title, items, folders, busy, onMove, onRemove, onDelete }) {
   return (
     <section className={styles.folder} aria-label={`Tarefa: ${title}`}>
       <div className={styles.folderHead}>
@@ -419,6 +488,14 @@ function FolderBlock({ title, items, folders, busy, onMove, onDelete }) {
               <a className={styles.rowLink} href={fileUrl(delivery.id)} download={delivery.name}>
                 Baixar<span className={styles.visuallyHidden}> {delivery.name}</span>
               </a>
+              <button
+                type="button"
+                className={styles.folderDelete}
+                onClick={() => void onRemove(delivery)}
+                disabled={busy}
+              >
+                Apagar<span className={styles.visuallyHidden}> {delivery.name}</span>
+              </button>
             </li>
           ))}
         </ul>
@@ -476,7 +553,7 @@ function SpendingPanel({ isOwner, onMonthChange }) {
             {month.budgetCents !== null && (
               <div className={`${styles.usageItem} ${styles.usageRight}`}>
                 <span className={styles.muted}>Do total do mês</span>
-                <span className={styles.usageLimit}>{formatCredits(month.budgetCents)} créditos</span>
+                <span className={styles.usageLimit}>{formatCredits(month.budgetCents)}</span>
               </div>
             )}
           </div>
@@ -532,11 +609,6 @@ function SpendingPanel({ isOwner, onMonthChange }) {
       {more && <p className={styles.muted}>Mostrando os {STATEMENT_PAGE_SIZE} gastos mais recentes.</p>}
     </section>
   );
-}
-
-/** Os créditos da OCK que o funcionário vê (1 crédito = R$ 0,01): esconde o valor em dinheiro, mostra um número. */
-function formatCredits(cents) {
-  return Math.round(cents).toLocaleString("pt-BR");
 }
 
 function nextTabIndex(key, current, count) {

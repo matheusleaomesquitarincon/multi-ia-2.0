@@ -1,0 +1,125 @@
+.figure {
+  margin: 0;
+  overflow-x: clip;
+}
+
+/* As barras saem da base; a mais alta ocupa a altura toda. */
+.plot {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  height: 160px;
+  padding-top: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.column {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.slot {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.bar {
+  width: min(100%, 22px);
+  border-radius: 4px 4px 0 0;
+  background: var(--color-primary);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.empty {
+  background: var(--color-border-strong);
+}
+
+.slot:hover .bar {
+  background: var(--color-primary-hover);
+}
+
+/* O valor da barra aparece em cima dela ao passar o mouse. */
+.tip {
+  position: absolute;
+  bottom: calc(100% + var(--space-1));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  white-space: nowrap;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-control);
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+  font-size: var(--text-xs);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.slot:hover .tip {
+  opacity: 1;
+}
+
+/* A dica nunca sai da tela (nem invisível, o que faria a página rolar para o lado no celular): na metade esquerda do
+   gráfico ela cresce para a direita, e na metade direita, para a esquerda. */
+.column:nth-child(-n + 7) .tip {
+  left: 0;
+  transform: none;
+}
+
+.column:nth-child(n + 8) .tip {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.tick {
+  padding-top: var(--space-1);
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* No celular, só o primeiro dia, o do meio e hoje aparecem escritos embaixo (as barras continuam todas). */
+@media (max-width: 640px) {
+  .tick {
+    display: flex;
+    justify-content: center;
+    overflow: visible;
+  }
+
+  .column:first-child .tick {
+    justify-content: flex-start;
+  }
+
+  .column:last-child .tick {
+    justify-content: flex-end;
+  }
+
+  .column:not(:first-child):not(:last-child):not(:nth-child(7)) .tick {
+    visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar,
+  .tip {
+    transition: none;
+  }
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

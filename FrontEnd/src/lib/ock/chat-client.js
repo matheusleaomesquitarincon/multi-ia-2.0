@@ -21,6 +21,8 @@ export const SERVER_PROBLEM = "Algo deu errado do nosso lado. Tente de novo daqu
  * pageMemberId: string;
  * // Ao começar uma conversa nova com um agente pronto, o id dele (lib/ock/agents.js).
  * agentId?: string | null;
+ * // A IA e o nível escolhidos pela pessoa (F03). Sem valor: o Chefe decide.
+ * choice?: ModelChoice;
  * }} SendBody
  */
 
@@ -171,6 +173,44 @@ export function deleteFolder(id, pageMemberId, send = fetch) {
 }
 
 /**
+ * Apaga uma conversa: as mensagens e os anexos mandados nela (F28). As entregas e o extrato ficam.
+ * @param {string} id
+ * @param {string} pageMemberId
+ * @param {typeof fetch} [send]
+ * @returns {Promise<Fetched<{ ok: true }>>}
+ */
+export function deleteConversation(id, pageMemberId, send = fetch) {
+  return request(
+    `/api/ock/conversations/${encodeURIComponent(id)}`,
+    {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [PAGE_MEMBER_FIELD]: pageMemberId }),
+    },
+    send,
+  );
+}
+
+/**
+ * Apaga um arquivo da própria pessoa (ex.: uma entrega), o registro e o conteúdo (F28).
+ * @param {string} id
+ * @param {string} pageMemberId
+ * @param {typeof fetch} [send]
+ * @returns {Promise<Fetched<{ ok: true }>>}
+ */
+export function deleteFile(id, pageMemberId, send = fetch) {
+  return request(
+    `/api/ock/files/${encodeURIComponent(id)}`,
+    {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [PAGE_MEMBER_FIELD]: pageMemberId }),
+    },
+    send,
+  );
+}
+
+/**
  * Move uma entrega para uma pasta (folderId) ou para "sem pasta" (folderId null).
  * @param {string} deliveryId
  * @param {string | null} folderId
@@ -233,4 +273,94 @@ async function request(url, init, send) {
   if (response.ok && body !== null) return { ok: true, data: body };
   const problem = body?.problem;
   return { ok: false, problem: typeof problem === "string" && problem ? problem : SERVER_PROBLEM };
+}
+
+// ===== Meu time (F08): os times de IA da pessoa (receitas próprias) e o resumo do dia.
+
+/**
+ * Salva um time novo (id null) ou muda um que já existe.
+ * @param {CustomRecipeForm} recipe
+ * @param {string | null} id
+ * @param {string} pageMemberId
+ * @param {typeof fetch} [send]
+ * @returns {Promise<Fetched<{ id?: string; ok?: true }>>}
+ */
+export function saveCustomRecipe(recipe, id, pageMemberId, send = fetch) {
+  return request(
+    "/api/ock/custom-recipes",
+    {
+      method: id ? "PATCH" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...(id ? { id } : {}), recipe, [PAGE_MEMBER_FIELD]: pageMemberId }),
+    },
+    send,
+  );
+}
+
+/**
+ * Apaga um time. As receitas que já rodaram com ele continuam no histórico.
+ * @param {string} id O id do banco (sem o "custom:").
+ * @param {string} pageMemberId
+ * @param {typeof fetch} [send]
+ * @returns {Promise<Fetched<{ ok: true }>>}
+ */
+export function deleteCustomRecipe(id, pageMemberId, send = fetch) {
+  return request(
+    "/api/ock/custom-recipes",
+    {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, [PAGE_MEMBER_FIELD]: pageMemberId }),
+    },
+    send,
+  );
+}
+
+/**
+ * O uso de cada dia, as receitas pendentes e as recentes.
+ * @param {typeof fetch} [send]
+ * @returns {Promise<Fetched<MyDay>>}
+ */
+export function loadMyDay(send = fetch) {
+  return request("/api/ock/my-day", {}, send);
+}
+
+// ===== Apagar o que é seu (F64, LGPD).
+
+/**
+ * Apaga uma receita rodada (precisa ter parado). A entrega e o extrato ficam.
+ * @param {string} runId
+ * @param {string} pageMemberId
+ * @param {typeof fetch} [send]
+ * @returns {Promise<Fetched<{ ok: true }>>}
+ */
+export function deleteRun(runId, pageMemberId, send = fetch) {
+  return request(
+    `/api/runs/${encodeURIComponent(runId)}`,
+    {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [PAGE_MEMBER_FIELD]: pageMemberId }),
+    },
+    send,
+  );
+}
+
+/**
+ * Apaga a conta de quem está logado (só funcionário). `confirm` é o que a pessoa digitou (precisa ser APAGAR).
+ * @param {string} confirm
+ * @param {string} pageMemberId
+ * @param {typeof fetch} [send]
+ * @returns {Promise<Fetched<{ ok: true }>>}
+ */
+export function deleteAccount(confirm, pageMemberId, send = fetch) {
+  return request(
+    "/api/ock/account",
+    {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ confirm, [PAGE_MEMBER_FIELD]: pageMemberId }),
+    },
+    send,
+  );
 }

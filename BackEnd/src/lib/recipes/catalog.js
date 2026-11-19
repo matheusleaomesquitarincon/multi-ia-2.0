@@ -1,26 +1,15 @@
-// Lista de receitas. As prontas ficam em RECIPES; as do MVP que ainda não foram feitas
-// aparecem como "Em breve", só com nome, descrição e time.
+// Lista de receitas. As prontas ficam em RECIPES; as do MVP que ainda não foram feitas aparecem como "Em breve", só
+// com nome, descrição e time (hoje, nenhuma: as 4 do MVP estão prontas).
 
+import { clientReportRecipe } from "./client-report.js";
 import { commercialProposalRecipe } from "./commercial-proposal.js";
 import { createSiteRecipe } from "./create-site.js";
 import { socialPostsRecipe } from "./social-posts.js";
 
-export const RECIPES = [createSiteRecipe, commercialProposalRecipe, socialPostsRecipe];
+export const RECIPES = [createSiteRecipe, commercialProposalRecipe, socialPostsRecipe, clientReportRecipe];
 
-// As receitas para PMEs escolhidas pelo Luis em 26/10 (issue #54) que ainda vão ser feitas.
-const COMING_SOON = [
-  {
-    id: "client-report",
-    name: "Relatório mensal para cliente",
-    description: "Um analista organiza os números, um redator escreve e um conferente checa cada número.",
-    available: false,
-    team: [
-      { roleName: "Analista", provider: "claude" },
-      { roleName: "Redator", provider: "gpt" },
-      { roleName: "Conferente", provider: "claude" },
-    ],
-  },
-];
+/** Receitas anunciadas como "Em breve". */
+const COMING_SOON = [];
 
 /**
  * @param {string} id

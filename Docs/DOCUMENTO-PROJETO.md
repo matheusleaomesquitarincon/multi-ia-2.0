@@ -86,7 +86,12 @@ muda pouco: receitas e textos mais específicos. Risco anotado em F02 do `FALHAS
    de IAs já vem montado, com papéis (chefe, executor, revisor) e a IA recomendada para cada um. Ele pode trocar as IAs,
    descreve o pedido e acompanha cada IA trabalhando até o resultado.
 2. **Receita própria:** se não houver receita pronta para o serviço, o funcionário monta a dele (papéis, IAs e
-   instruções).
+   instruções). Como ficou (16/11/2026, F08): na aba **Meu time**, um time de 2 a 5 membros, cada um com um nome, uma
+   IA e o que faz (com modelos prontos: Pesquisador, Planejador, Redator, Analista, Revisor, Tradutor). Os membros
+   trabalham um depois do outro, cada um recebendo o pedido e o que o anterior fez, e o último entrega em Word. O time
+   fica salvo "só para mim" ou "para a empresa toda" e roda como as receitas prontas (estimativa, reserva, cobrança por
+   etapa, troca de IA). No extrato do dono, aparece só "Receita própria · Etapa N" (nunca os nomes que a pessoa
+   escreveu). A mesma aba mostra o dia da pessoa: uso de hoje, tarefas, pendências e o uso dos últimos 14 dias.
 3. **Tarefa rápida:** para um serviço rápido, ele só pede, como num chat, sem montar receita.
 
 Ideia aprovada em 09/10, ainda sem data: nas receitas, em vez de uma caixa em branco, perguntas guiadas (ex.: nome do

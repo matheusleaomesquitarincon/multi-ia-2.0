@@ -1,5 +1,5 @@
-// Primeiro acesso: a pessoa entrou com a senha temporária e cria a própria aqui. Só o formulário; quem confere e grava
-// é o servidor (routes/actions/trocar-senha.js). Ao dar certo, ele leva direto para o espaço de trabalho.
+// Criar a senha: no primeiro acesso, ou na volta do "Esqueci minha senha" (`recovery`). Só o formulário; quem confere e
+// grava é o servidor (routes/actions/trocar-senha.js). Ao dar certo, ele leva direto para o lugar da pessoa.
 
 import { useActionState } from "react";
 import { changePasswordAction } from "../lib/actions.js";
@@ -10,21 +10,23 @@ import styles from "./AuthForm.module.css";
 const INITIAL = { status: "idle" };
 
 /**
- * @param {{ name: string; email: string }} props
+ * @param {{ name: string; email: string; recovery?: boolean }} props
  */
-export function ChangePasswordForm({ name, email }) {
+export function ChangePasswordForm({ name, email, recovery = false }) {
   const [state, formAction, pending] = useActionState(changePasswordAction, INITIAL);
   const errors = state.status === "invalid" ? state.errors : {};
 
   return (
     <main className={styles.main}>
       <form className={styles.card} action={formAction} noValidate aria-labelledby="change-title">
-        <p className={styles.kicker}>Primeiro acesso</p>
+        <p className={styles.kicker}>{recovery ? "Senha nova" : "Primeiro acesso"}</p>
         <h1 id="change-title" className={styles.title}>
           Olá, {firstName(name)}!
         </h1>
         <p className={styles.lead}>
-          Você entrou com a senha temporária. Agora crie a sua própria senha para usar daqui para a frente.
+          {recovery
+            ? "Você entrou pelo link do e-mail. Agora crie uma senha nova; a antiga deixa de valer e os outros aparelhos saem da conta."
+            : "Você entrou com a senha temporária. Agora crie a sua própria senha para usar daqui para a frente."}
         </p>
 
         <div className={styles.field}>

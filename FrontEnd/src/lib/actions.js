@@ -6,6 +6,7 @@ import { postForm } from "./api.js";
 const action = (name) => (previous, formData) => postForm(`/api/actions/${name}`, formData, previous);
 
 export const signIn = action("entrar/sign-in");
+export const forgotPasswordAction = action("esqueci-senha/request");
 export const signUpCompany = action("cadastro/sign-up");
 export const acceptInviteAction = action("convite/accept");
 export const changePasswordAction = action("trocar-senha/change");
