@@ -131,6 +131,11 @@ export function OwnerHome({ me, team, credit, months, statement, agents, demo })
                     <li className={styles.tag}>{person.role === "owner" ? "Dono" : "Funcionário"}</li>
                     {invite && <li className={styles.tagWarning}>{invite.tag}</li>}
                     {person.status === "disabled" && <li className={styles.tagMuted}>Desativado</li>}
+                    {person.role === "employee" && (
+                      <li className={person.emailVerified ? styles.tagMuted : styles.tagWarning}>
+                        {person.emailVerified ? "E-mail confirmado" : "E-mail não confirmado"}
+                      </li>
+                    )}
                   </ul>
                 </div>
                 {invite && <p className={styles.personNote}>{invite.note}</p>}

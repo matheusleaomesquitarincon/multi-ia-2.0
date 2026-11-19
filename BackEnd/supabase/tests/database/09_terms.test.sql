@@ -1,8 +1,8 @@
--- Teste do aceite dos termos (F05): a pessoa lê o próprio aceite, mas só o servidor grava; o dono não muda o aceite
+-- Teste do aceite dos termos (F05) e da marca de e-mail confirmado (F32): a pessoa lê o próprio aceite, mas só o servidor grava; o dono não muda o aceite
 -- de um funcionário; e versão e data andam juntas.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(6);
+select plan(8);
 
 create schema tests;
 create function tests.login_as(p_user uuid) returns void language plpgsql as $$
@@ -45,6 +45,11 @@ select throws_ok(
   '42501', null,
   'A funcionária não grava o próprio aceite pela sessão'
 );
+select throws_ok(
+  $$ update public.members set email_verified_at = now() where id = 'f0500000-0000-4000-8000-000000000002' $$,
+  '42501', null,
+  'A funcionária não marca o próprio e-mail como confirmado pela sessão (F32)'
+);
 reset role;
 
 select tests.login_as('00000000-0000-4000-8000-0000000009a1');
@@ -69,6 +74,12 @@ select is(
   '2026-11-18',
   'O aceite ficou guardado'
 );
+set local role service_role;
+select lives_ok(
+  $$ update public.members set email_verified_at = now() where id = 'f0500000-0000-4000-8000-000000000002' $$,
+  'O servidor marca o e-mail como confirmado (F32)'
+);
+reset role;
 
 select * from finish();
 rollback;

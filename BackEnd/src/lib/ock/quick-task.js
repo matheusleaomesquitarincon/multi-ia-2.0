@@ -6,7 +6,7 @@
 // (issue #39): no chat não há estimativa antes de cada mensagem. Depois que o Chefe decide, o servidor reserva o máximo
 // que a resposta pode custar, cobra o consumo real numa linha só e a tela mostra "Custou R$ X".
 
-import { costInUsd, imageCostInUsd, usdToCents, USD_TO_BRL } from "./pricing.js";
+import { costInUsd, imageCostInUsd, usdToCents, currentUsdToBrl } from "./pricing.js";
 import { maxImageUsage } from "../providers/images.js";
 import { MAX_WEB_SEARCHES, maxInputTokens, outputTokenCap, toolInputTokens } from "../providers/limits.js";
 
@@ -445,7 +445,7 @@ export function taskAiCallRows(ids, calls, charged) {
     output_tokens: call.usage.outputTokens,
     // A coluna guarda 6 casas depois da vírgula.
     cost_usd: Number(callUsd(call).toFixed(6)),
-    usd_brl: USD_TO_BRL,
+    usd_brl: currentUsdToBrl(),
     charged: charged && call.ok,
     status: call.ok ? "ok" : "error",
     error_message: call.errorMessage?.slice(0, 2000) ?? null,

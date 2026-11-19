@@ -17,6 +17,8 @@ import { TERMS_VERSION } from "./forms.js";
  * mustChangePassword: boolean;
  * // Ainda não aceitou a versão atual dos termos de uso e da política de privacidade (TERMS_VERSION, em forms.js).
  * needsTerms: boolean;
+ * // Já confirmou o e-mail com o código (F32). O dono confirma no cadastro.
+ * emailVerified: boolean;
  * }} CurrentMember
  */
 
@@ -69,5 +71,6 @@ export function parseMemberRow(row) {
     role: r.role,
     mustChangePassword: r.must_change_password === true,
     needsTerms: r.terms_version !== TERMS_VERSION,
+    emailVerified: typeof r.email_verified_at === "string",
   };
 }

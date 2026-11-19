@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { costInCents, costInUsd, formatBRL, transcriptionCostInUsd, USD_TO_BRL } from "./pricing.js";
+import {
+  costInCents,
+  costInUsd,
+  currentUsdToBrl,
+  formatBRL,
+  setUsdToBrl,
+  transcriptionCostInUsd,
+  usdToCents,
+  USD_TO_BRL,
+} from "./pricing.js";
 
 const million = (inputTokens, outputTokens) => ({ inputTokens, outputTokens });
 
@@ -56,5 +65,21 @@ describe("preço de cada uso", () => {
 
   it("mostra centavos como reais", () => {
     expect(formatBRL(531)).toBe("R$ 5,31");
+  });
+});
+
+describe("câmbio que vale agora (F17)", () => {
+  it("cobra no câmbio trocado e ignora valor fora dos limites", () => {
+    try {
+      expect(setUsdToBrl(6)).toBe(true);
+      expect(currentUsdToBrl()).toBe(6);
+      expect(usdToCents(1)).toBe(600);
+      expect(setUsdToBrl(0)).toBe(false);
+      expect(setUsdToBrl(Number.NaN)).toBe(false);
+      expect(setUsdToBrl(21)).toBe(false);
+      expect(currentUsdToBrl()).toBe(6);
+    } finally {
+      setUsdToBrl(USD_TO_BRL);
+    }
   });
 });

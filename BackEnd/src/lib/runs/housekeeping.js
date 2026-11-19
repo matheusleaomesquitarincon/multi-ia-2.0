@@ -2,11 +2,13 @@
 // - fechar as reservas de execuções e mensagens que já terminaram e que ninguém está rodando (F43). Se o servidor cair
 //   no meio de uma fase cancelada, a reserva dela deixa de segurar o saldo em minutos, não em uma hora;
 // - apagar da pasta de arquivos o conteúdo que perdeu o registro há mais de 1 hora (F28, LGPD): quem apagou o registro
-//   direto no banco, ou um apagar que falhou no meio.
+//   direto no banco, ou um apagar que falhou no meio;
+// - ler de novo o câmbio que a equipe da plataforma definiu no painel interno (F17).
 // Rodar em dois servidores ao mesmo tempo não faz mal: fechar uma reserva fechada ou apagar o que já sumiu não faz nada.
 // Cada tarefa tem o próprio try: o erro de uma não impede a outra.
 
 import { removeOrphanFiles } from "../ock/files.js";
+import { refreshExchangeRate } from "../platform/exchange.js";
 import { closeStaleHolds } from "./wallet.js";
 
 /** De quanto em quanto tempo a limpeza roda. */
@@ -28,6 +30,11 @@ export async function runHousekeeping() {
     if (removed > 0) console.log(`[housekeeping] Apaguei ${removed} arquivo(s) da pasta que não tinham mais registro.`);
   } catch (error) {
     console.error("[housekeeping] Não consegui apagar os arquivos esquecidos:", error);
+  }
+  try {
+    await refreshExchangeRate();
+  } catch (error) {
+    console.error("[housekeeping] Não consegui ler o câmbio; sigo com o anterior:", error);
   }
 }
 

@@ -12,11 +12,17 @@ export function SessionProvider({ children }) {
 }
 
 /**
- * @returns {{ loading: boolean, viewer: { status: string, member?: any }, demo: boolean }}
+ * staff: se é da equipe da plataforma (só para mostrar o atalho do painel interno; quem confere é o servidor).
+ * @returns {{ loading: boolean, viewer: { status: string, member?: any }, demo: boolean, staff: boolean }}
  */
 export function useSession() {
   const { data, loading, failed } = useContext(SessionContext);
   // O topo nunca derruba o site: sem resposta, ele aparece sem a conta.
-  if (failed && !data) return { loading: false, viewer: { status: "signed-out" }, demo: false };
-  return { loading, viewer: data?.viewer ?? { status: "signed-out" }, demo: data?.demo ?? false };
+  if (failed && !data) return { loading: false, viewer: { status: "signed-out" }, demo: false, staff: false };
+  return {
+    loading,
+    viewer: data?.viewer ?? { status: "signed-out" },
+    demo: data?.demo ?? false,
+    staff: data?.staff === true,
+  };
 }

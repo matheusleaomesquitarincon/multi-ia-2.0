@@ -64,6 +64,7 @@ export function pendingCompanyFrom(metadata) {
  * @typedef {{
  * id: string;
  * email?: string;
+ * email_confirmed_at?: string;
  * user_metadata?: unknown;
  * }} SignedUpUser
  */
@@ -103,6 +104,8 @@ export async function ensureOwnerCompany(user) {
     name: pending.ownerName,
     email: normalizeEmail(user.email),
     role: "owner",
+    // O dono chega aqui depois de confirmar o e-mail pelo link do cadastro.
+    ...(user.email_confirmed_at ? { email_verified_at: user.email_confirmed_at } : {}),
     // Sem o aceite guardado (cadastro de antes dos termos), fica em branco e a pessoa é chamada a aceitar.
     ...(pending.termsAcceptedAt
       ? { terms_version: TERMS_VERSION, terms_accepted_at: new Date(pending.termsAcceptedAt).toISOString() }

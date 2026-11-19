@@ -1,0 +1,71 @@
+/* A caixa fica dentro da margem da página, como o resto do conteúdo. */
+.box {
+  width: calc(100% - 2 * var(--page-gutter));
+  max-width: calc(var(--page-max-width) - 2 * var(--page-gutter));
+  margin: var(--space-6) auto 0;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-8);
+  align-items: flex-start;
+}
+
+.text {
+  flex: 1 1 var(--card-min-width);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-display);
+  color: var(--color-text);
+}
+
+.lead {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--line-height-body);
+  color: var(--color-text-body);
+  overflow-wrap: anywhere;
+}
+
+.forms {
+  flex: 1 1 var(--card-min-width);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.codeForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.codeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.codeInput {
+  flex: 1 1 0;
+  width: auto;
+  letter-spacing: var(--letter-spacing-eyebrow);
+}
+
+.done {
+  margin: 0;
+  color: var(--color-status-done-text);
+}

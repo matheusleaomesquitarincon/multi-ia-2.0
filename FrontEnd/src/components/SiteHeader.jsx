@@ -6,9 +6,9 @@ import { OwnerNav } from "./OwnerNav.jsx";
 import styles from "./SiteHeader.module.css";
 
 // Topo do site: o logo, que volta para a entrada, e, para quem está logado, quem é e o botão "Sair". O dono ganha os
-// atalhos entre o painel dele e o espaço de trabalho.
+// atalhos entre o painel dele e o espaço de trabalho; quem é da equipe da plataforma, o do painel interno.
 export function SiteHeader() {
-  const { viewer, demo } = useSession();
+  const { viewer, demo, staff } = useSession();
 
   return (
     <>
@@ -40,6 +40,11 @@ export function SiteHeader() {
             <div className={styles.nav}>
               <OwnerNav />
             </div>
+          )}
+          {staff && (
+            <Link to="/plataforma" className={styles.navLink}>
+              Plataforma
+            </Link>
           )}
           {viewer.status !== "signed-out" && (
             <div className={styles.account}>

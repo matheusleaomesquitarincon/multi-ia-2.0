@@ -13,6 +13,7 @@ import { EntrarPage } from "./pages/EntrarPage.jsx";
 import { EsqueciSenhaPage } from "./pages/EsqueciSenhaPage.jsx";
 import { HomePage } from "./pages/HomePage.jsx";
 import { LegalPage } from "./pages/LegalPage.jsx";
+import { PlataformaPage } from "./pages/PlataformaPage.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import { RaioXPage } from "./pages/RaioXPage.jsx";
 import { RecipeRedirectPage } from "./pages/RecipeRedirectPage.jsx";
@@ -39,6 +40,7 @@ export function App() {
           <Route path="/dono" element={<DonoPage />} />
           <Route path="/trabalho" element={<TrabalhoPage />} />
           <Route path="/raiox" element={<RaioXPage />} />
+          <Route path="/plataforma" element={<PlataformaPage />} />
           <Route path="/recipes/:recipeId" element={<RecipeRedirectPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

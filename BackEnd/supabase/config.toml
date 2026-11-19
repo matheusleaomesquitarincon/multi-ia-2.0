@@ -251,6 +251,12 @@ otp_expiry = 86400
 subject = "Crie uma senha nova"
 content_path = "./supabase/templates/recovery.html"
 
+# Código para confirmar o e-mail (F32): o e-mail do "magic link" mostra só o código ({{ .Token }}), sem link de entrada.
+# No site publicado, cole o mesmo texto em Authentication → Emails → Magic link (Docs/GUIA-PUBLICACAO.md).
+[auth.email.template.magic_link]
+subject = "Seu código de confirmação do Multi-IA"
+content_path = "./supabase/templates/email-code.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

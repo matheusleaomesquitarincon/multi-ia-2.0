@@ -3,6 +3,7 @@
 // (?aba=receitas&receita=create-site).
 
 import { Navigate, useSearchParams } from "react-router";
+import { EmailCheck } from "../components/EmailCheck.jsx";
 import { OckWorkspace } from "../components/OckWorkspace.jsx";
 import { readWorkspaceView } from "../components/workspace-view.js";
 import { firstName } from "../lib/auth/member.js";
@@ -23,6 +24,7 @@ export function TrabalhoPage() {
   return (
     <>
       <title>Trabalhar com o time · Multi-IA</title>
+      {!data.me.emailVerified && <EmailCheck email={data.me.email} />}
       <OckWorkspace
         pageMemberId={data.me.id}
         firstName={firstName(data.me.name)}

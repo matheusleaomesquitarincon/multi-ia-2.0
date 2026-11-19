@@ -17,6 +17,17 @@ import { createSessionClient } from "./session.js";
  * | { status: "member"; member: CurrentMember }} Viewer
  */
 
+/**
+ * O id do login de quem está pedindo (conferido pela assinatura), ou null sem login.
+ * @returns {Promise<string | null>}
+ */
+export async function getUserId() {
+  const supabase = await createSessionClient();
+  if (!supabase) return null;
+  const { data } = await supabase.auth.getClaims();
+  return data?.claims.sub ?? null;
+}
+
 /** Lê quem está logado. Guardado durante o pedido: consultas repetidas no mesmo pedido vão ao banco uma vez só. */
 export function getViewer() {
   return cachedInRequest("viewer", readViewer);
@@ -33,7 +44,7 @@ async function readViewer() {
   // Com a sessão: as regras de acesso devolvem o próprio cadastro (e, para o dono, os da empresa; daí o filtro).
   const { data: row, error } = await supabase
     .from("members")
-    .select("id, company_id, name, email, role, must_change_password, terms_version, companies (name)")
+    .select("id, company_id, name, email, role, must_change_password, terms_version, email_verified_at, companies (name)")
     .eq("user_id", userId)
     .maybeSingle();
   if (error) throw new Error(`Não deu para ler o cadastro de quem está logado: ${error.message}`);

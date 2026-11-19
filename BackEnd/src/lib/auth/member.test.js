@@ -21,6 +21,7 @@ const MEMBER = {
   role: "owner",
   mustChangePassword: false,
   needsTerms: false,
+  emailVerified: false,
 };
 
 describe("quem está logado", () => {
@@ -32,6 +33,10 @@ describe("quem está logado", () => {
   it("pede o aceite dos termos a quem nunca aceitou ou aceitou uma versão antiga (F05)", () => {
     expect(parseMemberRow({ ...ROW, terms_version: null }).needsTerms).toBe(true);
     expect(parseMemberRow({ ...ROW, terms_version: "2000-01-01" }).needsTerms).toBe(true);
+  });
+
+  it("diz se o e-mail já foi confirmado (F32)", () => {
+    expect(parseMemberRow({ ...ROW, email_verified_at: "2026-11-18T12:00:00Z" }).emailVerified).toBe(true);
   });
 
   it("falha com mensagem clara se faltar algo ou o papel for desconhecido", () => {
