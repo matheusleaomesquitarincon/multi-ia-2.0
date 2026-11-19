@@ -79,6 +79,19 @@ muda pouco: receitas e textos mais específicos. Risco anotado em F02 do `FALHAS
 - **Funcionário:** recebe do dono um convite (um link que só funciona uma vez e vale 24 horas, mandado por WhatsApp ou
   como o dono preferir), cria a própria senha e trabalha no **workspace**. Só ele conhece a senha (decisão do Luis, 24/10).
   Se perder a senha, o dono gera um link de senha nova, do mesmo jeito (até existir o envio de e-mail, F30).
+  - **Vê só créditos (decisão do Matheus, 18/11):** no espaço de trabalho, o funcionário vê o gasto e o que resta em
+    créditos (1 crédito = R$ 1,00); valores em reais ficam com o dono (F65).
+  - **Confirma o e-mail (18/11, F32):** um aviso no alto do espaço de trabalho manda um código de 6 dígitos para o
+    e-mail do login; o dono vê no painel quem já confirmou. Não bloqueia o uso.
+  - **Ao apagar a conta, as entregas ficam com a empresa (decisão do Matheus, 18/11):** somem as conversas, os anexos, as
+    receitas rodadas e o login; ficam as entregas, os times da empresa e o extrato (F64).
+- **Termos de uso e política de privacidade (18/11, F05):** em `/termos` e `/privacidade`, ainda em **rascunho** para
+  revisão de um advogado. O dono aceita no cadastro, o funcionário ao criar a senha, e quem já tinha conta aceita antes
+  de entrar. Cada pessoa guarda a versão aceita e a data; mudando a versão, todos aceitam de novo.
+- **Equipe da plataforma (bloco 3, 18/11):** um terceiro lado, só nosso. Em `/plataforma`, a equipe vê todas as
+  empresas com o saldo, o custo real das IAs contra o que foi cobrado no mês, recarrega crédito pela tela (depois do
+  pagamento) e define o câmbio usado para cobrar (F17, F25). Quem é da equipe é marcado só pelo editor de SQL do
+  Supabase, e o banco confere a equipe a cada pedido.
 
 ### Três jeitos de trabalhar no workspace (decisão do Luis, 22/10)
 

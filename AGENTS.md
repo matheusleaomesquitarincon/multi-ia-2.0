@@ -93,6 +93,7 @@ BackEnd/src/
   lib/runs/          a execução vista de fora: banco, carteira, cobrança, chamada interna
   lib/auth/          login, convite, cadastro da empresa e visão raio-x
   lib/ock/           o workspace: equipe, chat, arquivos, gastos
+  lib/platform/      o painel interno da equipe da plataforma (/plataforma): empresas, custo das IAs, recarga e câmbio
   supabase/          migrations/ (a versão oficial das tabelas), seed.sql (só local) e tests/ (testes do banco)
 Docs/                documento do projeto, diário, registro de falhas e guias
 .github/workflows/   checagens automáticas que rodam em todo pull request

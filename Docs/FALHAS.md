@@ -34,7 +34,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F14 | As tabelas do banco (Supabase) não estão no repositório | Código | Alta | Resolvida |
 | F15 | Pacote `xlsx` com falhas de segurança conhecidas | Segurança | Média | Resolvida |
 | F16 | Rotas que gastam IA de verdade abertas para qualquer um | Segurança | Alta | Resolvida |
-| F17 | Preços das IAs e câmbio fixos no código | Código | Média | Aberta |
+| F17 | Preços das IAs e câmbio fixos no código | Código | Média | Resolvida |
 | F18 | Prévia de site: o Chrome "aquece" uma conexão antes de bloquear | Segurança | Baixa | Aceita |
 | F19 | Testado só no Chrome | Código | Baixa | Aberta |
 | F20 | Mudança grande de produto entrou num PR só, sem registro nos documentos | Processo | Média | Decidida |
@@ -86,6 +86,7 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 | F66 | O guia do projeto de testes ainda mostra os nomes antigos das variáveis do Supabase nos passos | Processo | Baixa | Resolvida |
 | F67 | Com `PORT=` vazio, como no modelo do `.env.local`, o servidor ligava numa porta aleatória | Código | Média | Resolvida |
 | F68 | Com a visão raio-x ligada, o logo e o login mandavam para `/raiox` mesmo quem já tinha entrado | Código | Baixa | Resolvida |
+| F69 | Os documentos dizem que o chat mostra "Custou R$ X" ao funcionário, mas a tela esconde o custo dele | Processo / Produto | Baixa | Aberta |
 
 ## Negócio
 
@@ -439,6 +440,12 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   nos dois; o teste `FrontEnd/src/lib/copies.test.js` falha se ficarem diferentes. Os preços dos modelos ficam em
   `BackEnd/src/lib/providers/models.js`.
 
+- **Andamento (18/11/2026, branch `matheus`):** o **câmbio saiu do código**. Fica no banco (`platform_settings`), a
+  equipe muda em `/plataforma` (de R$ 1 a R$ 20, com até 4 casas) e cada mudança fica no registro do painel. O servidor
+  relê a cada 5 minutos (na limpeza periódica) e na hora, no servidor que recebeu a mudança; até a primeira leitura vale
+  o de partida (R$ 5,50). O painel mostra o custo real das IAs (no câmbio de cada chamada) contra o cobrado, por empresa.
+  **Falta:** os preços dos modelos continuam no código, de propósito (mudam com o código, em `lib/providers/models.js`).
+
 ### F18 — Prévia de site: o Chrome "aquece" uma conexão antes de bloquear
 - **Gravidade:** Baixa · **Status:** Aceita · **Anotada:** etapa 4 (T7), trazida para cá em 22/10/2026
 - **O problema:** quando o site gerado tenta trocar o endereço da moldura, o Chrome consulta o nome do site de destino
@@ -448,6 +455,15 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 ### F19 — Testado só no Chrome
 - **Gravidade:** Baixa · **Status:** Aberta · **Anotada:** etapa 4 (T7), trazida para cá em 22/10/2026
 - **O que fazer:** testar no Firefox e no Safari na rodada de testes com empresas.
+
+- **Andamento (18/11/2026, branch `matheus`):** o mesmo roteiro automático (Playwright) que entra como dona, funcionária
+  e equipe passou inteiro no **Chrome** e no **Edge**: 24 conferências, no computador e no celular (360 px), sem nenhuma
+  página rolando para o lado. No **Firefox**, a versão própria do Playwright não terminou de instalar neste computador
+  (o download travou ao descompactar, provavelmente pelo antivírus); com o Firefox instalado, em modo sem janela, `/termos`
+  apareceu certo. A foto do `/cadastro` saiu em branco, mas esse modo fotografa antes de a página terminar de carregar,
+  então o resultado é inconclusivo. **Falta:** passar pelas telas com login no Firefox, à mão, e o **Safari** (só num
+  Mac ou iPhone). Nota: em fotos tiradas sem esperar, o conteúdo aparece em branco por causa da animação de entrada
+  (`#root > main`, em `globals.css`); com "reduzir movimento", aparece.
 
 ### F23 — Apagar um funcionário devolve o gasto dele ao crédito da empresa
 - **Gravidade:** Alta · **Status:** Resolvida · **Anotada:** 24/10/2026
@@ -490,6 +506,11 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
 - **Resolvida (25/10/2026, conferido no PR 3c):** o painel antigo, com "recarregar" e "definir o crédito", saiu no PR 2a,
   e o de hoje só tem a equipe. Nenhuma tela nem rota do servidor lança crédito: só o editor de SQL do Supabase. O saldo
   volta para o painel do dono na parte 3d, só para ver.
+
+- **Mudança (18/11/2026, bloco 3):** a recarga agora também pode ser feita pela tela, em `/plataforma`, **só pela equipe
+  da plataforma** (`platform_staff`, que só se preenche pelo editor de SQL). Quem confere a equipe é o próprio banco, pelo
+  login de quem pede, dentro de `platform_topup`; o dono continua sem jeito de recarregar a própria empresa. Até
+  R$ 100.000,00 por vez, e cada recarga fica no registro com o nome de quem fez. O ajuste continua só pelo SQL.
 
 ### F26 — O custo das tentativas que falharam não fica registrado
 - **Gravidade:** Média · **Status:** Resolvida · **Anotada:** 09/10/2026 (no PROGRESSO), trazida para cá em 24/10/2026
@@ -606,6 +627,13 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   ocupar o e-mail de outra pessoa, que depois não consegue criar a própria empresa com ele ("Já existe uma conta").
 - **O que fazer:** quando houver envio de e-mail próprio (F30), mandar um e-mail de confirmação ao funcionário e ter
   um jeito de liberar um e-mail ocupado. Até lá, a página do convite mostra o e-mail com destaque.
+
+- **Parte 1 resolvida (18/11/2026, branch `matheus`):** o funcionário confirma o e-mail com um **código de 6 dígitos**
+  que chega no e-mail do login (aviso no alto do espaço de trabalho; `lib/auth/email-check.js`). O painel do dono mostra
+  "E-mail confirmado" ou "E-mail não confirmado" em cada funcionário (`members.email_verified_at`). O código não dá poder
+  novo a ninguém: quem lê o e-mail já entraria pelo "Esqueci minha senha". Não bloqueia o uso, porque sem o e-mail
+  próprio (F30) ninguém receberia o código. No site publicado, precisa do modelo "Magic Link" (`GUIA-PUBLICACAO.md`,
+  passo 6). **Parte 2 continua aberta:** liberar um e-mail ocupado por um funcionário que nunca confirmou.
 
 ### F33 — O dono consegue entrar na conta de um funcionário pelo link de senha nova
 - **Gravidade:** Média · **Status:** Aceita · **Anotada:** 24/10/2026 (PR 2b)
@@ -971,3 +999,12 @@ erro. Agora `server.js` e `lib/runs/trigger.js` usam `||`, com teste do caso vaz
 **Status:** Resolvida (05/11/2026). `HomePage.jsx` testava o raio-x antes do login, então o `/` nunca levava à página da pessoa. Só no
 computador: no site publicado o raio-x não liga. Agora quem entrou vai para a própria página (dono em `/dono`, funcionário em
 `/trabalho`, na primeira aba); só quem não entrou vai para `/raiox`.
+
+### F69 — Os documentos dizem que o chat mostra "Custou R$ X" ao funcionário, mas a tela esconde o custo dele
+**Status:** Aberta (18/11/2026, percebida pelo Claude ao testar a escolha de IA no chat). O `AGENTS.md` (seção 5,
+"Créditos e estimativa", item 4), o `DOCUMENTO-PROJETO.md` (linhas 127 e 320) e o `GUIA-TESTE-CHAT.md` dizem que cada
+resposta do chat mostra "Custou R$ X". O código (`FrontEnd/src/components/QuickChat.jsx`, `Answer`) diz o contrário: "o
+funcionário não vê qual IA respondeu nem o custo (isso é do painel do dono)", e a tela de fato não mostra. Pela decisão
+de 18/11 (F65, o funcionário vê só créditos), o mais provável é que os documentos estejam velhos. **A decidir:** o
+funcionário vê o custo de cada resposta (em créditos) ou não? Depois, alinhar o `AGENTS.md`, o documento e o guia.
+
