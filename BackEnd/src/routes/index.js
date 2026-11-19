@@ -3,6 +3,7 @@
 import { Router } from "express";
 import { route } from "../http/adapter.js";
 import { formAction } from "./action.js";
+import { acceptTermsAction } from "./actions/aceitar-termos.js";
 import { signUpCompany } from "./actions/cadastro.js";
 import { acceptInviteAction } from "./actions/convite.js";
 import {
@@ -92,6 +93,7 @@ export function apiRoutes() {
     "cadastro/sign-up": signUpCompany,
     "convite/accept": acceptInviteAction,
     "trocar-senha/change": changePasswordAction,
+    "termos/accept": acceptTermsAction,
     "dono/invite": inviteEmployeeAction,
     "dono/new-link": newLinkAction,
     "dono/budget": updateBudgetAction,

@@ -29,9 +29,11 @@ vi.mock("../runs/supabase-server.js", () => ({
 }));
 
 const { ensureOwnerCompany, pendingCompanyFrom, signupMetadata } = await import("./company-signup.js");
+const { TERMS_VERSION } = await import("./forms.js");
 
 const USER_ID = "a0000000-0000-4000-8000-000000000001";
-const PENDING = { companyName: "Agência Exemplo", ownerName: "Marina Souza" };
+const ACCEPTED_AT = "2026-11-18T12:00:00.000Z";
+const PENDING = { companyName: "Agência Exemplo", ownerName: "Marina Souza", termsAcceptedAt: ACCEPTED_AT };
 
 beforeEach(() => {
   db.existingMember = null;
@@ -43,6 +45,13 @@ beforeEach(() => {
 describe("cadastro pendente guardado no login", () => {
   it("volta igual ao que foi guardado no cadastro", () => {
     expect(pendingCompanyFrom(signupMetadata(PENDING))).toEqual(PENDING);
+  });
+
+  it("só leva o aceite dos termos se foi da versão atual (F05)", () => {
+    const old = { company_signup: { company_name: "Agência", owner_name: "Marina", terms_version: "2000-01-01", terms_accepted_at: ACCEPTED_AT } };
+    expect(pendingCompanyFrom(old)).toEqual({ companyName: "Agência", ownerName: "Marina" });
+    const broken = { company_signup: { company_name: "Agência", owner_name: "Marina", terms_version: TERMS_VERSION, terms_accepted_at: "ontem" } };
+    expect(pendingCompanyFrom(broken)).toEqual({ companyName: "Agência", ownerName: "Marina" });
   });
 
   it("ignora metadados ausentes, de outro formato ou com nomes inválidos", () => {
@@ -76,6 +85,8 @@ describe("empresa criada no primeiro acesso do dono", () => {
           name: "Marina Souza",
           email: "marina@example.com",
           role: "owner",
+          terms_version: TERMS_VERSION,
+          terms_accepted_at: ACCEPTED_AT,
         },
       },
     ]);

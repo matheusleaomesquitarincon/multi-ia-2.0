@@ -135,6 +135,15 @@ categoria, com a data. Ao mudar o status, escreva a data e o que aconteceu.
   recebe o pedido). O funcionário lê, nas abas Entregas e Meus gastos, "O dono da empresa vê suas entregas e quanto cada
   tarefa custou. Suas conversas, não." Achada e corrigida no caminho a F49 (o nome dos documentos vinha do pedido).
 
+- **Andamento (18/11/2026, branch `matheus`):** termos de uso (`/termos`) e política de privacidade (`/privacidade`) em
+  **rascunho**, com aviso na própria página, e o aceite obrigatório: o dono marca a caixinha no cadastro; o funcionário,
+  ao criar a senha (convite ou primeiro acesso); quem já tinha conta passa por `/aceitar-termos` antes de qualquer tela.
+  Cada pessoa guarda a versão aceita e a data (`members.terms_version` e `terms_accepted_at`, só o servidor grava). Mudou
+  o texto de um jeito importante? Troque `TERMS_VERSION` em `lib/auth/forms.js` e todos aceitam de novo. **Falta:**
+  preencher os [colchetes] (razão social, CNPJ, encarregado de dados, foro, preço e devolução dos créditos), confirmar
+  nos contratos das IAs que o conteúdo não treina os modelos e a região do Supabase, pôr o Gemini no plano pago (parte 3)
+  e a revisão de um advogado antes da primeira empresa de verdade.
+
 ### F06 — Vender para empresa é mais lento e trabalhoso
 - **Gravidade:** Média · **Status:** Aberta · **Anotada:** 22/10/2026
 - **O problema:** cada empresa exige conversa, demonstração e confiança, e o tempo dos dois sócios é curto.
@@ -936,6 +945,8 @@ política de privacidade (F05) precisa dizer o mesmo.
   **A confirmar com o grupo:** se as entregas também devem sumir ao apagar a conta (hoje ficam, por serem documentos de
   trabalho que o dono já vê) e o texto da política de privacidade (F05). Conferido de ponta a ponta no Chrome, com o
   Supabase local.
+- **Decidido (18/11/2026, Matheus):** ao apagar a conta, as entregas **ficam com a empresa**, como já funcionava. A
+  política de privacidade (`/privacidade`, seção 5) diz isso ao funcionário.
 
 ### F65 — O funcionário vê o "Gasto do mês" em reais no alto da página, mas créditos no resto
 **Status:** Aberta (16/11/2026, percebida pelo Claude ao testar a F08). O alto do espaço de trabalho (`OckWorkspace`)

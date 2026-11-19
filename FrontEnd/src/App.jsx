@@ -4,6 +4,7 @@
 import { Route, Routes, useLocation } from "react-router";
 import { SiteHeader } from "./components/SiteHeader.jsx";
 import { SessionProvider } from "./lib/session.jsx";
+import { AceitarTermosPage } from "./pages/AceitarTermosPage.jsx";
 import { ErrorBoundary } from "./pages/ErrorBoundary.jsx";
 import { CadastroPage } from "./pages/CadastroPage.jsx";
 import { ConvitePage } from "./pages/ConvitePage.jsx";
@@ -11,6 +12,7 @@ import { DonoPage } from "./pages/DonoPage.jsx";
 import { EntrarPage } from "./pages/EntrarPage.jsx";
 import { EsqueciSenhaPage } from "./pages/EsqueciSenhaPage.jsx";
 import { HomePage } from "./pages/HomePage.jsx";
+import { LegalPage } from "./pages/LegalPage.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import { RaioXPage } from "./pages/RaioXPage.jsx";
 import { RecipeRedirectPage } from "./pages/RecipeRedirectPage.jsx";
@@ -31,6 +33,9 @@ export function App() {
           <Route path="/cadastro" element={<CadastroPage />} />
           <Route path="/convite/:token" element={<ConvitePage />} />
           <Route path="/trocar-senha" element={<TrocarSenhaPage />} />
+          <Route path="/aceitar-termos" element={<AceitarTermosPage />} />
+          <Route path="/termos" element={<LegalPage kind="terms" />} />
+          <Route path="/privacidade" element={<LegalPage kind="privacy" />} />
           <Route path="/dono" element={<DonoPage />} />
           <Route path="/trabalho" element={<TrabalhoPage />} />
           <Route path="/raiox" element={<RaioXPage />} />

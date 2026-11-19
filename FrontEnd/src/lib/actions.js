@@ -10,6 +10,7 @@ export const forgotPasswordAction = action("esqueci-senha/request");
 export const signUpCompany = action("cadastro/sign-up");
 export const acceptInviteAction = action("convite/accept");
 export const changePasswordAction = action("trocar-senha/change");
+export const acceptTermsAction = action("termos/accept");
 export const inviteEmployeeAction = action("dono/invite");
 export const newLinkAction = action("dono/new-link");
 export const updateBudgetAction = action("dono/budget");

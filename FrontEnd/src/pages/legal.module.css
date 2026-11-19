@@ -1,0 +1,73 @@
+.main {
+  max-width: var(--text-max-width);
+  margin: 0 auto;
+  padding: var(--space-14) var(--page-gutter) var(--space-18);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.draft {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-title);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-title);
+}
+
+.lead {
+  margin: 0;
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+}
+
+.meta {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-display);
+  color: var(--color-text);
+}
+
+.paragraph {
+  margin: 0;
+  font-size: var(--text-md);
+  line-height: var(--line-height-body);
+  color: var(--color-text-body);
+  overflow-wrap: anywhere;
+}
+
+.footer {
+  margin: 0;
+  font-size: var(--text-md);
+  color: var(--color-text-body);
+}

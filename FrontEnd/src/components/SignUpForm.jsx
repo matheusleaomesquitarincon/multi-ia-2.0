@@ -6,6 +6,7 @@ import { useActionState } from "react";
 import { signUpCompany } from "../lib/actions.js";
 
 import { NAME_MAX_CHARS, PASSWORD_MIN_CHARS } from "../lib/auth/forms.js";
+import { TermsCheckbox } from "./TermsCheckbox.jsx";
 import styles from "./AuthForm.module.css";
 
 const INITIAL = { status: "idle" };
@@ -117,6 +118,8 @@ export function SignUpForm() {
             <p className={styles.hint}>Pelo menos {PASSWORD_MIN_CHARS} caracteres.</p>
           )}
         </div>
+
+        <TermsCheckbox error={errors.acceptTerms} />
 
         {state.status === "error" && (
           <p className={styles.error} role="alert">

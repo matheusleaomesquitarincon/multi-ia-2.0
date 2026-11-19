@@ -4,7 +4,7 @@
 // Quem cria é o servidor (chave secreta), porque pela sessão ninguém cria empresa nem pessoa (regras da migração 1).
 
 import { supabaseAdmin } from "../runs/supabase-server.js";
-import { NAME_MAX_CHARS, normalizeEmail } from "./forms.js";
+import { NAME_MAX_CHARS, normalizeEmail, TERMS_VERSION } from "./forms.js";
 
 /** Onde o nome da empresa e do dono ficam guardados no login, entre o cadastro e o primeiro acesso. */
 export const SIGNUP_METADATA_KEY = "company_signup";
@@ -13,6 +13,8 @@ export const SIGNUP_METADATA_KEY = "company_signup";
  * @typedef {{
  * companyName: string;
  * ownerName: string;
+ * // Quando o dono aceitou os termos no formulário (ISO). Só vale se foi a versão atual (TERMS_VERSION).
+ * termsAcceptedAt?: string;
  * }} PendingCompany
  */
 
@@ -22,7 +24,15 @@ export const SIGNUP_METADATA_KEY = "company_signup";
  * @returns {Record<string, unknown>}
  */
 export function signupMetadata(pending) {
-  return { [SIGNUP_METADATA_KEY]: { company_name: pending.companyName, owner_name: pending.ownerName } };
+  return {
+    [SIGNUP_METADATA_KEY]: {
+      company_name: pending.companyName,
+      owner_name: pending.ownerName,
+      // O cadastro só passa com a caixinha dos termos marcada (parseSignUp): o aceite vale a partir do formulário.
+      terms_version: TERMS_VERSION,
+      terms_accepted_at: pending.termsAcceptedAt ?? new Date().toISOString(),
+    },
+  };
 }
 
 function validName(value) {
@@ -43,7 +53,11 @@ export function pendingCompanyFrom(metadata) {
   if (typeof signup !== "object" || signup === null) return null;
   const companyName = validName(signup.company_name);
   const ownerName = validName(signup.owner_name);
-  return companyName && ownerName ? { companyName, ownerName } : null;
+  if (!companyName || !ownerName) return null;
+  const acceptedAt = signup.terms_accepted_at;
+  const accepted =
+    signup.terms_version === TERMS_VERSION && typeof acceptedAt === "string" && !Number.isNaN(Date.parse(acceptedAt));
+  return accepted ? { companyName, ownerName, termsAcceptedAt: acceptedAt } : { companyName, ownerName };
 }
 
 /**
@@ -89,6 +103,10 @@ export async function ensureOwnerCompany(user) {
     name: pending.ownerName,
     email: normalizeEmail(user.email),
     role: "owner",
+    // Sem o aceite guardado (cadastro de antes dos termos), fica em branco e a pessoa é chamada a aceitar.
+    ...(pending.termsAcceptedAt
+      ? { terms_version: TERMS_VERSION, terms_accepted_at: new Date(pending.termsAcceptedAt).toISOString() }
+      : {}),
   });
   // Outro pedido criou o dono no mesmo instante: está feito.
   if (memberError?.code === UNIQUE_VIOLATION) return "exists";

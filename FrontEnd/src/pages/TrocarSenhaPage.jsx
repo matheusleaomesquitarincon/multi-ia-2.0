@@ -22,6 +22,7 @@ export function TrocarSenhaPage() {
         name={viewer.member.name}
         email={viewer.member.email}
         recovery={search.get("motivo") === "recuperar"}
+        needsTerms={viewer.member.needsTerms}
       />
     </>
   );
